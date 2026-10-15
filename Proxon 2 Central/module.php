@@ -29,9 +29,11 @@
 				"LAYOUT" => 1,
 				"OPTIONS" => json_encode([
 					["Value" => 0, "Caption" => $this->Translate("Off"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 1, "Caption" => $this->Translate("Eco Summer"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 2, "Caption" => $this->Translate("Eco Winter"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 9, "Caption" => $this->Translate("Test"), "IconActive" => false, "IconValue" => ""]
+					["Value" => 1, "Caption" => $this->Translate("Summer Operation"), "IconActive" => false, "IconValue" => ""],
+					["Value" => 2, "Caption" => $this->Translate("Winter Operation"), "IconActive" => false, "IconValue" => ""],
+					["Value" => 3, "Caption" => $this->Translate("Eco Comfort"), "IconActive" => false, "IconValue" => ""],
+					["Value" => 4, "Caption" => $this->Translate("Stove Mode"), "IconActive" => false, "IconValue" => ""],
+					["Value" => 6, "Caption" => $this->Translate("Emergency Operation"), "IconActive" => false, "IconValue" => ""]
 			])
 			], 3);
 			$this->EnableAction("OperatingMode");
@@ -72,7 +74,7 @@
 			if($TargetTemperature[1] >= pow(2, 15)) $TargetTemperature[1] -= pow(2, 16);
 
 			$this->SetValue("TargetTemperature", $TargetTemperature[1] / 100.0);			
-			// OperatingMode -> FC3, 16, uint16 (0=Off, 1=Eco Summer, 2=Eco Winter, 9=Test)
+			// OperatingMode -> 4x0016, FC3, uint16 (0=Off, 1=Summer, 2=Winter, 3=Eco Comfort, 4=Stove, 6=Emergency)
 			$Address = 16;
 			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
 			if($Data == false)
@@ -80,7 +82,7 @@
 			$OperatingMode = (unpack("n*", substr($Data,2)));
 			$this->SetValue("OperatingMode", $OperatingMode[1]);
 
-			// FanStage -> FC3, 22, uint16 (1-4)
+			// FanStage -> 4x0022, FC3, uint16 (1-4)
 			$Address = 22;
 			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
 			if($Data == false)
@@ -98,10 +100,11 @@
 		}
 
 		public function SetOperatingMode(int $Value): void {
-			if (!in_array($Value, [0, 1, 2, 9], true)) {
+			if (!in_array($Value, [0, 1, 2, 3, 4, 6], true)) {
 				throw new InvalidArgumentException("Unsupported operating mode.");
 			}
 
+			// Write the selected mode to holding register 4x0016.
 			$Address = 16;
 			$Data = pack("n*", $Value);
 			$Response = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
@@ -117,6 +120,7 @@
 				throw new InvalidArgumentException("Fan stage must be between 1 and 4.");
 			}
 
+			// Write the selected fan stage to holding register 4x0022.
 			$Address = 22;
 			$Data = pack("n*", $Value);
 			$Response = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
