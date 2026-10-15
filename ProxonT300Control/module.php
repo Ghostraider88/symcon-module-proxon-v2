@@ -395,8 +395,6 @@ class ProxonT300Control extends IPSModuleStrict
                     'IconValue' => ''
                 ];
             }
-            $presentation['DISPLAY'] = 1;
-            $presentation['LAYOUT'] = 1;
             $presentation['OPTIONS'] = json_encode($presentationOptions, JSON_THROW_ON_ERROR);
         }
 
