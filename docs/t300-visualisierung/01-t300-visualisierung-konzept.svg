@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1880 1240" role="img" aria-labelledby="title desc">
+  <title id="title">PROXON T300 – Mockup der Anlagenvisualisierung</title>
+  <desc id="desc">Statischer Entwurf im Stil der FWT-Visualisierung mit hoher freistehender T300-Säule und vereinfachtem Schnitt. Rechts Betriebszustand und Messwerte, darunter Alltagssteuerung und PV-Status. Alle Zahlen sind Demo-Werte.</desc>
+  <defs>
+    <linearGradient id="background" x2="0" y2="1">
+      <stop stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#edf2f7"/>
+    </linearGradient>
+    <linearGradient id="tankFill" x2="0" y2="1">
+      <stop stop-color="#f8dcd5"/>
+      <stop offset=".48" stop-color="#fff5e7"/>
+      <stop offset="1" stop-color="#dcecf6"/>
+    </linearGradient>
+    <linearGradient id="deviceShell" x2="1">
+      <stop stop-color="#aeb5ba"/>
+      <stop offset=".2" stop-color="#edf0f2"/>
+      <stop offset=".7" stop-color="#c4c9cd"/>
+      <stop offset="1" stop-color="#969ea4"/>
+    </linearGradient>
+    <linearGradient id="warmLine" x2="1">
+      <stop stop-color="#dc493e"/>
+      <stop offset="1" stop-color="#ec8974"/>
+    </linearGradient>
+    <linearGradient id="coldLine" x2="1">
+      <stop stop-color="#398fc4"/>
+      <stop offset="1" stop-color="#75b6df"/>
+    </linearGradient>
+    <linearGradient id="pvLevel" x2="1">
+      <stop stop-color="#159a69"/>
+      <stop offset="1" stop-color="#72c6a3"/>
+    </linearGradient>
+    <clipPath id="tankClip">
+      <rect x="870" y="379" width="214" height="350" rx="34"/>
+    </clipPath>
+    <marker id="arrowGreen" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="10" refY="6" orient="auto">
+      <path d="M0 0L12 6L0 12Z" fill="#159a69"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="10" refY="6" orient="auto">
+      <path d="M0 0L12 6L0 12Z" fill="#de493e"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="10" refY="6" orient="auto">
+      <path d="M0 0L12 6L0 12Z" fill="#287cbd"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#df9a34"/>
+    </marker>
+    <style>
+      .txt{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#192b3d}
+      .muted{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#738397}
+      .card{fill:#fff;stroke:#dfe6ed;stroke-width:2}
+      .inner{fill:#f8fafc;stroke:#afbfce;stroke-width:2.5}
+      .small{font:700 11px Inter,"Segoe UI",Arial,sans-serif;letter-spacing:1px}
+      .label{font:650 14px Inter,"Segoe UI",Arial,sans-serif}
+      .value{font:750 25px Inter,"Segoe UI",Arial,sans-serif}
+      .mini-value{font:750 18px Inter,"Segoe UI",Arial,sans-serif}
+      .row-line{stroke:#e7edf2;stroke-width:1.5}
+      .pipe{fill:none;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+      .flow{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-dasharray:3 16;opacity:.9}
+      .green{fill:#159a69}
+      .red{fill:#de493e}
+      .blue{fill:#287cbd}
+      .neutral{fill:#738397}
+      .field{fill:#f8fafc;stroke:#e2e9ef;stroke-width:1.4}
+      .control{fill:#f8fafc;stroke:#e2e9ef;stroke-width:1.4}
+    </style>
+  </defs>
+
+  <rect width="1880" height="1240" fill="url(#background)"/>
+
+  <!-- Page heading -->
+  <text class="txt" x="34" y="43" font-size="16" font-weight="800" letter-spacing=".7">PROXON</text>
+  <text class="muted" x="121" y="43" font-size="14">· T300 · Anlagenübersicht</text>
+  <text class="txt" x="34" y="91" font-size="35" font-weight="750">Warmwasserbereitung</text>
+  <text class="muted" x="36" y="119" font-size="15">Wärmepumpe · Speicher · PV-Betrieb</text>
+  <rect x="1498" y="27" width="350" height="44" rx="22" fill="#fff6e8" stroke="#efd4a5"/>
+  <circle cx="1523" cy="49" r="5" fill="#df9a34"/>
+  <text class="txt" x="1540" y="54" font-size="12" font-weight="750" letter-spacing=".3">LAYOUTENTWURF · DEMO-WERTE</text>
+
+  <!-- Main process and storage card -->
+  <rect class="card" x="28" y="145" width="1128" height="690" rx="22"/>
+  <text class="txt" x="60" y="184" font-size="21" font-weight="750">Wärmepumpe und Speicher</text>
+  <rect x="1002" y="160" width="126" height="32" rx="16" fill="#fff0e8"/>
+  <circle cx="1020" cy="176" r="4" fill="#df493e"/>
+  <text class="txt" x="1032" y="181" font-size="11" font-weight="750">BEDARF</text>
+
+  <!-- Summary values -->
+  <circle cx="64" cy="215" r="4.5" fill="#de493e"/>
+  <text class="muted" x="78" y="220" font-size="12">Speichermittel</text>
+  <text class="txt" x="60" y="254" font-size="25" font-weight="750">47,4 <tspan font-size="14">°C</tspan></text>
+  <line class="row-line" x1="322" y1="210" x2="322" y2="263"/>
+  <circle cx="354" cy="215" r="4.5" fill="#df9a34"/>
+  <text class="muted" x="368" y="220" font-size="12">Aktueller Sollwert</text>
+  <text class="txt" x="350" y="254" font-size="25" font-weight="750">50,0 <tspan font-size="14">°C</tspan></text>
+  <line class="row-line" x1="612" y1="210" x2="612" y2="263"/>
+  <circle cx="644" cy="215" r="4.5" fill="#de493e"/>
+  <text class="muted" x="658" y="220" font-size="12">Verdichter T13</text>
+  <text class="txt" x="640" y="254" font-size="25" font-weight="750">59,3 <tspan font-size="14">°C</tspan></text>
+  <line class="row-line" x1="902" y1="210" x2="902" y2="263"/>
+  <circle cx="934" cy="215" r="4.5" fill="#738397"/>
+  <text class="muted" x="948" y="220" font-size="12">Ventilatordrehzahl</text>
+  <text class="txt" x="930" y="254" font-size="25" font-weight="750">1.320 <tspan font-size="14">rpm</tspan></text>
+
+  <!-- Manufacturer-referenced T300 cutaway; all runtime values remain illustrative -->
+  <rect class="inner" x="58" y="280" width="1068" height="525" rx="18"/>
+  <rect x="82" y="299" width="254" height="28" rx="14" fill="#314c61"/>
+  <text x="209" y="318" text-anchor="middle" fill="#fff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="800" letter-spacing=".7">PROXON T300 &#183; SCHNITT &amp; AUFBAU</text>
+  <text class="muted" x="1098" y="318" text-anchor="end" font-size="11">Geh&#228;useansicht schematisch</text>
+
+  <!-- Capacity / product summary -->
+  <rect class="field" x="84" y="414" width="292" height="265" rx="18"/>
+  <text class="muted small" x="108" y="449" font-size="9">TRINKWASSER-W&#196;RMEPUMPE</text>
+  <text class="txt" x="108" y="508" font-size="43" font-weight="800">300 <tspan font-size="23">l</tspan></text>
+  <text class="muted" x="111" y="531" font-size="13">integrierter Speicher</text>
+  <line class="row-line" x1="108" y1="553" x2="350" y2="553"/>
+  <circle cx="117" cy="582" r="5" fill="#de493e"/>
+  <text class="txt" x="133" y="587" font-size="13" font-weight="700">W&#228;rmepumpe</text>
+  <text class="muted" x="133" y="605" font-size="11">im oberen Ger&#228;tebereich</text>
+  <circle cx="117" cy="634" r="5" fill="#287cbd"/>
+  <text class="txt" x="133" y="639" font-size="13" font-weight="700">Warmwasserspeicher</text>
+  <text class="muted" x="133" y="657" font-size="11">im gleichen Standger&#228;t</text>
+
+  <!-- Tall freestanding cabinet, based on the manufacturer's silhouette and cutaway -->
+  <g transform="translate(117 0) scale(.8 1)">
+  <ellipse cx="585" cy="759" rx="113" ry="12" fill="#9aa8b4" opacity=".16"/>
+  <path d="M484 424 C484 404 501 390 524 387 H645 C669 391 687 406 687 426 V730 C681 750 661 761 639 763 H526 C503 760 484 747 478 729 V438 C479 432 481 428 484 424Z" fill="url(#deviceShell)" stroke="#97a2aa" stroke-width="2.4"/>
+  <path d="M478 423 C478 401 495 378 519 374 H647 C672 378 692 398 692 422 V452 H478Z" fill="#30383f" stroke="#202a31" stroke-width="2.2"/>
+  <path d="M489 410 C491 390 505 382 523 379 H643 C660 382 676 395 680 411" fill="none" stroke="#707a81" stroke-width="2" opacity=".65"/>
+  <path d="M512 373 V354 Q512 348 518 348 H551 Q557 348 557 354 V375Z" fill="#b8bec3" stroke="#727d84" stroke-width="2"/>
+  <path d="M613 373 V354 Q613 348 619 348 H652 Q658 348 658 354 V375Z" fill="#b8bec3" stroke="#727d84" stroke-width="2"/>
+  <path d="M518 357 H551 M518 363 H551 M619 357 H652 M619 363 H652" stroke="#7d878e" stroke-width="1.4"/>
+
+  <!-- Cutaway storage vessel and mantle heat exchanger -->
+  <rect x="514" y="466" width="142" height="253" rx="62" fill="#edf1f3" stroke="#a6b0b7" stroke-width="2"/>
+  <rect x="523" y="478" width="124" height="229" rx="55" fill="url(#tankFill)" stroke="#d6dfe5" stroke-width="1.3"/>
+  <ellipse cx="585" cy="490" rx="54" ry="10" fill="#fff" opacity=".62"/>
+  <path d="M528 535 H641 V550 H531 V566 H641 V582 H531 V598 H641 V614 H531 V630 H637" fill="none" stroke="#de493e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".78"/>
+  <path d="M530 535 H639 V550 H533 V566 H639 V582 H533 V598 H639 V614 H533 V630 H635" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="2 12" opacity=".9"/>
+  <line x1="512" y1="568" x2="535" y2="568" stroke="#df493e" stroke-width="3"/>
+  <circle cx="510" cy="568" r="5" fill="#df493e" stroke="#fff" stroke-width="2"/>
+  <line x1="512" y1="652" x2="535" y2="652" stroke="#287cbd" stroke-width="3"/>
+  <circle cx="510" cy="652" r="5" fill="#287cbd" stroke="#fff" stroke-width="2"/>
+  <text class="muted" x="585" y="500" text-anchor="middle" font-size="9" font-weight="700">SPEICHER</text>
+
+  <!-- Front control strip and access cover, as visible on the appliance -->
+  <path d="M489 378 H529 V510 C529 527 520 539 509 539 C498 539 489 527 489 510Z" fill="#202a31" stroke="#161e24" stroke-width="1.5"/>
+  <rect x="500" y="389" width="18" height="13" rx="2" fill="#a9c3d8" stroke="#e2edf5" stroke-width="1.4"/>
+  <rect x="501" y="412" width="16" height="74" rx="7" fill="#dbe3e8"/>
+  <path d="M504 419 V476 Q504 482 509 482 Q514 482 514 476 V419" fill="none" stroke="#7996aa" stroke-width="2"/>
+  <circle cx="603" cy="679" r="22" fill="#353d43" stroke="#242d33" stroke-width="2"/>
+  <circle cx="603" cy="679" r="7" fill="#adb6bc"/>
+  <path d="M512 763 V770 M654 763 V770" stroke="#646e75" stroke-width="7" stroke-linecap="round"/>
+
+  </g>
+  <text x="585" y="740" text-anchor="middle" fill="#46545e" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="800" letter-spacing="1.1">PROXON T300</text>
+
+  <!-- Existing sensor readings mapped to their approximate positions in the storage vessel -->
+  <rect class="field" x="776" y="414" width="320" height="265" rx="18"/>
+  <text class="muted small" x="800" y="449" font-size="9">SPEICHERF&#220;HLER</text>
+  <text class="txt" x="800" y="478" font-size="16" font-weight="750">Temperaturen im Speicher</text>
+  <circle cx="808" cy="521" r="4.5" fill="#de493e"/>
+  <text class="muted" x="823" y="525" font-size="12">T21 &#183; Mitte</text>
+  <text class="txt" x="1028" y="525" text-anchor="end" font-size="16" font-weight="750">48,9 &#176;C</text>
+  <line class="row-line" x1="800" y1="543" x2="1038" y2="543"/>
+  <circle cx="808" cy="580" r="4.5" fill="#287cbd"/>
+  <text class="muted" x="823" y="584" font-size="12">T20 &#183; Unten</text>
+  <text class="txt" x="1028" y="584" text-anchor="end" font-size="16" font-weight="750">45,8 &#176;C</text>
+  <line class="row-line" x1="800" y1="602" x2="1038" y2="602"/>
+  <text class="muted" x="800" y="633" font-size="11">F&#252;hlerpositionen schematisch</text>
+  <text class="muted" x="800" y="653" font-size="11">Mittelwert oben: 47,4 &#176;C</text>
+  <rect x="1053" y="495" width="20" height="145" rx="10" fill="url(#tankFill)" stroke="#cbd5dc" stroke-width="1.2"/>
+  <line x1="1048" y1="553" x2="1078" y2="553" stroke="#de493e" stroke-width="2.5"/>
+  <circle cx="1063" cy="553" r="4.5" fill="#de493e" stroke="#fff" stroke-width="1.5"/>
+  <line x1="1048" y1="616" x2="1078" y2="616" stroke="#287cbd" stroke-width="2.5"/>
+  <circle cx="1063" cy="616" r="4.5" fill="#287cbd" stroke="#fff" stroke-width="1.5"/>
+
+  <text class="muted" x="80" y="783" font-size="10">Geh&#228;use und Speicheraufbau nach Herstellerzeichnung vereinfacht; innere Leitungsf&#252;hrung nicht dargestellt.</text>
+
+  <!-- Status and readings -->
+  <rect class="card" x="1180" y="145" width="672" height="690" rx="22"/>
+  <text class="txt" x="1212" y="184" font-size="21" font-weight="750">Betrieb und Messwerte</text>
+  <rect x="1635" y="160" width="185" height="31" rx="15.5" fill="#fff0e8"/>
+  <circle cx="1652" cy="175.5" r="4" fill="#df493e"/>
+  <text class="txt" x="1663" y="180" font-size="10" font-weight="800">WÄRMEPUMPE AKTIV</text>
+  <text class="muted small" x="1212" y="221">ANLAGENZUSTAND</text>
+
+  <text class="txt label" x="1214" y="258">Verdichter</text>
+  <circle cx="1712" cy="253" r="4.5" fill="#159a69"/>
+  <text class="green" x="1730" y="258" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="750">Ein</text>
+  <line class="row-line" x1="1212" y1="275" x2="1820" y2="275"/>
+  <text class="txt label" x="1214" y="302">Ventilator</text>
+  <circle cx="1712" cy="297" r="4.5" fill="#159a69"/>
+  <text class="txt" x="1730" y="302" font-size="13" font-weight="700">Ein · 1.320 rpm</text>
+  <line class="row-line" x1="1212" y1="319" x2="1820" y2="319"/>
+  <text class="txt label" x="1214" y="346">E-Heizrelais</text>
+  <circle cx="1712" cy="341" r="4.5" fill="#8497a8"/>
+  <text class="muted" x="1730" y="346" font-size="13" font-weight="700">Aus</text>
+  <line class="row-line" x1="1212" y1="363" x2="1820" y2="363"/>
+  <text class="txt label" x="1214" y="390">Solarrelais</text>
+  <circle cx="1712" cy="385" r="4.5" fill="#8497a8"/>
+  <text class="muted" x="1730" y="390" font-size="13" font-weight="700">Aus</text>
+  <line class="row-line" x1="1212" y1="407" x2="1820" y2="407"/>
+  <text class="txt label" x="1214" y="434">Abtauung</text>
+  <circle cx="1712" cy="429" r="4.5" fill="#8497a8"/>
+  <text class="muted" x="1730" y="434" font-size="13" font-weight="700">Aus</text>
+
+  <rect x="1212" y="456" width="608" height="54" rx="12" fill="#eef8f2" stroke="#c9e4d4" stroke-width="1.3"/>
+  <circle cx="1238" cy="483" r="12" fill="#159a69"/>
+  <path d="M1232 483L1236 487L1244 478" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="muted" x="1260" y="479" font-size="10" font-weight="700">FEHLERSTATUS</text>
+  <text class="txt" x="1260" y="497" font-size="13" font-weight="750">Kein Fehler</text>
+
+  <line class="row-line" x1="1212" y1="531" x2="1820" y2="531"/>
+  <text class="muted small" x="1212" y="560">KÄLTEKREIS · MESSPUNKTE</text>
+  <rect class="field" x="1212" y="576" width="294" height="82" rx="12"/>
+  <text class="muted" x="1230" y="600" font-size="11">T5 · Vor Verdampfer</text>
+  <text class="txt mini-value" x="1230" y="635">8,6 °C</text>
+  <rect class="field" x="1524" y="576" width="296" height="82" rx="12"/>
+  <text class="muted" x="1542" y="600" font-size="11">T6 · Verdampfer</text>
+  <text class="txt mini-value" x="1542" y="635">4,6 °C</text>
+  <rect class="field" x="1212" y="674" width="294" height="82" rx="12"/>
+  <text class="muted" x="1230" y="698" font-size="11">T11 · Sauggas nach Verdampfer</text>
+  <text class="txt mini-value" x="1230" y="733">7,8 °C</text>
+  <rect class="field" x="1524" y="674" width="296" height="82" rx="12"/>
+  <text class="muted" x="1542" y="698" font-size="11">T13 · Kompressor</text>
+  <text class="txt mini-value" x="1542" y="733">59,3 °C</text>
+
+  <!-- Daily controls (static design proposal only) -->
+  <rect class="card" x="28" y="855" width="1128" height="330" rx="22"/>
+  <text class="txt" x="60" y="895" font-size="21" font-weight="750">Alltagssteuerung</text>
+  <text class="muted" x="60" y="917" font-size="11">T300-Control-Werte · Bedienelemente nur als statischer Layoutvorschlag</text>
+
+  <!-- Control 1: mode -->
+  <rect class="control" x="58" y="936" width="336" height="98" rx="13"/>
+  <text class="muted small" x="78" y="960" font-size="9">BETRIEBSART</text>
+  <text class="txt" x="78" y="988" font-size="18" font-weight="750">Bedarf</text>
+  <text class="muted" x="78" y="1016" font-size="10">Aus · Bedarf · LF1 · LF2</text>
+  <path d="M365 974L372 981L379 974" fill="none" stroke="#738397" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Control 2: normal water setpoint -->
+  <rect class="control" x="410" y="936" width="336" height="98" rx="13"/>
+  <text class="muted small" x="430" y="960" font-size="9">NORMAL-WASSERTEMPERATUR</text>
+  <text class="txt" x="430" y="988" font-size="18" font-weight="750">50,0 °C</text>
+  <rect x="430" y="1006" width="286" height="7" rx="3.5" fill="#e4ebf0"/>
+  <rect x="430" y="1006" width="175" height="7" rx="3.5" fill="#df493e"/>
+  <circle cx="605" cy="1009.5" r="8" fill="#fff" stroke="#df493e" stroke-width="3"/>
+  <text class="muted" x="430" y="1028" font-size="9">20 °C</text>
+  <text class="muted" x="716" y="1028" text-anchor="end" font-size="9">55 °C</text>
+
+  <!-- Control 3: electric heater -->
+  <rect class="control" x="762" y="936" width="366" height="98" rx="13"/>
+  <text class="muted small" x="782" y="960" font-size="9">ELEKTRISCHE HEIZUNG</text>
+  <text class="txt" x="782" y="990" font-size="17" font-weight="750">Freigabe</text>
+  <rect x="1042" y="962" width="62" height="29" rx="14.5" fill="#edf1f5"/>
+  <circle cx="1057" cy="976.5" r="10" fill="#fff" stroke="#cdd7df"/>
+  <text class="muted" x="1073" y="981" font-size="10" font-weight="750">AUS</text>
+  <text class="muted" x="782" y="1017" font-size="10">E-Heizrelais derzeit inaktiv</text>
+
+  <!-- Control 4: heater temperature -->
+  <rect class="control" x="58" y="1048" width="336" height="98" rx="13"/>
+  <text class="muted small" x="78" y="1072" font-size="9">E-HEIZUNG SOLLTEMPERATUR</text>
+  <text class="txt" x="78" y="1100" font-size="18" font-weight="750">65 °C</text>
+  <rect x="78" y="1118" width="286" height="7" rx="3.5" fill="#e4ebf0"/>
+  <rect x="78" y="1118" width="257" height="7" rx="3.5" fill="#df493e"/>
+  <circle cx="335" cy="1121.5" r="8" fill="#fff" stroke="#df493e" stroke-width="3"/>
+  <text class="muted" x="78" y="1140" font-size="9">20 °C</text>
+  <text class="muted" x="364" y="1140" text-anchor="end" font-size="9">70 °C</text>
+
+  <!-- Control 5: PV function -->
+  <rect class="control" x="410" y="1048" width="336" height="98" rx="13"/>
+  <text class="muted small" x="430" y="1072" font-size="9">PV-FUNKTION</text>
+  <text class="txt" x="430" y="1100" font-size="17" font-weight="750">Überschussbetrieb</text>
+  <rect x="660" y="1060" width="66" height="29" rx="14.5" fill="#eaf7f0"/>
+  <circle cx="675" cy="1074.5" r="10" fill="#159a69"/>
+  <path d="M671 1075L674 1078L680 1071" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="green" x="690" y="1079" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="800">EIN</text>
+  <text class="muted" x="430" y="1127" font-size="10">PV-Anforderung freigegeben</text>
+
+  <!-- Control 6: legionella function -->
+  <rect class="control" x="762" y="1048" width="366" height="98" rx="13"/>
+  <text class="muted small" x="782" y="1072" font-size="9">LEGIONELLENFUNKTION</text>
+  <text class="txt" x="782" y="1100" font-size="17" font-weight="750">Aktiviert</text>
+  <rect x="1040" y="1060" width="64" height="29" rx="14.5" fill="#eaf7f0"/>
+  <circle cx="1055" cy="1074.5" r="10" fill="#159a69"/>
+  <path d="M1051 1075L1054 1078L1060 1071" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="green" x="1070" y="1079" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="800">EIN</text>
+  <text class="muted" x="782" y="1127" font-size="10">Status der T300-Funktion</text>
+
+  <!-- PV state and fault card -->
+  <rect class="card" x="1180" y="855" width="672" height="330" rx="22"/>
+  <text class="txt" x="1212" y="895" font-size="21" font-weight="750">PV-Betrieb</text>
+  <text class="muted" x="1212" y="917" font-size="11">Status aus der T300-Überwachung</text>
+  <text class="muted" x="1212" y="957" font-size="12">PV-Tankniveau</text>
+  <text class="txt" x="1820" y="957" text-anchor="end" font-size="16" font-weight="750">72 %</text>
+  <rect x="1212" y="972" width="608" height="14" rx="7" fill="#e7edf2"/>
+  <rect x="1212" y="972" width="438" height="14" rx="7" fill="url(#pvLevel)"/>
+  <line class="row-line" x1="1212" y1="1008" x2="1820" y2="1008"/>
+  <text class="txt label" x="1214" y="1040">PV-Wärmepumpe aktiv</text>
+  <circle cx="1712" cy="1035" r="4.5" fill="#159a69"/>
+  <text class="green" x="1730" y="1040" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="750">Ja</text>
+  <line class="row-line" x1="1212" y1="1058" x2="1820" y2="1058"/>
+  <text class="txt label" x="1214" y="1090">PV-E-Heizung aktiv</text>
+  <circle cx="1712" cy="1085" r="4.5" fill="#8497a8"/>
+  <text class="muted" x="1730" y="1090" font-size="13" font-weight="750">Nein</text>
+  <rect x="1212" y="1110" width="608" height="42" rx="11" fill="#f8fafc" stroke="#e6edf2"/>
+  <text class="muted" x="1230" y="1136" font-size="10">Nur bestehende T300-Control- und Monitoring-Werte</text>
+
+  <text class="muted" x="34" y="1217" font-size="10">Statischer Mock · Beispielwerte · nicht mit Symcon verbunden · Komponenten- und Leitungsbild schematisch</text>
+</svg>

@@ -56,7 +56,7 @@
 - **TEST evidence executed (2026-10-15):** a read-only FC4 poll with the optional sensor disconnected reports availability=false while retaining the existing numeric variable. Monitoring remains active with no T300 warnings/errors; no Modbus write was sent.
 - **Out of scope per user clarification:** further work on input registers 817, 866 and 892 is not needed. The optional-sensor availability handling for 817 remains available but does not need connected-sensor verification.
 - **Scope clarified by user (2026-10-15):** FC6 writes through the new module were tested by the user and work. Register 886 remains available as a measurement; no further interpretation is needed. The 861 fault description is accepted as implemented; testing with an active fault is not required. Registers 817, 866 and 892, additional diagnostic values, and further monitoring-value work are out of scope.
-- **Open:** no T300 control or monitoring functionality remains open. Visualization is the only deferred work and is not currently in scope.
+- **T300 visualization concept (2026-10-15):** imported the static SVG/PNG draft from the local branch. It follows the FWT visual style and shows the cabinet, simplified tank and T20/T21 positions. All displayed values are synthetic; the schematic is not a confirmed pipe layout. No Symcon runtime or visualization integration was changed. **Open:** user review before planning integration.
 
 ## FWT register catalogue and fault summary
 
