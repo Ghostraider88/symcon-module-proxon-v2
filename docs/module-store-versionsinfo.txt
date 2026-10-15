@@ -1,3 +1,6 @@
+Build 5 (15.10.2026)
+geändert: Der Zuluftweg ab dem Verflüssiger einschl. EG-/OG-Abzweigungen ist im Heizbetrieb rot, im Kühlbetrieb blau und bei Lüftung/Aus grau.
+neu: Wenn das Betriebsartregister Aus meldet, leitet die Kachel Heizen/Kühlen bei laufendem Verdichter aus Zu- und Frischlufttemperatur ab. Abgeleitete Zustände sind mit * markiert.
 Build 4 (15.10.2026)
 geändert: Luftstromfarben verlaufen weicher durch den Kreuzstromwärmetauscher und folgen beim Übergang der Zuluft dem Betriebsmodus.
 geändert: Luftkanäle und animierte Strömungsmarker sind größer. Animationsgeschwindigkeit und Lüfterrotation folgen den gemessenen Lüfterdrehzahlen.

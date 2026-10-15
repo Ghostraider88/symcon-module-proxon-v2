@@ -303,22 +303,56 @@ function updateHeatPumpMode(data) {
     }
 
     element.classList.remove('status-heating', 'status-cooling', 'status-on', 'status-off', 'status-unknown');
-    const mode = data.systemControl && data.systemControl.HeatPumpModeCode;
-    const modeClass = ({ 0: 'status-off', 1: 'status-heating', 2: 'status-cooling', 3: 'status-on' })[mode] || 'status-unknown';
+    const system = data.systemControl || {};
+    const monitoring = data.monitoring || {};
+    const reportedMode = system.HeatPumpModeCode;
+    let mode = Number.isInteger(reportedMode) && reportedMode >= 0 && reportedMode <= 3 ? reportedMode : null;
+    let inferred = false;
+
+    if (mode === null || mode === 0) {
+        const compressorRPM = monitoring.CompressorSpeed;
+        const supplyTemperature = system.SupplyAirTemperature;
+        const freshTemperature = system.FreshAirTemperature;
+        if (typeof compressorRPM === 'number' && Number.isFinite(compressorRPM) && compressorRPM > 0
+            && typeof supplyTemperature === 'number' && Number.isFinite(supplyTemperature)
+            && typeof freshTemperature === 'number' && Number.isFinite(freshTemperature)) {
+            const temperatureDelta = supplyTemperature - freshTemperature;
+            if (temperatureDelta > 1) {
+                mode = 1;
+                inferred = true;
+            } else if (temperatureDelta < -1) {
+                mode = 2;
+                inferred = true;
+            }
+        }
+    }
+
+    const modeClass = ({ 0: 'status-off', 1: 'status-heating', 2: 'status-cooling', 3: 'status-off' })[mode] || 'status-unknown';
     element.classList.add(modeClass);
 
-    const color = ({ 0: '#8497a8', 1: '#de493e', 2: '#287cbd', 3: '#159a69' })[mode] || '#8497a8';
-    const softColor = ({ 0: '#b8c1c7', 1: '#efa79c', 2: '#9ec7df', 3: '#8bc6ac' })[mode] || '#b8c1c7';
+    if (inferred) {
+        element.textContent = mode === 1
+            ? (roomLabels['Heating (inferred)'] || 'Heating*')
+            : (roomLabels['Cooling (inferred)'] || 'Cooling*');
+        element.setAttribute('title', roomLabels['Mode Inferred'] || 'Inferred from compressor speed and air temperatures');
+    } else {
+        element.removeAttribute('title');
+    }
+
+    const color = ({ 0: '#8497a8', 1: '#de493e', 2: '#287cbd', 3: '#8497a8' })[mode] || '#8497a8';
+    const softColor = ({ 0: '#b8c1c7', 1: '#efa79c', 2: '#9ec7df', 3: '#b8c1c7' })[mode] || '#b8c1c7';
     const softStop = document.getElementById('supply-mode-soft');
     const endStop = document.getElementById('supply-mode-end');
     if (softStop) softStop.style.stopColor = softColor;
     if (endStop) endStop.style.stopColor = color;
-    const arrow = ({ 1: 'url(#arrowRed)', 2: 'url(#arrowBlue)', 3: 'url(#arrowGreen)' })[mode] || 'url(#arrowNeutral)';
-    ['flow-branch-og', 'flow-branch-eg'].forEach((id) => {
+    const arrow = ({ 1: 'url(#arrowRed)', 2: 'url(#arrowBlue)' })[mode] || 'url(#arrowNeutral)';
+    ['supply-air-to-branches', 'flow-branch-og', 'flow-branch-eg'].forEach((id) => {
         const path = document.getElementById(id);
         if (path) {
             path.style.stroke = color;
-            path.setAttribute('marker-end', arrow);
+            if (id !== 'supply-air-to-branches') {
+                path.setAttribute('marker-end', arrow);
+            }
         }
     });
 }

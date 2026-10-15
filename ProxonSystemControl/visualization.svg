@@ -8,7 +8,7 @@
   <linearGradient id="extractBefore" x2="0"><stop stop-color="#df9a34"/><stop offset="1" stop-color="#efc36c"/></linearGradient>
   <linearGradient id="extractAfter" x2="0"><stop stop-color="#75b6df"/><stop offset="1" stop-color="#287cbd"/></linearGradient>
   <linearGradient id="supply-core-gradient" gradientUnits="userSpaceOnUse" x1="412" y1="376" x2="654" y2="545"><stop stop-color="#21a477"/><stop offset=".58" stop-color="#6ab29b"/><stop offset="1" stop-color="#a9b9ad"/></linearGradient>
-  <linearGradient id="supply-after-gradient" gradientUnits="userSpaceOnUse" x1="654" y1="545" x2="810" y2="545"><stop stop-color="#a9b9ad"/><stop id="supply-mode-soft" offset=".68" stop-color="#efa79c"/><stop id="supply-mode-end" offset="1" stop-color="#df493e"/></linearGradient>
+  <linearGradient id="supply-after-gradient" gradientUnits="userSpaceOnUse" x1="654" y1="545" x2="810" y2="545"><stop stop-color="#a9b9ad"/><stop offset=".30" stop-color="#a9b9ad"/><stop id="supply-mode-soft" offset=".77" stop-color="#efa79c"/><stop id="supply-mode-end" offset=".80" stop-color="#df493e"/></linearGradient>
   <linearGradient id="extract-air-gradient" gradientUnits="userSpaceOnUse" x1="1080" y1="350" x2="86" y2="545"><stop stop-color="#dfa346"/><stop offset=".34" stop-color="#e3b467"/><stop offset=".57" stop-color="#b9b8aa"/><stop offset=".76" stop-color="#83b9d8"/><stop offset="1" stop-color="#398fc4"/></linearGradient>
   <style>
     .txt{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#192b3d}
@@ -146,7 +146,7 @@
 <text class="txt small" x="542" y="570" text-anchor="middle">KREUZSTROM-WÄRMETAUSCHER</text>
 
 <!-- Two distinct supply branches, visually weighted by the selected damper position -->
-<path class="duct" d="M810 545H846" stroke="#df493e"/>
+<path id="supply-air-to-branches" class="duct" d="M810 545H846" stroke="#df493e"/>
 <path class="moving supply-flow" d="M810 545H846"/>
 <path id="flow-branch-og" class="duct branchOG" d="M846 545H884V478H1068" stroke="#df493e" marker-end="url(#arrowRed)"/>
 <path id="flow-particles-og" class="moving movingOG supply-flow" d="M846 545H884V478H1068"/>

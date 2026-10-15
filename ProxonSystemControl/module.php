@@ -127,7 +127,7 @@ class ProxonSystemControl extends IPSModuleStrict
         );
 
         $roomLabels = [];
-        foreach (['Rooms', 'Room', 'Ground Floor', 'Upper Floor', 'Actual / Target', 'CO2', 'Relative Humidity', 'PTC Active', 'No rooms assigned', 'On', 'Off', 'Running'] as $caption) {
+        foreach (['Rooms', 'Room', 'Ground Floor', 'Upper Floor', 'Actual / Target', 'CO2', 'Relative Humidity', 'PTC Active', 'No rooms assigned', 'On', 'Off', 'Running', 'Heating (inferred)', 'Cooling (inferred)', 'Mode Inferred'] as $caption) {
             $roomLabels[$caption] = $this->Translate($caption);
         }
 
