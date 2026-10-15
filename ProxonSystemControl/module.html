@@ -117,7 +117,9 @@ function formatBoundValue(element, value) {
     }
 
     let formattedValue;
-    if (element.dataset.format === 'boolean') {
+    if (element.dataset.format === 'boolean-de') {
+        formattedValue = value ? 'Freigegeben' : 'Gesperrt';
+    } else if (element.dataset.format === 'boolean') {
         const enabled = typeof translate === 'function' ? translate('Enabled') : 'Enabled';
         const blocked = typeof translate === 'function' ? translate('Blocked') : 'Blocked';
         formattedValue = value ? enabled : blocked;
@@ -136,7 +138,14 @@ function formatBoundValue(element, value) {
 
 function updateBoundValues(data) {
     document.querySelectorAll('[data-bind]').forEach((element) => {
-        element.textContent = formatBoundValue(element, getValueAtPath(data, element.dataset.bind));
+        const value = getValueAtPath(data, element.dataset.bind);
+        const optionalRow = element.closest('[data-hide-if-empty]');
+        if (optionalRow) {
+            const unavailable = value === null || value === undefined || value === '';
+            const emptyCode = optionalRow.hasAttribute('data-hide-if-zero') && !unavailable && Number(value) === 0;
+            optionalRow.style.display = unavailable || emptyCode ? 'none' : '';
+        }
+        element.textContent = formatBoundValue(element, value);
     });
 }
 
@@ -188,13 +197,16 @@ function updateCompressorAnimation(data) {
     const rpm = monitoring.CompressorSpeed;
     const hasSpeed = typeof rpm === 'number' && Number.isFinite(rpm) && rpm >= 0;
     const isRunning = hasSpeed && rpm > 0;
-    const speedText = !hasSpeed ? '—' : isRunning ? (roomLabels.Running || 'Running') : (roomLabels.Off || 'Off');
+    const statusText = !hasSpeed ? '—' : isRunning ? (roomLabels.Running || 'Running') : (roomLabels.Off || 'Off');
+    const rpmText = hasSpeed
+        ? new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(rpm) + ' rpm'
+        : '— rpm';
     const duration = isRunning ? Math.max(0.28, Math.min(2.4, 1800 / rpm)) : 1.6;
 
-    ['compressor-state', 'compressor-circuit-state', 'compressor-overview-state'].forEach((id) => {
-        const state = document.getElementById(id);
-        if (state) state.textContent = speedText;
-    });
+    const state = document.getElementById('compressor-state');
+    if (state) state.textContent = statusText;
+    const overviewSpeed = document.getElementById('compressor-overview-state');
+    if (overviewSpeed) overviewSpeed.textContent = rpmText;
 
     const lampColor = !hasSpeed ? '#8497a8' : isRunning ? '#159a69' : '#8497a8';
     ['compressor-state-lamp', 'compressor-status-lamp-top'].forEach((id) => {
@@ -252,8 +264,8 @@ function updateDamper(data) {
     }
 
     const describeShare = (share) => !hasPosition ? '—' : share > 0.6
-        ? 'relativ bevorzugt'
-        : share < 0.4 ? 'relativ reduziert' : 'ausgeglichen';
+        ? 'bevorzugt'
+        : share < 0.4 ? 'reduziert' : 'ausgeglichen';
     [
         ['og-branch-caption', ogShare],
         ['og-meter-caption', ogShare],
@@ -355,20 +367,28 @@ function updateHeatPumpMode(data) {
             }
         }
     });
+
+    const coilRoles = mode === 1
+        ? { left: ['VERDAMPFER', '#398fc4', '#f4faff'], right: ['VERFLÜSSIGER', '#df6d5f', '#fff8f5'] }
+        : mode === 2
+            ? { left: ['VERFLÜSSIGER', '#df6d5f', '#fff8f5'], right: ['VERDAMPFER', '#398fc4', '#f4faff'] }
+            : { left: ['REGISTER', '#91a2af', '#f5f7f8'], right: ['REGISTER', '#91a2af', '#f5f7f8'] };
+    ['left', 'right'].forEach((side) => {
+        const [role, color, fill] = coilRoles[side];
+        const label = document.getElementById('coil-' + side + '-role');
+        const frame = document.getElementById('coil-' + side + '-frame');
+        const line = document.getElementById('coil-' + side + '-line');
+        if (label) label.textContent = role;
+        if (frame) {
+            frame.style.stroke = color;
+            frame.style.fill = fill;
+        }
+        if (line) line.style.stroke = color;
+    });
 }
 
 function updateTileStatus(data) {
-    const status = document.getElementById('tile-update-status');
     const source = document.getElementById('monitoring-source-status');
-    if (status) {
-        if (data.connected !== true) {
-            status.textContent = 'Keine aktive Modbus-Verbindung';
-        } else if (!data.updatedAt) {
-            status.textContent = 'Warte auf erste Statusabfrage';
-        } else {
-            status.textContent = 'Statusabfrage: ' + new Date(data.updatedAt * 1000).toLocaleTimeString();
-        }
-    }
     if (source) {
         if (!data.monitoringSelected) {
             source.textContent = 'Monitoring-Instanz in der Konfiguration auswählen';
