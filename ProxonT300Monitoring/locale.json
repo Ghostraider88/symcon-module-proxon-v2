@@ -80,6 +80,8 @@
             "Compressor Temperature Error Duration": "Dauer Kompressortemperaturfehler",
             "P14 Pressure Error Duration": "Dauer P14-Druckfehler",
             "Fault Code": "Fehlercode",
+            "Fault Description": "Fehlerbeschreibung",
+            "Unknown fault code: %d": "Unbekannter Fehlercode: %d",
             "No Fault": "Kein Fehler",
             "Modbus": "Modbus",
             "Filter": "Filter",

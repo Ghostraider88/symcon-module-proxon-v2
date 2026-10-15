@@ -7,6 +7,25 @@ class ProxonT300Monitoring extends IPSModuleStrict
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const READ_FUNCTION = 4;
     private const EXTERNAL_SENSOR_UNAVAILABLE_RAW_VALUE = 2569;
+    private const FAULT_CODE_DESCRIPTIONS = [
+        0 => 'No Fault',
+        1 => 'Modbus',
+        2 => 'Filter',
+        3 => 'Compressor',
+        4 => 'T9',
+        5 => 'T11',
+        6 => 'T13',
+        7 => 'T21',
+        8 => 'T20',
+        9 => 'T6',
+        10 => 'T5',
+        11 => 'P19',
+        12 => 'P14',
+        13 => 'Compressor Temperature',
+        14 => 'Fan',
+        15 => 'Low Pressure',
+        16 => 'Pressure Switch'
+    ];
 
     public function Create(): void
     {
@@ -21,11 +40,18 @@ class ProxonT300Monitoring extends IPSModuleStrict
         parent::ApplyChanges();
 
         $this->RegisterInputVariables();
+        $this->RegisterVariableString(
+            'FaultDescription',
+            $this->Translate('Fault Description'),
+            [],
+            158
+        );
+        $this->MaintainAction('FaultDescription', false);
         $this->RegisterVariableBoolean(
             'ExternalSensorTemperatureAvailable',
             $this->Translate('External Sensor Temperature Available'),
             [],
-            158
+            159
         );
         $this->MaintainAction('ExternalSensorTemperatureAvailable', false);
         $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
@@ -56,9 +82,22 @@ class ProxonT300Monitoring extends IPSModuleStrict
                     $this->SetValue('ExternalSensorTemperatureAvailable', $available);
                 }
 
-                $this->SetValue($ident, $this->DecodeInputValue($rawValue, $definition));
+                $decodedValue = $this->DecodeInputValue($rawValue, $definition);
+                $this->SetValue($ident, $decodedValue);
+                if ($ident === 'FaultCode') {
+                    $this->SetValue('FaultDescription', $this->GetFaultDescription((int) $decodedValue));
+                }
             }
         }
+    }
+
+    private function GetFaultDescription(int $code): string
+    {
+        if (!array_key_exists($code, self::FAULT_CODE_DESCRIPTIONS)) {
+            return sprintf($this->Translate('Unknown fault code: %d'), $code);
+        }
+
+        return $this->Translate(self::FAULT_CODE_DESCRIPTIONS[$code]);
     }
 
     private function RegisterInputVariables(): void
