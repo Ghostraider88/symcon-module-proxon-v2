@@ -447,7 +447,7 @@ class ProxonT300Control extends IPSModuleStrict
             return $rawValue > 0;
         }
 
-        $value = ($rawValue / $definition['scale']) + $definition['offset'];
+        $value = ($rawValue / $definition['scale']) + ($definition['offset'] ?? 0);
         return $definition['type'] === 'integer' ? (int) round($value) : (float) $value;
     }
 
