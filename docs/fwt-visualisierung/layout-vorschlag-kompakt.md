@@ -1,23 +1,33 @@
-# Kompakter FWT-Entwurf nach Hersteller- und DIBt-Unterlagen
+# FWT-Entwurf mit überarbeiteten Proportionen
 
-Die vorherige Variante stellte Anlagenprozess und Messwerte als lange Panoramaansicht nebeneinander. Dieser Entwurf setzt stattdessen das Gerät in den Mittelpunkt und ordnet die Informationen in vier annähernd gleichwertigen Feldern darum an.
+Der erste kompakte Entwurf hatte zu kleine Lüfter, ein zu großes Bauteil im Zuluftweg und viel leere Gehäusefläche. Beschriftungen am Verteiler drängten sich zusammen. Die überarbeitete Grafik verwendet ein einheitliches Raster für Bauteile, Abstände, Texte und Messwertzeilen.
 
-![Kompakte FWT-Vorschau](05-fwt-kompakt-vorschlag.png)
+![FWT-Vorschau mit überarbeiteten Proportionen und synthetischen Demowerten](06-fwt-proportionen.png)
+
+## Geänderte Proportionen
+
+- Das Gerätegehäuse hat ein Breiten-Höhen-Verhältnis von ungefähr 1,94 zu 1. Es orientiert sich damit an der Form der FWT 2; die innere Anordnung bleibt eine Prinzipskizze.
+- Beide Lüfter verwenden dasselbe Symbol und denselben Durchmesser. Der zentrale Wärmetauscher ist größer, Filter und Wärmepumpenregister sind schmaler. Vorwärmung vor dem Zuluft-Fan und Verflüssiger nach der Wärmerückgewinnung sind separat bezeichnet.
+- Verdampfer und Verflüssiger liegen an den jeweiligen Luftwegen. Der Verdichter belegt den unteren Gerätebereich. Die gestrichelten Verbindungen zeigen nur die symbolische Zusammengehörigkeit der Wärmepumpenkomponenten, keinen vollständigen Kältemittel-Rohrplan.
+- Eine zweite große Kältekreisgrafik entfällt. Die rechte Karte zeigt die zugehörigen Sensorwerte in gleichmäßig ausgerichteten Zeilen.
+- Beide Etagenkarten sind gleich groß. Ihre Balken und die zwei Ausgänge haben im Heiz-Demo dieselbe Zuluftfarbe. Bei Schieberposition 2 sind beide Balken gleich lang.
 
 ## Was sich an der Anlagenansicht orientiert
 
 - Das DIBt-Prinzipbild für die FWT 2 zeigt ein kompaktes Zentralgerät mit Filter, zwei EC-Ventilatoren, Sommerbypass, Kreuzgegenstromwärmetauscher, Wärmepumpenkomponenten und Energieregler. Es kennzeichnet Frischluft, Fortluft, Abluft sowie getrennte Zuluftausgänge für EG und OG.
 - Das Herstellerdatenblatt beschreibt das Gerät als kompaktes Gehäuse mit seitlichen Luftanschlüssen und integriertem Energieregler, der die Luft- und Energiemengen auf zwei Zuluftanschlüsse verteilt.
-- Die neue Grafik zeichnet deshalb ein eigenes Geräteschnittbild statt eines durchlaufenden Luftkanals. Die beiden Diagonalwege im Kreuzstromkern bleiben sichtbar; Bypass, Wärmepumpen-Vorwärmung und Energieregler sitzen an der jeweiligen Prozessstelle.
+- Die Grafik zeichnet ein eigenes Geräteschnittbild. Die beiden Diagonalwege im Kreuzstromkern bleiben sichtbar; Bypass, Wärmepumpenkomponenten und Energieregler sind als eigene Bauteile erkennbar. Der geschlossene Demo-Bypass erscheint grau und ohne Luftbewegung.
 
 ## Anordnung in der Kachel
 
-1. **Oben links:** Geräteansicht mit vier Temperaturwerten, Lüfterdrehzahlen, Filter, Bypass und Luftwegen A–E.
+1. **Oben links:** Geräteansicht mit vier Temperaturwerten, Lüfterdrehzahlen, Filtern, Bypass und den zwei Zuluftausgängen.
 2. **Oben rechts:** Wärmepumpenstatus, Leistungswerte und Kältekreis-Messpunkte.
 3. **Unten links:** Fünfstufige EG/OG-Verteilung mit Raumzeilen und PTC-Status.
-4. **Unten rechts:** Fehler, Lüfterzustand, Laufzeiten und offene Registerzuordnungen.
+4. **Unten rechts:** Fehler, Lüfterzustand, Laufzeiten, Verdichterdrehzahl und Expansionsventile.
 
-Der Entwurf verwendet neutrale Platzhalter statt Live- oder Hauswerten. Die Raumzeilen sind als Vorschau für Werte aus den vorhandenen Symcon-Rauminstanzen gedacht. PTC bleibt als „nicht zugeordnet“ markiert, bis Relais und Räume eindeutig verknüpft sind. EG/OG-Balken zeigen nur die relative Schieberstellung, solange keine belastbaren Volumenstrommessungen je Raum vorliegen.
+Alle Zahlen, Zustände und Raumzeilen sind synthetische Demodaten. Sie zeigen bewusst eine gefüllte Kachel; sie belegen weder eine Messung noch eine fertige Register- oder Raumzuordnung. Ungeklärte Einheiten und Ventilcodes bleiben als Strich dargestellt. Raumzuordnung, PTC-Relais und weitere Sensoren müssen für die tatsächliche Einbindung konfiguriert bzw. bestätigt werden. EG/OG-Balken zeigen nur die relative Schieberstellung, keine gemessenen Volumenströme je Raum.
+
+Die frühere Variante [05-fwt-kompakt-vorschlag.svg](05-fwt-kompakt-vorschlag.svg) bleibt zum Vergleich erhalten. Die aktuelle Fassung liegt als [SVG](06-fwt-proportionen.svg) und [PNG](06-fwt-proportionen.png) vor.
 
 ## Quellen
 
