@@ -1,0 +1,22 @@
+{
+    "elements": [
+        {
+            "name": "Interval",
+            "type": "NumberSpinner",
+            "caption": "Poll Interval",
+            "suffix": "Seconds"
+        },
+        {
+            "type": "Label",
+            "caption": "Enable Modbus write access in the T300 controller before using the controls."
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Update Values",
+            "onClick": "PROXONT300_RequestStatus($id);"
+        }
+    ],
+    "status": []
+}
