@@ -6,7 +6,8 @@
 - Spaced and thickened the refrigerant pipes between the condenser and expansion valve; heating/cooling paths keep distinct ports and directions.
 - Routed the summer bypass from fresh air before the crossflow core to supply air after it. Its flow follows the supply fan; opening it dims the fresh-air path through the core.
 - Replaced the irregular fresh-air filter hatching and added the extract-air filter. Both show a remaining-life bar when a confirmed percentage source is mapped; until then they display “—”.
-- Added more space below the Symcon tile title and moved larger, mode-colored compressor RPM and power readings into one row inside the equipment frame.
+- Kept the tile title gap at 36 px and moved the supply temperature into the EG/OG outlet gap. Placed the heat-pump preheater label above its component.
+- Consolidated animated air paths to remove duplicate white particles after the extract fan and condenser. Both evaporator pipes now descend from the coil; expansion arrows retain the correct flow direction.
 
 ## 1.1 — Build 8 — 2026-10-15
 

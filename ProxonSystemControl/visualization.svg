@@ -17,7 +17,7 @@
     .label{font:700 14px Inter,"Segoe UI",Arial,sans-serif}
     .value{font:750 19px Inter,"Segoe UI",Arial,sans-serif}
     .card{fill:#fff;stroke:#e0e7ef;stroke-width:2}
-    .duct{fill:none;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;transition:stroke .9s ease,stroke-width .35s ease}
+    .duct{fill:none;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;transition:stroke .9s ease,stroke-width .35s ease,opacity .6s ease}
     .moving{fill:none;stroke:#fff;stroke-width:3.4;stroke-linecap:round;stroke-dasharray:4 18;animation:air var(--flow-speed,1.6s) linear infinite;opacity:.94}
     .fresh-flow{stroke:#bcebd5;stroke-width:2.8;opacity:.9}
     .supply-flow{animation-duration:var(--supply-flow-speed,1.6s)}
@@ -57,7 +57,9 @@
   <marker id="arrowNeutral" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="9" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#8497a8"/></marker>
   <marker id="arrowHotSmall" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#df493e"/></marker>
   <marker id="arrowColdSmall" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#287cbd"/></marker>
+  <marker id="arrowColdStart" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#287cbd"/></marker>
   <marker id="arrowRefNeutralSmall" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#8497a8"/></marker>
+  <marker id="arrowRefNeutralStart" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" refX="7" refY="4" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="#8497a8"/></marker>
 </defs>
 <rect width="1880" height="1070" fill="url(#background)"/>
 <g transform="translate(0,-71)">
@@ -79,7 +81,7 @@
 <text class="muted" x="858" y="297" font-size="9" font-weight="750">RAUMLUFT · ABLUFT</text>
 <text class="txt" x="858" y="318" font-size="14" font-weight="750" data-bind="systemControl.ExtractAirTemperature" data-suffix=" °C" data-digits="1">— °C</text>
 <path class="duct" d="M1080 350H831" stroke="url(#extract-air-gradient)" marker-end="url(#arrowAmber)"/>
-<path class="moving extract-flow" d="M1080 350H831"/>
+<path class="moving extract-flow" d="M1080 350H806"/>
 
 <!-- Fresh-air filter and supply fan -->
 <g id="supply-air-filter">
@@ -94,9 +96,9 @@
   <rect x="263" y="356" width="27" height="40" rx="4" fill="#f5f7f8" stroke="#aebdca" stroke-width="1.8"/>
   <path d="M269 363L284 370L269 377L284 384L269 390" fill="none" stroke="#8497a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
-<text class="muted" x="276" y="414" text-anchor="middle" font-size="8.5" font-weight="700">WP-VORWÄRMUNG</text>
-<path class="duct" d="M250 376H430" stroke="#21a477"/>
-<path class="moving supply-flow" d="M250 376H430"/>
+<text class="muted" x="285" y="337" text-anchor="middle" font-size="8.5" font-weight="700">WP-VORWÄRMUNG</text>
+<path class="duct" d="M250 376H412" stroke="#21a477"/>
+<path class="moving supply-flow" d="M250 376H412"/>
 <g id="supply-fan" transform="translate(348 376)">
   <circle r="30" fill="#fff" stroke="#9fb3c2" stroke-width="2"/>
   <g class="blade" fill="#57ad86"><path d="M0-24C16-23 17-10 5-2L0 0L-6-5Z"/><path d="M24 0C23 16 10 17 2 5L0 0L5-6Z"/><path d="M0 24C-16 23-17 10-5 2L0 0L6 5Z"/><path d="M-24 0C-23-16-10-17-2-5L0 0L-5 6Z"/></g>
@@ -107,7 +109,6 @@
 
 <!-- Extract fan -->
 <path class="duct" d="M831 350H806" stroke="url(#extract-air-gradient)"/>
-<path class="moving extract-flow" d="M831 350H806"/>
 <g id="extract-fan" transform="translate(775 350)">
   <circle r="29" fill="#fff" stroke="#9fb3c2" stroke-width="2"/>
   <g class="blade" fill="#dfa346"><path d="M0-23C15-22 16-10 5-2L0 0L-6-5Z"/><path d="M23 0C22 15 10 16 2 5L0 0L5-6Z"/><path d="M0 23C-15 22-16 10-5 2L0 0L6 5Z"/><path d="M-23 0C-22-15-10-16-2-5L0 0L-5 6Z"/></g>
@@ -116,7 +117,6 @@
 <text class="txt" x="775" y="399" text-anchor="middle" font-size="11" font-weight="750">ABLUFTVENTILATOR</text>
 <text class="muted" x="775" y="418" text-anchor="middle" font-size="12" data-bind="systemControl.ExtractFanRPM" data-suffix=" rpm">— rpm</text>
 <path class="duct" d="M746 350H654" stroke="url(#extract-air-gradient)"/>
-<path class="moving extract-flow" d="M746 350H654"/>
 <g id="extract-air-filter">
   <rect x="838" y="337" width="48" height="65" rx="8" fill="#fff" stroke="#aebdca" stroke-width="2"/>
   <rect x="844" y="345" width="11" height="49" rx="2" fill="#edf1f4" stroke="#d1dbe2" stroke-width="1"/>
@@ -131,13 +131,13 @@
 <path d="M440 362L644 537M440 388L614 537M440 414L584 537M440 440L554 537M440 466L524 537M440 492L494 537" stroke="#ccd5dd" stroke-width="3"/>
 <path d="M644 362L440 537M644 388L470 537M644 414L500 537M644 440L530 537M644 466L560 537M644 492L590 537" stroke="#bdc9d3" stroke-width="3"/>
 <path id="supply-air-through-core" class="duct" d="M412 376H430L542 448L654 545" stroke="url(#supply-core-gradient)"/>
-<path id="supply-air-after-hp" class="duct" d="M654 545H810" stroke="url(#supply-after-gradient)"/>
+<path id="supply-air-before-bypass" class="duct" d="M654 545H680" stroke="url(#supply-after-gradient)"/>
+<path id="supply-air-after-hp" class="duct" d="M680 545H810" stroke="url(#supply-after-gradient)"/>
 <path id="extract-air-through-core" class="duct" d="M654 350H644L542 430L430 545H86" stroke="url(#extract-air-gradient)"/>
-<path class="duct" d="M430 545H86" stroke="url(#extract-air-gradient)"/>
 <path id="supply-core-flow" class="moving supply-flow" d="M412 376H430L542 448L654 545"/>
-<path class="moving supply-flow" d="M654 545H810"/>
-<path class="moving extract-flow" d="M1080 350H831H654"/>
-<path id="extract-core-flow" class="moving extract-flow" d="M654 350H644L542 430L430 545H86"/>
+<path id="supply-pre-bypass-flow" class="moving supply-flow" d="M654 545H680"/>
+<path id="supply-post-bypass-flow" class="moving supply-flow" d="M680 545H902"/>
+<path id="extract-after-fan-flow" class="moving extract-flow" d="M746 350H654L542 430L430 545H28"/>
 
 <!-- Fresh-air summer bypass: supply air crosses above the room-air path and rejoins after the core -->
 <path id="bypass-path" d="M430 376V320H680V545" fill="none" stroke="#8497a8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 8" marker-end="url(#arrowNeutral)"/>
@@ -150,12 +150,12 @@
 <!-- Heat pump coils at the exhaust and supply paths; refrigerant roles and direction reverse in cooling mode -->
 <path id="refrigerant-discharge" class="refrigerant-link refrigerant-high" d="M560 660H610V603H716V575" marker-end="url(#arrowHotSmall)"/>
 <path id="refrigerant-liquid" class="refrigerant-link refrigerant-high" d="M762 575V630H678" marker-end="url(#arrowHotSmall)"/>
-<path id="refrigerant-expansion" class="refrigerant-link refrigerant-low" d="M626 630H260V575" marker-end="url(#arrowColdSmall)"/>
-<path id="refrigerant-suction" class="refrigerant-link refrigerant-low" d="M296 575H230V660H526" marker-end="url(#arrowColdSmall)"/>
+<path id="refrigerant-expansion" class="refrigerant-link refrigerant-low" d="M260 575V630H286Q296 630 296 620Q296 610 306 620Q306 630 316 630H626" marker-start="url(#arrowColdStart)"/>
+<path id="refrigerant-suction" class="refrigerant-link refrigerant-low" d="M296 575V606M296 626V660H526" marker-end="url(#arrowColdSmall)"/>
 <path id="refrigerant-flow-discharge" class="refrigerant-moving" d="M560 660H610V603H716V575"/>
 <path id="refrigerant-flow-liquid" class="refrigerant-moving" d="M762 575V630H678"/>
-<path id="refrigerant-flow-expansion" class="refrigerant-moving" d="M626 630H260V575"/>
-<path id="refrigerant-flow-suction" class="refrigerant-moving" d="M296 575H230V660H526"/>
+<path id="refrigerant-flow-expansion" class="refrigerant-moving" d="M260 575V630H286Q296 630 296 620Q296 610 306 620Q306 630 316 630H626"/>
+<path id="refrigerant-flow-suction" class="refrigerant-moving" d="M296 575V606M296 626V660H526"/>
 <rect id="coil-left-frame" x="242" y="516" width="72" height="59" rx="8" fill="#f4faff" fill-opacity=".96" stroke="#9cc8e0" stroke-width="2"/>
 <text id="coil-left-role" class="txt" x="278" y="531" text-anchor="middle" font-size="8.5" font-weight="800">VERDAMPFER</text>
 <path id="coil-left-line" d="M251 538L259 547L267 538L275 547L283 538L291 547L299 538L307 547" fill="none" stroke="#398fc4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -181,12 +181,11 @@
 <text class="txt" x="542" y="570" text-anchor="middle" font-size="9.5" font-weight="750" letter-spacing=".35px">KREUZGEGENSTROM-WÄRMETAUSCHER</text>
 
 <!-- Two distinct supply branches, visually weighted by the selected damper position -->
-<path id="supply-air-to-branches" class="duct" d="M810 545H874" stroke="#df493e"/>
-<path class="moving supply-flow" d="M810 545H874"/>
-<path id="flow-branch-eg" class="duct branchEG" d="M874 545H912V478H1068" stroke="#df493e" marker-end="url(#arrowRed)"/>
-<path id="flow-particles-eg" class="moving movingEG supply-flow" d="M874 545H912V478H1068"/>
-<path id="flow-branch-og" class="duct branchOG" d="M874 545H912V624H1068" stroke="#df493e" marker-end="url(#arrowRed)"/>
-<path id="flow-particles-og" class="moving movingOG supply-flow" d="M874 545H912V624H1068"/>
+<path id="supply-air-to-branches" class="duct" d="M810 545H902" stroke="#df493e"/>
+<path id="flow-branch-eg" class="duct branchEG" d="M902 545V478H1068" stroke="#df493e" marker-end="url(#arrowRed)"/>
+<path id="flow-particles-eg" class="moving movingEG supply-flow" d="M902 545V478H1068"/>
+<path id="flow-branch-og" class="duct branchOG" d="M902 545V624H1068" stroke="#df493e" marker-end="url(#arrowRed)"/>
+<path id="flow-particles-og" class="moving movingOG supply-flow" d="M902 545V624H1068"/>
 <g transform="translate(874 545)"><circle r="17" fill="#fff" stroke="#b84d45" stroke-width="2"/><text x="0" y="4" text-anchor="middle" fill="#9d423b" font-size="10" font-weight="800">M</text></g>
 <text class="muted" x="874" y="583" text-anchor="middle" font-size="9" font-weight="700">EG/OG-</text>
 <text class="muted" x="874" y="595" text-anchor="middle" font-size="9" font-weight="700">SCHIEBER</text>
@@ -200,11 +199,10 @@
 <text class="muted" x="42" y="580" font-size="9" font-weight="750">FORTLUFT</text>
 <text class="txt" x="42" y="600" font-size="14" font-weight="750" data-bind="systemControl.ExhaustAirTemperature" data-suffix=" °C" data-digits="1">— °C</text>
 <path class="duct" d="M86 545H28" stroke="url(#extract-air-gradient)" marker-end="url(#arrowBlue)"/>
-<path class="moving extract-flow" d="M86 545H28"/>
 
-<!-- Four air temperatures at their ports -->
+<!-- Supply-air temperature at the EG/OG outlet -->
 <g>
-  <rect class="pill" x="681" y="260" width="151" height="42" rx="12"/><text class="muted" x="694" y="277" font-size="9" font-weight="750">ZULUFT</text><text class="txt" x="694" y="294" font-size="14" font-weight="750" data-bind="systemControl.SupplyAirTemperature" data-suffix=" °C" data-digits="1">— °C</text>
+  <rect class="pill" x="914" y="522" width="142" height="42" rx="12"/><text class="muted" x="927" y="539" font-size="9" font-weight="750">ZULUFT</text><text class="txt" x="927" y="557" font-size="14" font-weight="750" data-bind="systemControl.SupplyAirTemperature" data-suffix=" °C" data-digits="1">— °C</text>
 </g>
 
 <!-- Floor split selector and qualitative air distribution -->

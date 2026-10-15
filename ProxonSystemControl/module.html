@@ -17,7 +17,7 @@
             width: 100%;
             overflow: auto;
             scrollbar-color: #aebdca transparent;
-            padding-top: 64px;
+            padding-top: 36px;
             box-sizing: border-box;
         }
 
@@ -297,6 +297,8 @@ function updateBypass(data) {
     const flow = document.getElementById('bypass-flow');
     const supplyCore = document.getElementById('supply-air-through-core');
     const supplyCoreFlow = document.getElementById('supply-core-flow');
+    const supplyBeforeBypass = document.getElementById('supply-air-before-bypass');
+    const supplyBeforeBypassFlow = document.getElementById('supply-pre-bypass-flow');
     const valve = document.getElementById('bypass-valve');
     const valveBlade = valve && valve.querySelector('path');
 
@@ -309,6 +311,8 @@ function updateBypass(data) {
     }
     if (supplyCore) supplyCore.style.opacity = isOpen === true ? '0.24' : '1';
     if (supplyCoreFlow) supplyCoreFlow.style.opacity = isOpen === true ? '0.12' : '0.92';
+    if (supplyBeforeBypass) supplyBeforeBypass.style.opacity = isOpen === true ? '0.24' : '1';
+    if (supplyBeforeBypassFlow) supplyBeforeBypassFlow.style.opacity = isOpen === true ? '0.12' : '0.92';
     if (flow) {
         flow.style.opacity = bypassFlowing ? '0.92' : '0';
         flow.style.animationDuration = typeof supplyRPM === 'number' && Number.isFinite(supplyRPM) && supplyRPM > 0
@@ -443,14 +447,14 @@ function updateHeatPumpMode(data) {
         ? {
             discharge: 'M526 660H476V575H314',
             liquid: 'M242 575V630H626',
-            expansion: 'M678 630H740V575',
+            expansion: 'M740 575V630H678',
             suction: 'M774 575V660H560'
         }
         : {
             discharge: 'M560 660H610V603H716V575',
             liquid: 'M762 575V630H678',
-            expansion: 'M626 630H260V575',
-            suction: 'M296 575H230V660H526'
+            expansion: 'M260 575V630H286Q296 630 296 620Q296 610 306 620Q306 630 316 630H626',
+            suction: 'M296 575V606M296 626V660H526'
         };
     ['discharge', 'liquid', 'expansion', 'suction'].forEach((name) => {
         const path = document.getElementById('refrigerant-' + name);
@@ -464,9 +468,18 @@ function updateHeatPumpMode(data) {
             path.setAttribute('d', circuit[name]);
             path.style.stroke = stroke;
             path.style.opacity = activeMode ? '0.96' : '0.4';
-            path.setAttribute('marker-end', marker);
+            path.removeAttribute('marker-start');
+            path.removeAttribute('marker-end');
+            if (name === 'expansion') {
+                path.setAttribute('marker-start', activeMode ? 'url(#arrowColdStart)' : 'url(#arrowRefNeutralStart)');
+            } else {
+                path.setAttribute('marker-end', marker);
+            }
         }
-        if (flow) flow.setAttribute('d', circuit[name]);
+        if (flow) {
+            flow.setAttribute('d', circuit[name]);
+            flow.style.animationDirection = name === 'expansion' ? 'reverse' : 'normal';
+        }
     });
 
     const compressorMode = document.getElementById('compressor-overview-mode');
