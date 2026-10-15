@@ -23,11 +23,11 @@ Connect the Proxon Configurator to the Modbus parent and select **T300 Control**
 | Legionella Function | 2025 | 0 = off, 1 = on |
 | PV Function | 2010 | 0 = off, 1 = on |
 
-The table places these values in the `Holding Register` sheet and marks them writable. This module therefore reads them with FC3 and writes individual values with FC6, following the existing Proxon module pattern. The same workbook labels the addresses with a `3x` prefix and describes `3x` as FC4 in its interface overview. That conflict has not yet been resolved against a T300 controller; verify the register function and address convention on a dedicated test device before using this module to write settings.
+The 14 usable settings are marked R/W in the write-permission=1 (some) column. Register 2006 has the same mark but allows only raw value 0, so the module omits it. The existing manual configuration confirms FC3 reads and FC6 writes for registers 2000-2003; the other ten controls are implemented but have not been hardware-tested. The workbook shows 0 in its separate write-permission=2 (yes) column for these rows, and its interface overview describes 3x as FC4. Verify the controller permission mode and address convention before using the untested writes.
 
 ## Read-only measurements and operating status
 
-The module also reads documented Input Registers with FC4 using five blocks (`811–830`, `832–841`, `862`, `868–892`, and `898–900`) on the configured polling interval. These values have no actions and are not automatically enabled for archive logging.
+The module reads documented Input Registers with FC4 using seven blocks (811-830, 832-841, 842-846, 861, 862, 868-892, and 898-900). These values have no actions and are not automatically enabled for archive logging.
 
 | Values | Registers | Conversion |
 | --- | --- | --- |
@@ -40,8 +40,12 @@ The module also reads documented Input Registers with FC4 using five blocks (`81
 | Emergency heater permission; setpoint, firmware, tank average and superheat values | 868, 879–886 | FC4; temperature formats follow the workbook |
 | Expansion-valve and post-defrost timers; post-defrost superheat and defrost start temperature | 887–888, 890, 892 | seconds or workbook temperature scaling |
 | PV tank level and active heater/heat-pump states | 898–900 | percent; 0 = off, nonzero = on |
+| Emergency operation status | 834 | 0 = normal, 1 = emergency operation |
+| Compressor/fan/sensor/pressure error durations | 842, 844-846, 869-878 | seconds, per workbook |
+| Fault code | 861 | displayed using the 0-16 labels from the existing manual Symcon profile |
+| Restart count | 880 | raw integer |
 
-The existing Symcon T300 ModBus configurations confirm FC4 for these input addresses and apply the documented temperature correction after scaling. The raw ADC channels, error list/counters and undocumented state codes are left for a later diagnostics step.
+Register 861 is described as binary in the workbook, while the manual Symcon profile presents values 0-16 as named fault codes; the module mirrors that existing profile. Verify it against a nonzero fault before relying on its text. The existing Symcon T300 ModBus configurations confirm FC4 for the manually configured input addresses and apply the documented temperature correction after scaling. The TEST instance previously showed all forty measurement/status values updating. The added diagnostic values cover the remaining manual ModBus entries; raw ADC channels and undocumented state codes remain separate follow-up work.
 
 ## Compatibility
 
@@ -49,7 +53,7 @@ The existing Symcon T300 ModBus configurations confirm FC4 for these input addre
 - A compatible Proxon Modbus parent
 - T300 Modbus write access enabled for control actions
 
-The T300 control instance is present in the TEST area. Existing ModBus instances provide live input-register reads; this module's new grouped FC4 polling still needs a runtime update and verification. Holding-register writes have not been tested by this module on hardware.
+The T300 instance in TEST was confirmed active with the original 54 variables before this diagnostic supplement. The new 17 read-only variables still need a library update in Symcon. Holding-register writes have not been tested by this module on hardware.
 
 ## Exported functions
 
