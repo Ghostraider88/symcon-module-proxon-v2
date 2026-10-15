@@ -33,6 +33,8 @@ class ProxonSystemControl extends IPSModuleStrict
     ];
 
     private array $pollCache = [];
+    private bool $statusPollInProgress = false;
+    private bool $statusPollHadSuccessfulRead = false;
 
     public function Create(): void
     {
@@ -41,12 +43,21 @@ class ProxonSystemControl extends IPSModuleStrict
         $this->RegisterPropertyInteger('Interval', 30);
         $this->RegisterPropertyInteger('CO2RFSensorCount', 1);
         $this->RegisterPropertyBoolean('AdvancedControlsEnabled', false);
+        $this->RegisterPropertyInteger('MonitoringInstanceID', 0);
+        $this->RegisterAttributeInteger('RegisteredMonitoringInstanceID', 0);
+        $this->RegisterAttributeInteger('RawBypassStatus', -1);
+        $this->RegisterAttributeInteger('RawDamperPosition', -1);
+        $this->RegisterAttributeInteger('RawHeatPumpMode', -1);
+        $this->RegisterAttributeInteger('LastVisualizationUpdate', 0);
         $this->RegisterTimer('Poller', 0, 'PROXON_RequestStatus($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+
+        $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML);
+        $this->UpdateMonitoringReference();
 
         $this->RegisterVariableInteger('OperatingMode', $this->Translate('Operating Mode'), [
             'PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION,
@@ -94,6 +105,26 @@ class ProxonSystemControl extends IPSModuleStrict
         }
 
         return json_encode($form, JSON_THROW_ON_ERROR);
+    }
+
+    public function GetVisualizationTile(): string
+    {
+        $html = file_get_contents(__DIR__ . '/module.html');
+        $svg = file_get_contents(__DIR__ . '/visualization.svg');
+        if ($html === false || $svg === false) {
+            throw new RuntimeException('The FWT visualization files could not be loaded.');
+        }
+
+        $initialData = json_encode(
+            $this->GetVisualizationData(),
+            JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+        );
+
+        return str_replace(
+            ['<!-- FWT_SVG -->', '__INITIAL_DATA__'],
+            [$svg, $initialData],
+            $html
+        );
     }
 
     public function CreateAdvancedInstance(): void
@@ -182,6 +213,8 @@ class ProxonSystemControl extends IPSModuleStrict
         }
 
         $this->pollCache = [];
+        $this->statusPollInProgress = true;
+        $this->statusPollHadSuccessfulRead = false;
 
         foreach ([
             'OperatingMode' => 16,
@@ -209,6 +242,11 @@ class ProxonSystemControl extends IPSModuleStrict
         $this->UpdatePlantStatus();
         $this->UpdateConnectedPanels();
         $this->UpdateSensorValues();
+        $this->statusPollInProgress = false;
+        if ($this->statusPollHadSuccessfulRead) {
+            $this->WriteAttributeInteger('LastVisualizationUpdate', time());
+        }
+        $this->UpdateVisualizationValue($this->GetVisualizationData());
     }
 
     public function RequestAction(string $Ident, mixed $Value): void
@@ -485,6 +523,101 @@ class ProxonSystemControl extends IPSModuleStrict
         ];
     }
 
+    private function UpdateMonitoringReference(): void
+    {
+        $monitoringInstanceID = $this->ReadPropertyInteger('MonitoringInstanceID');
+        $registeredInstanceID = $this->ReadAttributeInteger('RegisteredMonitoringInstanceID');
+        $isValid = $this->IsMonitoringInstance($monitoringInstanceID);
+
+        if ($registeredInstanceID > 0 && (!$isValid || $registeredInstanceID !== $monitoringInstanceID)) {
+            $this->UnregisterReference($registeredInstanceID);
+        }
+
+        if ($isValid) {
+            $this->RegisterReference($monitoringInstanceID);
+        }
+
+        $this->WriteAttributeInteger('RegisteredMonitoringInstanceID', $isValid ? $monitoringInstanceID : 0);
+    }
+
+    private function IsMonitoringInstance(int $instanceID): bool
+    {
+        return $instanceID > 0
+            && IPS_InstanceExists($instanceID)
+            && in_array($instanceID, IPS_GetInstanceListByModuleID(self::MONITORING_MODULE_ID), true);
+    }
+
+    private function GetVisualizationData(): array
+    {
+        $lastUpdate = $this->ReadAttributeInteger('LastVisualizationUpdate');
+        $hasLiveData = $lastUpdate > 0;
+        $monitoringInstanceID = $this->ReadPropertyInteger('MonitoringInstanceID');
+        $monitoringSelected = $this->IsMonitoringInstance($monitoringInstanceID);
+        $monitoring = $this->GetVisualizationMonitoringValues($monitoringInstanceID, $hasLiveData);
+
+        $systemControl = [];
+        foreach ([
+            'ActualOperatingMode',
+            'ActualHeatPumpMode',
+            'SupplyFanRPM',
+            'ExtractFanRPM',
+            'SupplyAirTemperature',
+            'ExtractAirTemperature',
+            'ExhaustAirTemperature',
+            'FreshAirTemperature',
+            'DeviceFilterRuntime',
+            'RecirculationFilterRuntime',
+            'BypassStatus',
+            'DamperPosition',
+            'CoolingEnabled',
+            'SupplyFanStageActual',
+            'ExtractFanStageActual'
+        ] as $ident) {
+            $systemControl[$ident] = $hasLiveData ? $this->GetValue($ident) : null;
+        }
+
+        $rawBypassStatus = $this->ReadAttributeInteger('RawBypassStatus');
+        $rawDamperPosition = $this->ReadAttributeInteger('RawDamperPosition');
+        $rawHeatPumpMode = $this->ReadAttributeInteger('RawHeatPumpMode');
+
+        return [
+            'connected' => $this->HasActiveParent(),
+            'updatedAt' => $hasLiveData ? $lastUpdate : null,
+            'monitoringSelected' => $monitoringSelected,
+            'monitoringInterval' => $monitoringSelected ? max(5, (int) IPS_GetProperty($monitoringInstanceID, 'Interval')) : null,
+            'monitoringLastRead' => $monitoring['LastSuccessfulRead'] ?? null,
+            'systemControl' => $systemControl + [
+                'BypassOpen' => $hasLiveData && in_array($rawBypassStatus, [0, 1], true) ? $rawBypassStatus === 1 : null,
+                'DamperPositionCode' => $hasLiveData && $rawDamperPosition >= 0 && $rawDamperPosition <= 4 ? $rawDamperPosition : null,
+                'HeatPumpModeCode' => $hasLiveData && $rawHeatPumpMode >= 0 && $rawHeatPumpMode <= 3 ? $rawHeatPumpMode : null
+            ],
+            'monitoring' => $monitoring
+        ];
+    }
+
+    private function GetVisualizationMonitoringValues(int $monitoringInstanceID, bool $hasLiveData): array
+    {
+        if (!$hasLiveData || !$this->IsMonitoringInstance($monitoringInstanceID)) {
+            return [];
+        }
+
+        $values = [];
+        foreach (IPS_GetChildrenIDs($monitoringInstanceID) as $childID) {
+            if (!IPS_VariableExists($childID)) {
+                continue;
+            }
+
+            $ident = (string) IPS_GetObject($childID)['ObjectIdent'];
+            if ($ident === '') {
+                continue;
+            }
+
+            $values[$ident] = GetValue($childID);
+        }
+
+        return ($values['LastSuccessfulRead'] ?? '') !== '' ? $values : [];
+    }
+
     private function UpdatePlantStatus(): void
     {
         $mode = $this->ReadRegister(4, 23);
@@ -494,6 +627,7 @@ class ProxonSystemControl extends IPSModuleStrict
 
         $heatPumpMode = $this->ReadRegister(3, 69);
         if ($heatPumpMode !== null) {
+            $this->WriteAttributeInteger('RawHeatPumpMode', $heatPumpMode);
             $this->SetValue('ActualHeatPumpMode', $this->GetHeatPumpModeCaption($heatPumpMode));
         }
 
@@ -527,11 +661,13 @@ class ProxonSystemControl extends IPSModuleStrict
 
         $bypassStatus = $this->ReadRegister(4, 222);
         if ($bypassStatus !== null) {
+            $this->WriteAttributeInteger('RawBypassStatus', $bypassStatus);
             $this->SetValue('BypassStatus', $this->GetBypassStatusCaption($bypassStatus));
         }
 
         $damperPosition = $this->ReadRegister(4, 159);
         if ($damperPosition !== null) {
+            $this->WriteAttributeInteger('RawDamperPosition', $damperPosition);
             $this->SetValue('DamperPosition', $this->GetDamperPositionCaption($damperPosition));
         }
     }
@@ -746,6 +882,9 @@ class ProxonSystemControl extends IPSModuleStrict
 
         $value = unpack('nvalue', substr($response, 2, 2));
         $this->pollCache[$key] = $value === false ? null : $value['value'];
+        if ($this->statusPollInProgress && $this->pollCache[$key] !== null) {
+            $this->statusPollHadSuccessfulRead = true;
+        }
         return $this->pollCache[$key];
     }
 

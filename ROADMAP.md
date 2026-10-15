@@ -22,6 +22,8 @@
 
 ## Later work
 
+- **Implemented locally:** added a read-only FWT HTML-SDK tile with animated fan/airflow paths, a separate EG/OG outlet view driven by damper position, bypass state, air temperatures and selected heat-pump Monitoring values. Added an explicit Monitoring instance selector; the tile reads that instance's direct child variables and does not add Modbus polling.
+- **Open:** no Symcon runtime or visualization tile has been exercised yet. Confirm the display on a TEST instance after installing the branch. EG/OG bars are qualitative preferences only; R26 airflow scope, power units, R190 unit, R162/R223 mappings, the R69/R241 mode source and actual PTC relay state still need confirmation.
 - Diagnostics and fault handling.
 - Additional comfort and automation features.
 - T300 support.

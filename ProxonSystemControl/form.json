@@ -7,6 +7,12 @@
 			"suffix": "Seconds"
 		},
 		{
+			"name": "MonitoringInstanceID",
+			"type": "SelectInstance",
+			"caption": "Heat Pump Monitoring Instance",
+			"validModules": ["{C48CB61D-8500-41F3-AC35-82DAF84EC870}"]
+		},
+		{
 			"name": "CO2RFSensorCount",
 			"type": "NumberSpinner",
 			"caption": "CO2/RF Sensor Count",

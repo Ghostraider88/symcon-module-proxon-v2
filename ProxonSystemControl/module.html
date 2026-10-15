@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html,
+        body {
+            margin: 0;
+            min-width: 0;
+            background: transparent;
+            color: #192b3d;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+        }
+
+        .fwt-tile {
+            width: 100%;
+            overflow: auto;
+            scrollbar-color: #aebdca transparent;
+        }
+
+        .fwt-plant {
+            display: block;
+            width: 100%;
+            min-width: 1180px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<main class="fwt-tile" aria-label="PROXON FWT Anlagenvisualisierung">
+    <!-- FWT_SVG -->
+</main>
+<script>
+const initialData = __INITIAL_DATA__;
+
+function getValueAtPath(source, path) {
+    return path.split('.').reduce((value, key) => value && value[key], source);
+}
+
+function formatBoundValue(element, value) {
+    if (value === null || value === undefined || value === '') {
+        return '—';
+    }
+
+    let formattedValue;
+    if (element.dataset.format === 'boolean') {
+        const enabled = typeof translate === 'function' ? translate('Enabled') : 'Enabled';
+        const blocked = typeof translate === 'function' ? translate('Blocked') : 'Blocked';
+        formattedValue = value ? enabled : blocked;
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+        const digits = Number.parseInt(element.dataset.digits || '0', 10);
+        formattedValue = new Intl.NumberFormat(undefined, {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits
+        }).format(value);
+    } else {
+        formattedValue = String(value);
+    }
+
+    return (element.dataset.prefix || '') + formattedValue + (element.dataset.suffix || '');
+}
+
+function updateBoundValues(data) {
+    document.querySelectorAll('[data-bind]').forEach((element) => {
+        element.textContent = formatBoundValue(element, getValueAtPath(data, element.dataset.bind));
+    });
+}
+
+function updateFanAnimation(fanID, rpm) {
+    const fan = document.getElementById(fanID);
+    if (!fan) {
+        return;
+    }
+
+    const blades = fan.querySelector('.blade');
+    const isRunning = typeof rpm === 'number' && Number.isFinite(rpm) && rpm > 0;
+    if (blades) {
+        blades.style.animationPlayState = isRunning ? 'running' : 'paused';
+        if (isRunning) {
+            blades.style.animationDuration = Math.max(0.18, Math.min(2.5, 1200 / rpm)) + 's';
+        }
+    }
+}
+
+function updateAirflow(data) {
+    const svg = document.querySelector('.fwt-plant');
+    if (!svg) {
+        return;
+    }
+
+    const system = data.systemControl || {};
+    const supplyRPM = system.SupplyFanRPM;
+    const extractRPM = system.ExtractFanRPM;
+    const airflowPaths = [
+        { selector: '.supply-flow', rpm: supplyRPM },
+        { selector: '.extract-flow', rpm: extractRPM }
+    ];
+
+    airflowPaths.forEach(({ selector, rpm }) => {
+        const isRunning = typeof rpm === 'number' && Number.isFinite(rpm) && rpm > 0;
+        const duration = isRunning ? Math.max(0.3, Math.min(3, 1200 / rpm)) : 1.6;
+        svg.querySelectorAll(selector).forEach((path) => {
+            path.style.animationDuration = duration + 's';
+            path.style.animationPlayState = isRunning ? 'running' : 'paused';
+        });
+    });
+
+    updateFanAnimation('supply-fan', supplyRPM);
+    updateFanAnimation('extract-fan', extractRPM);
+}
+
+function updateDamper(data) {
+    const system = data.systemControl || {};
+    const position = system.DamperPositionCode;
+    const captions = ['EG', 'EG bevorzugt', 'ausgeglichen', 'OG bevorzugt', 'OG'];
+    const caption = document.getElementById('damper-caption');
+
+    document.querySelectorAll('.damper-step').forEach((step) => {
+        step.classList.toggle('damper-active', Number(step.dataset.damperPosition) === position);
+    });
+
+    if (caption) {
+        caption.textContent = Number.isInteger(position)
+            ? 'Schieberposition ' + position + ' · ' + captions[position]
+            : 'Schieberposition: —';
+    }
+
+    const egShares = [0.9, 0.75, 0.5, 0.25, 0.1];
+    const egShare = Number.isInteger(position) && egShares[position] !== undefined ? egShares[position] : 0.5;
+    const ogShare = 1 - egShare;
+    const egMeter = document.getElementById('eg-flow-meter');
+    const ogMeter = document.getElementById('og-flow-meter');
+    const egBranch = document.getElementById('flow-branch-eg');
+    const ogBranch = document.getElementById('flow-branch-og');
+
+    if (egMeter) {
+        egMeter.setAttribute('width', String(450 * egShare));
+    }
+    if (ogMeter) {
+        ogMeter.setAttribute('width', String(450 * ogShare));
+    }
+    if (egBranch) {
+        egBranch.style.strokeWidth = String(4 + egShare * 9);
+    }
+    if (ogBranch) {
+        ogBranch.style.strokeWidth = String(4 + ogShare * 9);
+    }
+
+    const describeShare = (share) => share > 0.6
+        ? 'relativ bevorzugt'
+        : share < 0.4 ? 'relativ reduziert' : 'ausgeglichen';
+    [
+        ['og-branch-caption', ogShare],
+        ['og-meter-caption', ogShare],
+        ['eg-branch-caption', egShare],
+        ['eg-meter-caption', egShare]
+    ].forEach(([id, share]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = describeShare(share);
+        }
+    });
+}
+
+function updateBypass(data) {
+    const isOpen = data.systemControl && data.systemControl.BypassOpen;
+    const status = data.systemControl && data.systemControl.BypassStatus;
+    const supplyRPM = data.systemControl && data.systemControl.SupplyFanRPM;
+    const bypassFlowing = isOpen === true && typeof supplyRPM === 'number' && supplyRPM > 0;
+    const statusElement = document.getElementById('bypass-status');
+    const path = document.getElementById('bypass-path');
+    const flow = document.getElementById('bypass-flow');
+    const valve = document.getElementById('bypass-valve');
+    const valveBlade = valve && valve.querySelector('path');
+
+    if (statusElement) {
+        statusElement.textContent = 'BYPASS · R222 · ' + (status || '—');
+    }
+    if (path) {
+        path.style.stroke = isOpen === true ? '#159a69' : '#8497a8';
+    }
+    if (flow) {
+        flow.style.opacity = bypassFlowing ? '0.92' : '0';
+        flow.style.animationPlayState = bypassFlowing ? 'running' : 'paused';
+    }
+    if (valveBlade) {
+        const valvePosition = isOpen === true
+            ? 'M-7 7L7-7'
+            : isOpen === false ? 'M-7 -7L7 7' : 'M-7 0L7 0';
+        valveBlade.setAttribute('d', valvePosition);
+    }
+}
+
+function updateHeatPumpMode(data) {
+    const element = document.getElementById('heat-pump-mode');
+    if (!element) {
+        return;
+    }
+
+    element.classList.remove('status-heating', 'status-cooling', 'status-on', 'status-off', 'status-unknown');
+    const mode = data.systemControl && data.systemControl.HeatPumpModeCode;
+    const modeClass = ({ 0: 'status-off', 1: 'status-heating', 2: 'status-cooling', 3: 'status-on' })[mode] || 'status-unknown';
+    element.classList.add(modeClass);
+
+    const color = ({ 0: '#8497a8', 1: '#de493e', 2: '#287cbd', 3: '#159a69' })[mode] || '#8497a8';
+    const arrow = ({ 1: 'url(#arrowRed)', 2: 'url(#arrowBlue)', 3: 'url(#arrowGreen)' })[mode] || 'url(#arrowNeutral)';
+    ['supply-air-after-hp', 'flow-branch-og', 'flow-branch-eg'].forEach((id) => {
+        const path = document.getElementById(id);
+        if (path) {
+            path.style.stroke = color;
+            path.setAttribute('marker-end', arrow);
+        }
+    });
+}
+
+function updateTileStatus(data) {
+    const status = document.getElementById('tile-update-status');
+    const source = document.getElementById('monitoring-source-status');
+    if (status) {
+        if (data.connected !== true) {
+            status.textContent = 'Keine aktive Modbus-Verbindung';
+        } else if (!data.updatedAt) {
+            status.textContent = 'Warte auf erste Statusabfrage';
+        } else {
+            status.textContent = 'Statusabfrage: ' + new Date(data.updatedAt * 1000).toLocaleTimeString();
+        }
+    }
+    if (source) {
+        if (!data.monitoringSelected) {
+            source.textContent = 'Monitoring-Instanz in der Konfiguration auswählen';
+        } else if (!data.monitoringLastRead) {
+            source.textContent = 'Monitoring ausgewählt · wartet auf erfolgreiche Abfrage';
+        } else {
+            const readTime = Date.parse(String(data.monitoringLastRead).replace(' ', 'T'));
+            const interval = Number(data.monitoringInterval) || 60;
+            const isStale = Number.isFinite(readTime) && Date.now() - readTime > interval * 3000;
+            source.textContent = (isStale ? 'Monitoringdaten veraltet · letzter Stand ' : 'Monitoring · letzter Stand ')
+                + data.monitoringLastRead;
+        }
+    }
+}
+
+function handleMessage(data) {
+    if (!data || typeof data !== 'object') {
+        return;
+    }
+
+    updateBoundValues(data);
+    updateAirflow(data);
+    updateDamper(data);
+    updateBypass(data);
+    updateHeatPumpMode(data);
+    updateTileStatus(data);
+}
+
+window.handleMessage = handleMessage;
+handleMessage(initialData);
+</script>
+</body>
+</html>
