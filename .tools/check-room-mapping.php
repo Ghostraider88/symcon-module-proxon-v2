@@ -12,7 +12,8 @@ $reads = [];
 $instances = [
     100 => ['name' => 'Control', 'module' => 'control'],
     200 => ['name' => 'Native Zone', 'module' => '{9496FF42-B793-02E3-8271-541651A9085F}'],
-    300 => ['name' => 'Native Panel', 'module' => '{82991C5F-F554-4ED2-B2C7-2B2999B32C46}']
+    300 => ['name' => 'Native Panel', 'module' => '{82991C5F-F554-4ED2-B2C7-2B2999B32C46}'],
+    400 => ['name' => 'Central Living Room', 'module' => '{1D1DC6F5-A07B-FC2B-84E4-D68E6B71D401}']
 ];
 $variables = [];
 function fixture(int $id, int $parent, string $ident, mixed $value, int $updated = 1): void
@@ -27,6 +28,9 @@ fixture(203, 200, 'PTCRelease', true);
 fixture(301, 300, 'CurrentTemperature', 20.2);
 fixture(302, 300, 'TargetTemperature', 20);
 fixture(303, 300, 'PTCStatus', false);
+fixture(401, 400, 'CurrentTemperature', 22.1);
+fixture(402, 400, 'TargetTemperature', 22.5);
+fixture(403, 400, 'PTCRelease', true);
 fixture(501, 0, 'ExternalCO2', 850);
 fixture(502, 0, 'ExternalHumidity', 57.2);
 fixture(503, 0, 'ExternalPTC', true);
@@ -82,6 +86,7 @@ $module = new RoomHarness();
 $rows = [
     ['Name' => 'Wohnen <img src=x>', 'Floor' => 'EG', 'RoomInstanceID' => 200, 'AirQualitySensor' => 1, 'CO2VariableID' => 501],
     ['Name' => '', 'Floor' => 'OG', 'RoomInstanceID' => 300, 'HumidityVariableID' => 502, 'PTCStatusVariableID' => 503],
+    ['Name' => '', 'Floor' => 'EG', 'RoomInstanceID' => 400],
     ['Name' => 'Büro', 'Floor' => 'EG', 'CO2VariableID' => 504]
 ];
 $module->mapping = json_encode($rows, JSON_THROW_ON_ERROR);
@@ -91,7 +96,10 @@ check($rooms[0]['co2'] === 850 && $rooms[0]['humidity'] === 43, 'External CO2 mu
 check($rooms[1]['co2'] === null && $rooms[1]['humidity'] === 57.2, 'External humidity must work independently');
 check($rooms[0]['temperature'] === 21.4 && $rooms[0]['setpoint'] === 22, 'Selected room temperatures');
 check($rooms[0]['ptc'] === null && $rooms[1]['ptc'] === true, 'PTC permission must never become actual state');
-check($rooms[2]['co2'] === null && $rooms[2]['temperature'] === null, 'Bad or missing readings remain unavailable');
+check($rooms[2]['name'] === 'Central Living Room', 'Central room name fallback');
+check($rooms[2]['temperature'] === 22.1 && $rooms[2]['setpoint'] === 22.5, 'Central room temperatures');
+check($rooms[2]['ptc'] === null, 'Central PTC release must not become actual state');
+check($rooms[3]['co2'] === null && $rooms[3]['temperature'] === null, 'Bad or missing readings remain unavailable');
 check(!in_array(505, $reads, true), 'Do not read unselected variables');
 $module->bind();
 check(isset($module->messages[501], $module->messages[102]) && !isset($module->messages[203]), 'Subscribe to actual selected data only');

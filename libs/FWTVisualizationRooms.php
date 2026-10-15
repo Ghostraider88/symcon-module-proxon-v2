@@ -102,7 +102,8 @@ trait FWTVisualizationRooms
             if ($instanceID > 0 && IPS_InstanceExists($instanceID)
                 && in_array(IPS_GetInstance($instanceID)['ModuleInfo']['ModuleID'], [
                     '{82991C5F-F554-4ED2-B2C7-2B2999B32C46}',
-                    '{9496FF42-B793-02E3-8271-541651A9085F}'
+                    '{9496FF42-B793-02E3-8271-541651A9085F}',
+                    '{1D1DC6F5-A07B-FC2B-84E4-D68E6B71D401}'
                 ], true)) {
                 $native = $this->GetVisualizationChildVariables($instanceID);
             } else {

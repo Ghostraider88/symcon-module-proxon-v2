@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1 — Build 2 — 2026-10-15
+
+- Added Proxon Central as a room mapping source for current and target temperature. Its PTC release value is not treated as actual heater status.
+- Added an isolated fixture check for Central room mapping.
+
 ## 1.1 — Build 1 — 2026-10-15
 
 - Added configurable visualization rooms with display names, EG/OG assignment and optional PROXON room instances.

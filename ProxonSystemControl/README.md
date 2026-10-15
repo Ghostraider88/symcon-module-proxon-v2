@@ -54,7 +54,7 @@ Open **Visualization Rooms** in the instance configuration and add one row per r
 | --- | --- |
 | Room Name | Display name, independent of the instance name. When empty, use the selected PROXON room instance's name. A name is required for a room without a PROXON instance. |
 | Floor | EG or OG. The list order determines the room order within each floor. |
-| PROXON Room | Optional Panel/Zone instance supplying `CurrentTemperature`, `TargetTemperature` and actual `PTCStatus` if available. |
+| PROXON Room | Optional Panel, Zone or Central instance supplying `CurrentTemperature` and `TargetTemperature`; actual `PTCStatus` is used when that instance provides it. |
 | PROXON Air Quality Sensor | Optional sensor 1–5 from this System Control instance supplying CO2 and relative humidity. Select the sensor actually serving the room. |
 | External CO2 Variable | Optional integer/float Symcon variable, in ppm. Overrides only the selected room's CO2 value. |
 | External Humidity Variable | Optional integer/float Symcon variable, in percent (0–100). Overrides only the selected room's humidity value. |
