@@ -19,7 +19,7 @@ Use the **Create Monitoring Instance** action to add the separate read-only FC4 
 | Legionella Function / PV Function | 2025 / 2010 | Boolean; advanced |
 | Hour / Minute / Weekday / Day / Month / Year | 2150-2155 | Clock fields; advanced |
 
-The fourteen documented candidates are marked R/W in the workbook's write-permission=1 (some) column. Register 2006 is omitted because its only documented value is 0. For registers other than 2000-2003, the workbook has no confirmed write permission and describes 3x as FC4. No writes have been tested against hardware by this module.
+The workbook marks fifteen rows R/W at write-permission level 1 (some). Fourteen have a nontrivial allowed range, and all fourteen are implemented with matching limits. Register 2006 (Language) is omitted because its documented range is fixed at 0. The inspected manual Symcon configuration confirms FC6 writes only for 2000-2003; these four are enabled by default. The other ten stay read-only until Advanced Controls is selected. Their hardware write behavior has not been verified, and this module has sent no writes.
 
 ## Compatibility
 
