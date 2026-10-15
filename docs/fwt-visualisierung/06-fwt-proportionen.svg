@@ -106,7 +106,7 @@
 <!-- Dashed links indicate only the heat pump's symbolic component coupling. -->
 <path d="M229 584H180V648H527M751 584H810V648H573" fill="none" stroke="#b1bfc9" stroke-width="2" stroke-dasharray="6 6"/>
 <rect x="528" y="627" width="44" height="42" rx="13" fill="#fff0ea" stroke="#cb8c79" stroke-width="2"/>
-<path d="M535 669V674H565V669M540 636C546 629 559 636 555 644S541 651 548 659" fill="none" stroke="#b67562" stroke-width="2"/>
+<path d="M535 669V674H565V669M536 638H564M536 658H564" fill="none" stroke="#b67562" stroke-width="2" stroke-linecap="round"/>
 <circle cx="574" cy="628" r="5" fill="#349c75" stroke="#f6f8fa" stroke-width="2"/>
 <text class="label" x="550" y="685" text-anchor="middle">Verdichter · Ein</text>
 
