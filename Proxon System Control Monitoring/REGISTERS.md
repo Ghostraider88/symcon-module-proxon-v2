@@ -17,7 +17,7 @@ Diese Seite beschreibt verfügbare Variablen aus den Instanzen **Proxon System C
 | Monitoring | `FaultPresent` | Boolean | Mindestens ein gelesener Fehlerindikator ist ungleich null | Zusammenfassung der unten aufgeführten Fehlerregister; bei lückenhaftem Lesen zusätzlich `FaultStatusComplete` beachten |
 | Monitoring | `FaultSummary` | Text | Lesbare Störungsmeldung, ohne erfundene Code- oder Bitübersetzung | Aus den bestätigten Fehlerindikatoren abgeleitet |
 | Monitoring | `FaultStatusComplete` | Boolean | Alle zehn für die Störungsübersicht verwendeten Register wurden beim letzten Poll gelesen | Gültigkeit der beiden Störungswerte darüber |
-| Monitoring | `Airflow` | m³/h | Luftvolumenstrom laut Registerliste | FC04 / 4x0026, Registerwert / 10; Messgröße/Bezug ungeklärt |
+| Monitoring | `Airflow` | m³/h | Als „Air m³/h“ benannter Luftvolumenstrom | FC04 / 4x0026, Registerwert / 10; Messort und Luftstrombezug ungeklärt |
 | Monitoring | `TotalCOPJAZ1Hour` | Verhältniszahl | Vom Regler gemeldeter Gesamt-COP/JAZ für 1 Stunde | FC04 / 4x0033, Wert / 100; Berechnungsdefinition nicht unabhängig verifiziert |
 
 `FaultDetails` und die numerischen Fehlerregister sind Backend-Diagnosewerte. Sie werden nicht als Kachelwerte empfohlen. `EnergySinceFirstSample` ist eine lokale Leistungssummen-Schätzung, kein Zählerstand.
@@ -30,7 +30,7 @@ Diese Seite beschreibt verfügbare Variablen aus den Instanzen **Proxon System C
 | `FanStage` | Auswahl 1–4 | Angeforderte Lüfterstufe | Schreibregister FC04 / 4x0022 | Bedienwert, kein Messwert |
 | `CoolingEnabled` | Boolean | Kühlfunktion freigeben/sperren | FC04 / 4x0062 | Bedienwert |
 | `ActualOperatingMode` | Text | Aktuell von der FWT gemeldete Betriebsart | FC04 / 4x0023 | Geeignet für Statusanzeige |
-| `ActualHeatPumpMode` | Text | Vom Modul dekodierter Wärmepumpenmodus | Derzeit FC03 / 4x0069 | **Quelle ungeklärt:** Abweichung zur Registerliste (4x0241); vor Kachelverwendung verifizieren |
+| `ActualHeatPumpMode` | Text | Vom Modul dekodierter Wert des Wärmepumpenmodus | FC03 / 3x0069 | Registerliste nennt die Codes 0 = Aus, 1 = Heizbedarf, 2 = Kühlbedarf, 3 = Ventilation; Ist-/Soll-Rolle und Beziehung zu 4x0241 ungeklärt. Bis dahin nicht als bestätigter Ist-Modus für eine Kachel verwenden |
 | `SupplyFanRPM` | rpm | Drehzahl Zuluftventilator | FC04 / 4x0000 | Statuswert |
 | `ExtractFanRPM` | rpm | Drehzahl Abluftventilator | FC04 / 4x0001 | Statuswert |
 | `SupplyFanStageActual` | Stufe | Tatsächliche Zuluftstufe | FC04 / 4x0154 | Statuswert |
@@ -67,7 +67,7 @@ Diese Werte sind optionale Raumkacheldaten und erscheinen nicht zwingend in eine
 | `ElectricalPowerPCB` | W | FC04 / 4x0019, / 10 | Elektrische Leistung der Platine laut Registerliste | Bezeichnung und Skalierung geklärt |
 | `ElectricalPowerInverter` | W | FC04 / 4x0020, / 10 | Elektrische Leistung des Umrichters laut Registerliste | Bezeichnung und Skalierung geklärt |
 | `TotalElectricalPower` | W | FC04 / 4x0025, / 10 | Elektrische Gesamtleistung laut FWT | Bezeichnung und Skalierung geklärt |
-| `Airflow` | m³/h | FC04 / 4x0026, / 10 | Luftvolumenstrom | **Ungeklärt:** Messort und genauer Bezug der Größe sind nicht näher beschrieben |
+| `Airflow` | m³/h | FC04 / 4x0026, / 10 | Registerbezeichnung „Air m³/h“ | **Ungeklärt:** Messort und genauer Luftstrombezug sind nicht näher beschrieben |
 | `CompressorCOPJAZ1Minute` | Verhältniszahl | FC04 / 4x0027, / 100 | Kompressor-COP/JAZ, 1 Minute | Reglerwert; Berechnung/Begriff COP vs. JAZ nicht unabhängig verifiziert |
 | `CompressorCOPJAZ1Hour` | Verhältniszahl | FC04 / 4x0028, / 100 | Kompressor-COP/JAZ, 1 Stunde | Wie oben |
 | `CompressorCOPJAZ24Hours` | Verhältniszahl | FC04 / 4x0029, / 100 | Kompressor-COP/JAZ, 24 Stunden | Wie oben |
@@ -101,7 +101,7 @@ Diese Werte sind optionale Raumkacheldaten und erscheinen nicht zwingend in eine
 | `InverterResetCounterTime` | s | FC04 / 4x0185 | Umrichter-Resetzählerzeit laut Bezeichnung | **Ungeklärt:** Zeitfenster und Rücksetzverhalten |
 | `InverterErrorDelay` | s | FC04 / 4x0186 | Umrichter-Fehlerverzögerung laut Bezeichnung | **Ungeklärt:** genaue Verzögerungslogik |
 | `InverterErrorCounter` | Anzahl | FC04 / 4x0187 | Umrichter-Fehlerzähler | **Ungeklärt:** Zählumfang und Rücksetzbedingung |
-| `CompressorSpeed` | derzeit rpm | FC04 / 4x0190 | Kompressordrehzahl laut Modulname | **Ungeklärt:** Einheit und Messbezug sind in der Registerliste nicht bestätigt; rpm ist vorläufig |
+| `CompressorSpeed` | ppm (laut Excel) | FC04 / 4x0190, / 1 | Als Kompressordrehzahl benannter Wert | **Ungeklärt:** Die Registerliste nennt ppm; Bedeutung der Einheit und physikalischer Messbezug sind offen. Nicht als rpm interpretieren |
 | `MaximumCompressorPower` | % | FC04 / 4x0201, / 100 | Maximalleistung Kompressor, lesender Monitoringwert | Registereinheit laut Modul; Kachel nicht empfohlen, Konfiguration/Optimierung getrennt halten |
 | `InverterModbusErrorCounter` | Anzahl | FC04 / 4x0213 | Umrichter-Modbus-Fehlerzähler | **Ungeklärt:** Zähl- und Rücksetzzeitraum; Backend |
 | `EvaporatorTemperatureFromPressure` | °C | FC04 / 4x0216, signed / 100 | Verdampfertemperatur aus Druck | Bezeichnung und Skalierung geklärt |
@@ -128,13 +128,13 @@ Die Monitoring-Instanz liest FC04 / 4x0047–0051, 0157, 0170, 0172, 0174 und 01
 
 ## Offene Register- und Bedeutungsfragen
 
-- 4x0026: Welcher Luftvolumenstrom und welcher Messquerschnitt sind gemeint?
+- 4x0026: Excel nennt „Air m³/h“ und den Faktor 10; Messort und Luftstrombezug bleiben offen.
 - 4x0048–0051 und 4x0157: Welche Bits entsprechen welchen Fehlern?
 - 4x0152 und 4x0162: Welche Statuswerte bedeuten welche Ventilator-/Kompressorzustände?
 - 4x0170, 4x0172 und 4x0174: Welche Fehlercodes und FOF-Werte gibt es?
 - 4x0184: Was genau ist die Quelle und Polarität des AUS/AN-Fehlereingangs?
 - 4x0185–0187, 4x0213, 4x0237, 4x0267–0268: Welche Zeitfenster, Zählbedingungen und Rücksetzregeln gelten?
-- 4x0190: Welche Einheit und welcher Drehzahl-Messbezug gelten?
-- 4x0241: Die Registerliste nennt hier den Wärmepumpenmodus; das Modul liest dafür aktuell FC03 / 4x0069. Die richtige Quelle muss geklärt werden.
+- 4x0190: Excel nennt ppm; die genaue Bedeutung dieser Einheit und der physikalische Messbezug bleiben offen. Nicht in rpm umrechnen.
+- 4x0241: Excel führt „Akt_WP_Betriebsart“ als separates Input Register ohne Code-Tabelle. Die Beziehung zu FC03 / 3x0069 („Wärmepumpe Betriebsart“) und die Ist-/Soll-Rolle beider Register sind nicht dokumentiert; das Modul verwendet weiterhin die Code-Tabelle von 3x0069. Bis zur Klärung ist `ActualHeatPumpMode` kein bestätigter Istwert für eine Kachel.
 - Vierwegeventil: Im aktuellen Modul ist noch kein verifiziertes Register mit belastbarer Zustandsdekodierung vorhanden.
 - 4x0035/0036 (Gesamt-JAZ 365 Tage und Alter): In der Registerliste als nicht implementiert markiert und daher nicht im Modul verfügbar.
