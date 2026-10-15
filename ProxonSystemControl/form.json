@@ -5,6 +5,13 @@
 			"type": "NumberSpinner",
 			"caption": "Interval",
 			"suffix": "Seconds"
+		},
+		{
+			"name": "CO2RFSensorCount",
+			"type": "NumberSpinner",
+			"caption": "CO2/RF Sensor Count",
+			"minimum": 1,
+			"maximum": 5
 		}
 	],
 	"actions": [

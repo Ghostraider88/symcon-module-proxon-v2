@@ -4,9 +4,9 @@ This library integrates PROXON FWT 2.0 and 3.0 Modbus systems.
 
 ## Modules
 
-- **Proxon System Control** (`ProxonSystemControl`): system operating mode, fan stage, cooling release, and intensive ventilation duration.
+- **Proxon System Control** (`ProxonSystemControl`): plant operating controls, heat pump/fan settings, CO2/RF configuration, plant status, sensor values, connected panels, and filter runtimes.
 - **Proxon Central** (`ProxonCentral`): the room assigned to the central TFT control panel.
-- **Proxon Zone** (`ProxonZone`): individual HNBP and NBP room controls, including PTC release and panel key lock.
+- **Proxon Zone** (`ProxonZone`): individual HNBP and NBP room controls, including PTC release, panel key lock, and room sensor correction.
 - **Proxon Configurator** (`ProxonConfigurator`): discovers the central panel and configured room panels and offers the system control instance.
 
 The T300 communication setting is not included in the current implementation.

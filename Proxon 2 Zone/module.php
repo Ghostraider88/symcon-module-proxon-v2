@@ -39,6 +39,11 @@
 				"PRESENTATION" => VARIABLE_PRESENTATION_SWITCH
 			], 4);
 			$this->EnableAction("ButtonsLocked");
+			$this->RegisterVariableFloat("SensorTemperatureOffset", $this->Translate("Sensor Temperature Offset"), [
+				"PRESENTATION" => VARIABLE_PRESENTATION_VALUE_INPUT,
+				"SUFFIX" => " \u{00B0}C"
+			], 5);
+			$this->EnableAction("SensorTemperatureOffset");
 			
 			$this->SetTimerInterval("Poller", $this->ReadPropertyInteger("Interval") * 1000);
 		}
@@ -99,6 +104,15 @@
 				$ButtonsLocked = unpack("n*", substr($Data, 2));
 				$this->SetValue("ButtonsLocked", $ButtonsLocked[1] > 0);
 			}
+
+			// SensorTemperatureOffset -> FC3, 190 + X, INT16 (0.1 \u{00B0}C resolution)
+			$Address = 190 + ($this->ReadPropertyInteger("ControlPanel") % 20);
+			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
+			if($Data !== false) {
+				$TemperatureOffset = unpack("n*", substr($Data, 2));
+				if($TemperatureOffset[1] >= pow(2, 15)) $TemperatureOffset[1] -= pow(2, 16);
+				$this->SetValue("SensorTemperatureOffset", $TemperatureOffset[1] / 10.0);
+			}
 		}
 
 		public function SetTemperature(int $Value): void {
@@ -140,6 +154,20 @@
 			}
 		}
 
+		public function SetSensorTemperatureOffset(float $Value): void {
+			if ($Value < -10 || $Value > 10) {
+				throw new InvalidArgumentException($this->Translate("Sensor temperature offset must be between -10 and 10 \u{00B0}C."));
+			}
+
+			$Address = 190 + ($this->ReadPropertyInteger("ControlPanel") % 20);
+			$RawValue = (int) round($Value * 10);
+			$Data = pack("n*", $RawValue & 0xFFFF);
+			$Response = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
+			if ($Response !== false) {
+				$this->SetValue("SensorTemperatureOffset", $RawValue / 10.0);
+			}
+		}
+
 		private function UpdateTargetTemperaturePresentation(int $MiddleTemperature): void {
 			$Presentation = [
 				"PRESENTATION" => VARIABLE_PRESENTATION_SLIDER,
@@ -171,6 +199,9 @@
 					break;
 				case "ButtonsLocked":
 					$this->SetButtonsLocked((bool) $Value);
+					break;
+				case "SensorTemperatureOffset":
+					$this->SetSensorTemperatureOffset((float) $Value);
 					break;
 			}
 		}
