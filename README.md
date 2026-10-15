@@ -9,9 +9,9 @@ This library integrates PROXON FWT 2.0/3.0 and T300 Modbus systems.
 - **Proxon Central** (`ProxonCentral`): the room assigned to the central TFT control panel.
 - **Proxon Zone** (`ProxonZone`): individual HNBP and NBP room controls, including room setpoint, PTC release, and panel key lock.
 - **Proxon Configurator** (`ProxonConfigurator`): discovers the central panel and configured room panels and offers the system control instance.
-- **Proxon T300 Control** (`ProxonT300Control`): reads and controls the documented T300 operating mode, water temperatures, heater options and clock values.
+- **Proxon T300 Control** (`ProxonT300Control`): controls the documented T300 operating mode, water temperatures, heater options and clock values, and reads the primary FC4 sensor and operating-status values.
 
-T300 register access follows the supplied register table. Its `3x` address notation conflicts with the table's Holding Register classification; confirm the read function and writable addresses against a T300 before using the controls.
+T300 read-only input values use FC4, matching the workbook and existing Symcon configurations. Writable controls follow FC3 reads and FC6 writes, but the workbook's `3x` address notation conflicts with its Holding Register classification; verify hardware write behavior on a dedicated T300 test device before relying on control writes.
 
 ## Setup
 

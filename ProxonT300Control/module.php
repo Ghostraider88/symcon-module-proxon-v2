@@ -6,6 +6,7 @@ class ProxonT300Control extends IPSModuleStrict
 {
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const READ_FUNCTION = 3;
+    private const INPUT_READ_FUNCTION = 4;
     private const WRITE_FUNCTION = 6;
 
     public function Create(): void
@@ -21,6 +22,7 @@ class ProxonT300Control extends IPSModuleStrict
         parent::ApplyChanges();
 
         $this->RegisterControlVariables();
+        $this->RegisterInputVariables();
         $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
     }
 
@@ -44,6 +46,23 @@ class ProxonT300Control extends IPSModuleStrict
                 }
 
                 $this->SetValue($ident, $this->DecodeValue($values[$offset], $definition));
+            }
+        }
+
+        $inputDefinitions = $this->GetInputDefinitions();
+        foreach ($this->GetInputRegisterGroups() as $group) {
+            $values = $this->ReadInputRegisters($group['address'], $group['quantity']);
+            if ($values === null) {
+                continue;
+            }
+
+            foreach ($inputDefinitions as $ident => $definition) {
+                $offset = $definition['address'] - $group['address'];
+                if ($offset < 0 || $offset >= count($values)) {
+                    continue;
+                }
+
+                $this->SetValue($ident, $this->DecodeInputValue($values[$offset], $definition));
             }
         }
     }
@@ -246,6 +265,81 @@ class ProxonT300Control extends IPSModuleStrict
         ];
     }
 
+    private function RegisterInputVariables(): void
+    {
+        foreach ($this->GetInputDefinitions() as $ident => $definition) {
+            $caption = $this->Translate($definition['caption']);
+            if ($definition['type'] === 'boolean') {
+                $this->RegisterVariableBoolean($ident, $caption, [], $definition['position']);
+            } elseif ($definition['type'] === 'integer') {
+                $this->RegisterVariableInteger($ident, $caption, $this->GetInputPresentation($definition), $definition['position']);
+            } else {
+                $this->RegisterVariableFloat($ident, $caption, $this->GetInputPresentation($definition), $definition['position']);
+            }
+
+            $this->MaintainAction($ident, false);
+        }
+    }
+
+    private function GetInputDefinitions(): array
+    {
+        return [
+            'EvaporatorInletTemperature' => ['caption' => 'Evaporator Inlet Temperature', 'address' => 811, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 101],
+            'EvaporatorTemperature' => ['caption' => 'Evaporator Temperature', 'address' => 812, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 102],
+            'TankBottomTemperature' => ['caption' => 'Tank Bottom Temperature', 'address' => 813, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 103],
+            'TankCenterTemperature' => ['caption' => 'Tank Center Temperature', 'address' => 814, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 104],
+            'CompressorTemperature' => ['caption' => 'Compressor Temperature', 'address' => 815, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 105],
+            'SuctionGasTemperature' => ['caption' => 'Suction Gas Temperature', 'address' => 816, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 106],
+            'ExternalSensorTemperature' => ['caption' => 'External Sensor Temperature', 'address' => 817, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 107],
+            'EvaporatorLowSidePressure' => ['caption' => 'Evaporator Low-Side Pressure', 'address' => 818, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => ' bar', 'digits' => 2, 'position' => 108],
+            'DefrostDifferentialPressure' => ['caption' => 'Defrost Differential Pressure', 'address' => 819, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => ' Pa', 'digits' => 2, 'position' => 109],
+            'ExpansionValvePosition' => ['caption' => 'Expansion Valve Position', 'address' => 820, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'position' => 110],
+            'CompressorRelay' => ['caption' => 'Compressor Relay', 'address' => 824, 'type' => 'boolean', 'scale' => 1, 'position' => 111],
+            'SolarRelay' => ['caption' => 'Solar Relay', 'address' => 825, 'type' => 'boolean', 'scale' => 1, 'position' => 112],
+            'ElectricHeaterRelay' => ['caption' => 'Electric Heater Relay', 'address' => 826, 'type' => 'boolean', 'scale' => 1, 'position' => 113],
+            'FanRelay' => ['caption' => 'Fan Relay', 'address' => 827, 'type' => 'boolean', 'scale' => 1, 'position' => 114],
+            'DefrostRelay' => ['caption' => 'Defrost Relay', 'address' => 828, 'type' => 'boolean', 'scale' => 1, 'position' => 115],
+            'PressureDerivedEvaporatorTemperature' => ['caption' => 'Pressure-Derived Evaporator Temperature', 'address' => 829, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 116],
+            'SuctionEvaporatorTemperatureDifference' => ['caption' => 'Suction-to-Evaporator Temperature Difference', 'address' => 830, 'type' => 'float', 'scale' => 10, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 117],
+            'HotAirRestrictionDuration' => ['caption' => 'Hot-Air Restriction Duration', 'address' => 832, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 118],
+            'DefrostRestrictionDuration' => ['caption' => 'Defrost Restriction Duration', 'address' => 835, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 119],
+            'HeatPumpStateDuration' => ['caption' => 'Heat Pump State Duration', 'address' => 836, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 120],
+            'FanSpeed' => ['caption' => 'Fan Speed', 'address' => 838, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' %', 'position' => 121],
+            'MaximumDefrostTimeRemaining' => ['caption' => 'Maximum Defrost Time Remaining', 'address' => 839, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 122],
+            'DefrostWaitTime' => ['caption' => 'Defrost Wait Time', 'address' => 840, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 123],
+            'ColdOperationDuration' => ['caption' => 'Cold Operation Duration', 'address' => 841, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 124],
+            'FanRPM' => ['caption' => 'Fan Speed RPM', 'address' => 862, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' rpm', 'position' => 125],
+            'EmergencyHeaterPermission' => ['caption' => 'Emergency Heater Permission', 'address' => 868, 'type' => 'boolean', 'scale' => 1, 'position' => 126],
+            'CurrentSetpoint' => ['caption' => 'Current Setpoint', 'address' => 879, 'type' => 'float', 'scale' => 10, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 127],
+            'FirmwareVersion' => ['caption' => 'Firmware Version', 'address' => 881, 'type' => 'float', 'scale' => 10, 'offset' => 0, 'digits' => 1, 'position' => 128],
+            'AverageTankTemperature' => ['caption' => 'Average Tank Temperature', 'address' => 882, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 2, 'position' => 129],
+            'SuperheatTemperature' => ['caption' => 'Superheat Temperature', 'address' => 883, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 2, 'position' => 130],
+            'ActiveMaximumSuperheat' => ['caption' => 'Active Maximum Superheat', 'address' => 884, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 2, 'position' => 131],
+            'ActiveMinimumSuperheat' => ['caption' => 'Active Minimum Superheat', 'address' => 885, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 2, 'position' => 132],
+            'SuperheatReference' => ['caption' => 'Superheat Reference', 'address' => 886, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 2, 'position' => 133],
+            'ExpansionValveStartTimeRemaining' => ['caption' => 'Expansion Valve Start Time Remaining', 'address' => 887, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 134],
+            'RegulationReleaseAfterDefrostTime' => ['caption' => 'Regulation Release After Defrost Time', 'address' => 888, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' s', 'position' => 135],
+            'MaximumSuperheatAfterDefrost' => ['caption' => 'Maximum Superheat After Defrost', 'address' => 890, 'type' => 'float', 'scale' => 100, 'offset' => 0, 'suffix' => " \u{00B0}C", 'digits' => 2, 'position' => 136],
+            'DefrostStartTemperature' => ['caption' => 'Defrost Start Temperature', 'address' => 892, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 137],
+            'PVTankLevel' => ['caption' => 'PV Tank Level', 'address' => 898, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' %', 'position' => 138],
+            'PVElectricHeaterActive' => ['caption' => 'PV Electric Heater Active', 'address' => 899, 'type' => 'boolean', 'scale' => 1, 'position' => 139],
+            'PVHeatPumpActive' => ['caption' => 'PV Heat Pump Active', 'address' => 900, 'type' => 'boolean', 'scale' => 1, 'position' => 140]
+        ];
+    }
+
+    private function GetInputPresentation(array $definition): array
+    {
+        $presentation = ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION];
+        if (isset($definition['suffix'])) {
+            $presentation['SUFFIX'] = $definition['suffix'];
+        }
+        if (isset($definition['digits'])) {
+            $presentation['DIGITS'] = $definition['digits'];
+        }
+
+        return $presentation;
+    }
+
     private function GetRegisterGroups(): array
     {
         return [
@@ -256,11 +350,40 @@ class ProxonT300Control extends IPSModuleStrict
         ];
     }
 
+    private function GetInputRegisterGroups(): array
+    {
+        return [
+            ['address' => 811, 'quantity' => 20],
+            ['address' => 832, 'quantity' => 10],
+            ['address' => 862, 'quantity' => 1],
+            ['address' => 868, 'quantity' => 25],
+            ['address' => 898, 'quantity' => 3]
+        ];
+    }
+
     private function ReadHoldingRegisters(int $address, int $quantity): ?array
     {
         $response = $this->SendDataToParent(json_encode([
             'DataID' => self::MODBUS_DATA_ID,
             'Function' => self::READ_FUNCTION,
+            'Address' => $address,
+            'Quantity' => $quantity,
+            'Data' => ''
+        ], JSON_THROW_ON_ERROR));
+
+        if (!is_string($response) || strlen($response) !== 2 + ($quantity * 2)) {
+            return null;
+        }
+
+        $values = unpack('n*', substr($response, 2));
+        return $values === false ? null : array_values($values);
+    }
+
+    private function ReadInputRegisters(int $address, int $quantity): ?array
+    {
+        $response = $this->SendDataToParent(json_encode([
+            'DataID' => self::MODBUS_DATA_ID,
+            'Function' => self::INPUT_READ_FUNCTION,
             'Address' => $address,
             'Quantity' => $quantity,
             'Data' => ''
@@ -285,6 +408,16 @@ class ProxonT300Control extends IPSModuleStrict
         }
 
         return $rawValue;
+    }
+
+    private function DecodeInputValue(int $rawValue, array $definition): bool|int|float
+    {
+        if ($definition['type'] === 'boolean') {
+            return $rawValue > 0;
+        }
+
+        $value = ($rawValue / $definition['scale']) + $definition['offset'];
+        return $definition['type'] === 'integer' ? (int) round($value) : (float) $value;
     }
 
     private function NormalizeValue(mixed $value, array $definition): array
