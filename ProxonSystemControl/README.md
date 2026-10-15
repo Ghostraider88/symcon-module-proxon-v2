@@ -33,10 +33,17 @@ Previously exposed advanced variables in an existing System Control instance are
 | Property | Default | Use |
 | --- | --- | --- |
 | Interval | 30 seconds | Poll interval for control and status values |
+| Heat Pump Monitoring Instance | None | Optional Monitoring instance whose heat-pump readings are shown in the HTML tile |
 | CO2/RF sensor count | 1 | Number of installed sensors to show, from 1 to 5 |
 | Enable Advanced Controls | Off | Allows write actions in the associated Advanced instance |
 
 The plant must already allow Modbus writes. This library does not change the write permission register.
+
+## FWT visualization tile
+
+System Control offers a read-only HTML-SDK tile. Add the instance to a Symcon visualization and select the matching Proxon System Control Monitoring instance in its configuration to include heat-pump measurements. The tile uses values already polled by these modules and does not add Modbus requests.
+
+The EG/OG branch thickness and bars visualize the five-position damper preference. They are relative indicators, not measured air volume per floor. Register units and state mappings that are still under review remain unlabeled or show as unavailable. The PTC relay's active state is not yet exposed by the current modules.
 
 ## Installation
 
