@@ -237,7 +237,7 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
             'InverterResetCounterTime' => ['caption' => 'Inverter Reset Counter Time', 'function' => 4, 'address' => 185, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 37],
             'InverterErrorDelay' => ['caption' => 'Inverter Error Delay', 'function' => 4, 'address' => 186, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 38],
             'InverterErrorCounter' => ['caption' => 'Inverter Error Counter', 'function' => 4, 'address' => 187, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 39],
-            'CompressorSpeed' => ['caption' => 'Compressor Speed', 'function' => 4, 'address' => 190, 'type' => 'integer', 'scale' => 1, 'suffix' => ' ppm', 'position' => 40],
+            'CompressorSpeed' => ['caption' => 'Compressor Speed', 'function' => 4, 'address' => 190, 'type' => 'integer', 'scale' => 1, 'suffix' => ' rpm', 'position' => 40],
             'MaximumCompressorPower' => ['caption' => 'Maximum Compressor Power', 'function' => 4, 'address' => 201, 'type' => 'float', 'scale' => 100, 'suffix' => ' %', 'digits' => 2, 'position' => 41],
             'InverterModbusErrorCounter' => ['caption' => 'Inverter Modbus Error Counter', 'function' => 4, 'address' => 213, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 42],
             'EvaporatorTemperatureFromPressure' => ['caption' => 'Evaporator Temperature from Pressure', 'function' => 4, 'address' => 216, 'type' => 'float', 'scale' => 100, 'suffix' => ' °C', 'digits' => 2, 'signed' => true, 'position' => 43],

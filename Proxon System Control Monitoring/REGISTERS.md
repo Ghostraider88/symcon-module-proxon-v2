@@ -101,7 +101,7 @@ Diese Werte sind optionale Raumkacheldaten und erscheinen nicht zwingend in eine
 | `InverterResetCounterTime` | s | FC04 / 4x0185 | Umrichter-Resetzählerzeit laut Bezeichnung | **Ungeklärt:** Zeitfenster und Rücksetzverhalten |
 | `InverterErrorDelay` | s | FC04 / 4x0186 | Umrichter-Fehlerverzögerung laut Bezeichnung | **Ungeklärt:** genaue Verzögerungslogik |
 | `InverterErrorCounter` | Anzahl | FC04 / 4x0187 | Umrichter-Fehlerzähler | **Ungeklärt:** Zählumfang und Rücksetzbedingung |
-| `CompressorSpeed` | ppm (laut Excel) | FC04 / 4x0190, / 1 | Als Kompressordrehzahl benannter Wert | **Ungeklärt:** Die Registerliste nennt ppm; Bedeutung der Einheit und physikalischer Messbezug sind offen. Nicht als rpm interpretieren |
+| `CompressorSpeed` | rpm | FC04 / 4x0190, / 1 | Kompressordrehzahl | Hersteller-App zeigt die Kompressordrehzahl in rpm; die Excel-Einheit ppm ist damit widersprüchlich und vermutlich fehlerhaft |
 | `MaximumCompressorPower` | % | FC04 / 4x0201, / 100 | Maximalleistung Kompressor, lesender Monitoringwert | Registereinheit laut Modul; Kachel nicht empfohlen, Konfiguration/Optimierung getrennt halten |
 | `InverterModbusErrorCounter` | Anzahl | FC04 / 4x0213 | Umrichter-Modbus-Fehlerzähler | **Ungeklärt:** Zähl- und Rücksetzzeitraum; Backend |
 | `EvaporatorTemperatureFromPressure` | °C | FC04 / 4x0216, signed / 100 | Verdampfertemperatur aus Druck | Bezeichnung und Skalierung geklärt |
@@ -134,7 +134,7 @@ Die Monitoring-Instanz liest FC04 / 4x0047–0051, 0157, 0170, 0172, 0174 und 01
 - 4x0170, 4x0172 und 4x0174: Welche Fehlercodes und FOF-Werte gibt es?
 - 4x0184: Was genau ist die Quelle und Polarität des AUS/AN-Fehlereingangs?
 - 4x0185–0187, 4x0213, 4x0237, 4x0267–0268: Welche Zeitfenster, Zählbedingungen und Rücksetzregeln gelten?
-- 4x0190: Excel nennt ppm; die genaue Bedeutung dieser Einheit und der physikalische Messbezug bleiben offen. Nicht in rpm umrechnen.
+- 4x0190: Die Hersteller-App zeigt die Kompressordrehzahl in rpm. Die Excel nennt abweichend ppm; die Registerdarstellung im Modul verwendet rpm.
 - 4x0241: Excel führt „Akt_WP_Betriebsart“ als separates Input Register ohne Code-Tabelle. Die Beziehung zu FC03 / 3x0069 („Wärmepumpe Betriebsart“) und die Ist-/Soll-Rolle beider Register sind nicht dokumentiert; das Modul verwendet weiterhin die Code-Tabelle von 3x0069. Bis zur Klärung ist `ActualHeatPumpMode` kein bestätigter Istwert für eine Kachel.
 - Vierwegeventil: Im aktuellen Modul ist noch kein verifiziertes Register mit belastbarer Zustandsdekodierung vorhanden.
 - 4x0035/0036 (Gesamt-JAZ 365 Tage und Alter): In der Registerliste als nicht implementiert markiert und daher nicht im Modul verfügbar.
