@@ -32,6 +32,8 @@
 
 - **Implemented locally:** added a separate T300 control device with fourteen writable settings from the supplied T300 `Holding Register` sheet, grouped polling, range/type validation, and a Configurator entry. The fixed-value language register is omitted.
 - **Evidence:** mapped the sheet's register addresses, raw ranges and scales into the module. No Symcon runtime action or live Modbus write was performed.
+- **Fixed locally:** Value Input presentations now contain only supported parameters (`PRESENTATION` and, for temperatures, `SUFFIX`). Register ranges remain checked before writes in `RequestAction`; unsupported `MIN`, `MAX`, `STEP_SIZE` and `DIGITS` presentation keys caused instance-creation warnings.
+- **Validation:** compared the configuration to the official Symcon Value Input parameter list and ran `git diff --check`. PHP CLI and a Symcon runtime are unavailable here, so instance creation has not been re-tested locally.
 - **Open:** the T300 sheet labels these settings `3x` while placing them in `Holding Register`; its interface overview defines `3x` as FC4. The implementation follows the Holding Register group (read FC3, write FC6), pending verification of read function, address base and write permission on a dedicated T300 test device. No visualization is included in this step.
 
 ## FWT register catalogue and fault summary

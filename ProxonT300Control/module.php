@@ -97,19 +97,12 @@ class ProxonT300Control extends IPSModuleStrict
                 case 'float':
                     $this->RegisterVariableFloat($ident, $caption, [
                         'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_INPUT,
-                        'MIN' => $definition['minimum'],
-                        'MAX' => $definition['maximum'],
-                        'STEP_SIZE' => $definition['step'],
-                        'SUFFIX' => $definition['suffix'],
-                        'DIGITS' => $definition['digits']
+                        'SUFFIX' => $definition['suffix']
                     ], $definition['position']);
                     break;
                 default:
                     $this->RegisterVariableInteger($ident, $caption, [
-                        'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_INPUT,
-                        'MIN' => $definition['minimum'],
-                        'MAX' => $definition['maximum'],
-                        'STEP_SIZE' => 1
+                        'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_INPUT
                     ], $definition['position']);
                     break;
             }
@@ -138,9 +131,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 20,
                 'maximum' => 55,
                 'scale' => 10,
-                'step' => 0.1,
                 'suffix' => " \u{00B0}C",
-                'digits' => 1,
                 'position' => 2
             ],
             'ElectricHeaterEnabled' => [
@@ -222,9 +213,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 20,
                 'maximum' => 70,
                 'scale' => 10,
-                'step' => 0.1,
                 'suffix' => " \u{00B0}C",
-                'digits' => 1,
                 'position' => 20
             ],
             'ScreenTimeout' => [
