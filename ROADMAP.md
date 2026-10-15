@@ -25,3 +25,10 @@
 - Diagnostics and fault handling.
 - Additional comfort and automation features.
 - T300 support.
+
+## FWT register catalogue and fault summary
+
+- **Implemented locally:** added `Proxon System Control Monitoring/REGISTERS.md` with tile candidate idents, units, meanings and register sources from Monitoring and standard System Control; ambiguous register semantics are explicitly marked.
+- **Implemented locally:** added a generic fault summary, active-marker and poll-completeness variables. Raw fault registers and the backend details string are hidden from visualizations; code/bit mappings remain unresolved where the register sheet does not define them.
+- **Validation:** inspected the module mappings and register catalogue diff. No Symcon instance, Modbus device or visualization file was changed; no fault reset/restart was sent.
+- **Open:** validate the new variables after loading the module in Symcon; resolve airflow scope, error-code/bit mappings, compressor-speed units, and the heat-pump-mode source conflict before treating those as definitive tile values.

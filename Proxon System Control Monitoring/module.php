@@ -30,29 +30,34 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
     public function RequestStatus(): void
     {
         $this->pollCache = [];
-        if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+        if (IPS_GetKernelRunlevel() !== KR_READY) {
+            return;
+        }
+        if (!$this->HasActiveParent()) {
+            $this->SetValue('FaultStatusComplete', false);
+            $this->SetValue('FaultSummary', $this->Translate('Fault status unavailable: no active Modbus parent connection.'));
             return;
         }
 
         $successfulReads = 0;
+        $successfulIdentifiers = [];
         foreach ($this->GetMonitoringDefinitions() as $ident => $definition) {
             $rawValue = $this->ReadRegister($definition['function'], $definition['address']);
             if ($rawValue === null) {
                 continue;
             }
-
             $value = $this->DecodeValue($rawValue, $definition);
             $this->SetValue($ident, $value);
             $successfulReads++;
+            $successfulIdentifiers[] = $ident;
 
             if ($ident === 'TotalElectricalPower') {
                 $this->UpdateEnergyEstimate((float) $value);
             }
 
-            if ($ident === 'FaultRegister') {
-                $this->SetValue('FaultPresent', $value > 0);
-            }
         }
+
+        $this->UpdateFaultStatus($successfulIdentifiers);
 
         if ($successfulReads > 0) {
             $this->SetValue('LastSuccessfulRead', date('Y-m-d H:i:s'));
@@ -72,6 +77,9 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
     private function RegisterMonitoringVariables(): void
     {
         $this->RegisterVariableBoolean('FaultPresent', $this->Translate('Fault Present'), [], 19);
+        $this->RegisterVariableString('FaultSummary', $this->Translate('Fault Summary'), '', 18);
+        $this->RegisterVariableString('FaultDetails', $this->Translate('Fault Details'), '', 48);
+        $this->RegisterVariableBoolean('FaultStatusComplete', $this->Translate('Fault Status Complete'), [], 49);
 
         foreach ($this->GetMonitoringDefinitions() as $ident => $definition) {
             $presentation = [
@@ -101,6 +109,97 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
         ], 4);
         $this->SetValue('EnergySinceFirstSample', $this->ReadAttributeFloat('AccumulatedEnergyKWh'));
         $this->RegisterVariableString('LastSuccessfulRead', $this->Translate('Last Successful Read'), '', 90);
+
+        foreach (array_merge($this->GetTechnicalFaultIdents(), ['FaultDetails']) as $ident) {
+            $variableID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
+            if ($variableID > 0 && IPS_ObjectExists($variableID)) {
+                IPS_SetHidden($variableID, true);
+            }
+        }
+    }
+
+    private function UpdateFaultStatus(array $successfulIdentifiers): void
+    {
+        $faultRegisters = $this->GetFaultRegisterDefinitions();
+        $successfulCount = 0;
+        $activeRegisters = [];
+        foreach ($faultRegisters as $ident => $definition) {
+            if (!in_array($ident, $successfulIdentifiers, true)) {
+                continue;
+            }
+
+            $successfulCount++;
+            $value = (int) $this->GetValue($ident);
+            if ($value > 0) {
+                $activeRegisters[$ident] = $value;
+            }
+        }
+
+        $this->SetValue('FaultPresent', count($activeRegisters) > 0);
+
+        $messages = [];
+        if (isset($activeRegisters['FaultRegister'])) {
+            $messages[] = $this->Translate('The FWT controller reports a plant fault.');
+        }
+        if (isset($activeRegisters['InverterFatalError'])) {
+            $messages[] = $this->Translate('The inverter reports a fatal fault.');
+        }
+        $internalFaultIdents = ['FaultStatus1', 'FaultStatus2', 'FaultStatus3', 'FaultStatus4', 'SecondaryBoardFaultFlags', 'InverterErrorCode', 'InverterErrorCode2', 'InverterErrorInput'];
+        if (array_intersect($internalFaultIdents, array_keys($activeRegisters)) !== []) {
+            $messages[] = $this->Translate('An internal board or inverter fault marker is active.');
+        }
+
+        $missingCount = count($faultRegisters) - $successfulCount;
+        $this->SetValue('FaultStatusComplete', $missingCount === 0);
+        if ($messages === []) {
+            $summary = $missingCount === 0
+                ? $this->Translate('No fault marker is active.')
+                : $this->Translate('No fault marker was found in the read registers.');
+        } else {
+            $summary = implode(' ', array_unique($messages));
+        }
+
+        if ($missingCount > 0) {
+            $summary .= ' ' . sprintf(
+                $this->Translate('Fault status is incomplete (%d of %d registers read).'),
+                $successfulCount,
+                count($faultRegisters)
+            );
+        }
+        $this->SetValue('FaultSummary', $summary);
+
+        $detailLines = [];
+        foreach ($faultRegisters as $ident => $definition) {
+            if (!in_array($ident, $successfulIdentifiers, true)) {
+                $detailLines[] = sprintf('%s: %s', $definition['register'], $this->Translate('not read'));
+                continue;
+            }
+
+            $detailLines[] = sprintf('%s: %d', $definition['register'], (int) $this->GetValue($ident));
+        }
+        $detailLines[] = $this->Translate('Fault code and bit meanings are not decoded by the register sheet.');
+        $this->SetValue('FaultDetails', implode("\n", $detailLines));
+    }
+
+    private function GetFaultRegisterDefinitions(): array
+    {
+        return [
+            'FaultRegister' => ['register' => 'FC04 / 4x0047'],
+            'FaultStatus1' => ['register' => 'FC04 / 4x0048'],
+            'FaultStatus2' => ['register' => 'FC04 / 4x0049'],
+            'FaultStatus3' => ['register' => 'FC04 / 4x0050'],
+            'FaultStatus4' => ['register' => 'FC04 / 4x0051'],
+            'SecondaryBoardFaultFlags' => ['register' => 'FC04 / 4x0157'],
+            'InverterErrorCode' => ['register' => 'FC04 / 4x0170'],
+            'InverterErrorCode2' => ['register' => 'FC04 / 4x0172'],
+            'InverterFatalError' => ['register' => 'FC04 / 4x0174'],
+            'InverterErrorInput' => ['register' => 'FC04 / 4x0184']
+        ];
+    }
+
+    private function GetTechnicalFaultIdents(): array
+    {
+        return array_keys($this->GetFaultRegisterDefinitions());
     }
 
     private function GetMonitoringDefinitions(): array
@@ -147,7 +246,7 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
             'InverterModbusRestartCounter' => ['caption' => 'Inverter Modbus Restart Counter', 'function' => 4, 'address' => 267, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 46],
             'InverterOneSecondErrorCounter' => ['caption' => 'Inverter 1-Second Error Counter', 'function' => 4, 'address' => 268, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 47],
             'PlantRuntime' => ['caption' => 'Plant Runtime', 'function' => 3, 'address' => 467, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 60],
-            'RecirculationFilterRuntime' => ['caption' => 'Recirculation Runtime', 'function' => 3, 'address' => 468, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 61],
+            'RecirculationFilterRuntime' => ['caption' => 'Recirculation Filter Runtime', 'function' => 3, 'address' => 468, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 61],
             'DeviceFilterRuntime' => ['caption' => 'Device Filter Runtime', 'function' => 3, 'address' => 469, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 62],
             'PreheaterRuntime' => ['caption' => 'Preheater Runtime', 'function' => 3, 'address' => 470, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 63],
             'RecirculationRuntime' => ['caption' => 'Recirculation Runtime', 'function' => 3, 'address' => 471, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 64],
