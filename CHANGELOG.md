@@ -3,7 +3,7 @@
 ## 1.1 — Build 5 — 2026-10-15
 
 - Extended heating/cooling colors from the condenser outlet through the EG/OG branch ducts; ventilation and off are neutral grey.
-- Added a fallback that infers heating or cooling from compressor RPM and supply/fresh-air temperatures when the mode register reports off. Inferred states are marked with an asterisk.
+- Added a fallback that infers heating or cooling from compressor RPM and supply/fresh-air temperatures when no verified heat/cool mode code is available. Inferred states are marked with an asterisk.
 
 ## 1.1 — Build 4 — 2026-10-15
 
