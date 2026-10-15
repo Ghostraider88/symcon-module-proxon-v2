@@ -17,6 +17,8 @@
             width: 100%;
             overflow: auto;
             scrollbar-color: #aebdca transparent;
+            padding-top: 36px;
+            box-sizing: border-box;
         }
 
         .fwt-plant {
@@ -210,6 +212,11 @@ function updateCompressorAnimation(data) {
     if (state) state.textContent = statusText;
     const overviewSpeed = document.getElementById('compressor-overview-state');
     if (overviewSpeed) overviewSpeed.textContent = rpmText;
+    const rotor = document.getElementById('compressor-symbol-rotor');
+    if (rotor) {
+        rotor.style.animationDuration = duration + 's';
+        rotor.style.animationPlayState = isRunning ? 'running' : 'paused';
+    }
 
     const lampColor = !hasSpeed || !isRunning
         ? '#8497a8'
@@ -283,13 +290,15 @@ function updateDamper(data) {
 function updateBypass(data) {
     const isOpen = data.systemControl && data.systemControl.BypassOpen;
     const status = data.systemControl && data.systemControl.BypassStatus;
-    const extractRPM = data.systemControl && data.systemControl.ExtractFanRPM;
-    const bypassFlowing = isOpen === true && typeof extractRPM === 'number' && extractRPM > 0;
+    const supplyRPM = data.systemControl && data.systemControl.SupplyFanRPM;
+    const bypassFlowing = isOpen === true && typeof supplyRPM === 'number' && supplyRPM > 0;
     const statusElement = document.getElementById('bypass-status');
     const path = document.getElementById('bypass-path');
     const flow = document.getElementById('bypass-flow');
-    const extractCore = document.getElementById('extract-air-through-core');
-    const extractCoreFlow = document.getElementById('extract-core-flow');
+    const supplyCore = document.getElementById('supply-air-through-core');
+    const supplyCoreFlow = document.getElementById('supply-core-flow');
+    const supplyBeforeBypass = document.getElementById('supply-air-before-bypass');
+    const supplyBeforeBypassFlow = document.getElementById('supply-pre-bypass-flow');
     const valve = document.getElementById('bypass-valve');
     const valveBlade = valve && valve.querySelector('path');
 
@@ -297,13 +306,18 @@ function updateBypass(data) {
         statusElement.textContent = 'BYPASS · ' + (status || '—');
     }
     if (path) {
-        path.style.stroke = isOpen === true ? '#dfa346' : '#8497a8';
-        path.setAttribute('marker-end', isOpen === true ? 'url(#arrowAmber)' : 'url(#arrowNeutral)');
+        path.style.stroke = isOpen === true ? '#159a69' : '#8497a8';
+        path.setAttribute('marker-end', isOpen === true ? 'url(#arrowGreen)' : 'url(#arrowNeutral)');
     }
-    if (extractCore) extractCore.style.opacity = isOpen === true ? '0.22' : '1';
-    if (extractCoreFlow) extractCoreFlow.style.opacity = isOpen === true ? '0.12' : '0.92';
+    if (supplyCore) supplyCore.style.opacity = isOpen === true ? '0.24' : '1';
+    if (supplyCoreFlow) supplyCoreFlow.style.opacity = isOpen === true ? '0.12' : '0.92';
+    if (supplyBeforeBypass) supplyBeforeBypass.style.opacity = isOpen === true ? '0.24' : '1';
+    if (supplyBeforeBypassFlow) supplyBeforeBypassFlow.style.opacity = isOpen === true ? '0.12' : '0.92';
     if (flow) {
         flow.style.opacity = bypassFlowing ? '0.92' : '0';
+        flow.style.animationDuration = typeof supplyRPM === 'number' && Number.isFinite(supplyRPM) && supplyRPM > 0
+            ? Math.max(0.45, Math.min(3.5, 1200 / supplyRPM)) + 's'
+            : '1.6s';
         flow.style.animationPlayState = bypassFlowing ? 'running' : 'paused';
     }
     if (valveBlade) {
@@ -312,6 +326,33 @@ function updateBypass(data) {
             : isOpen === false ? 'M-7 -7L7 7' : 'M-7 0L7 0';
         valveBlade.setAttribute('d', valvePosition);
     }
+}
+
+function updateFilterIndicators(data) {
+    const system = data.systemControl || {};
+    const indicators = [
+        { key: 'SupplyFilterRemainingPercent', fill: 'supply-filter-fill', label: 'supply-filter-life', top: 350, bottom: 402 },
+        { key: 'ExtractFilterRemainingPercent', fill: 'extract-filter-fill', label: 'extract-filter-life', top: 345, bottom: 394 }
+    ];
+
+    indicators.forEach(({ key, fill: fillId, label: labelId, top, bottom }) => {
+        const percent = system[key];
+        const hasValue = typeof percent === 'number' && Number.isFinite(percent) && percent >= 0 && percent <= 100;
+        const fill = document.getElementById(fillId);
+        const label = document.getElementById(labelId);
+        const height = hasValue ? (bottom - top) * percent / 100 : 0;
+        const color = !hasValue ? '#c7d1d8' : percent > 60 ? '#159a69' : percent > 25 ? '#dfa346' : '#de493e';
+
+        if (fill) {
+            fill.setAttribute('y', String(bottom - height));
+            fill.setAttribute('height', String(height));
+            fill.style.fill = color;
+        }
+        if (label) {
+            label.textContent = hasValue ? Math.round(percent) + '%' : '—';
+            label.style.fill = hasValue ? color : '#738397';
+        }
+    });
 }
 
 function updateHeatPumpMode(data) {
@@ -404,16 +445,16 @@ function updateHeatPumpMode(data) {
     const activeMode = mode === 1 || mode === 2;
     const circuit = mode === 2
         ? {
-            discharge: 'M507 645H476V575H278',
-            liquid: 'M278 575V584H626V603',
-            expansion: 'M678 603H739V575',
-            suction: 'M739 575V681H579V683'
+            discharge: 'M526 660H476V575H314',
+            liquid: 'M242 575V630H626',
+            expansion: 'M740 575V630H678',
+            suction: 'M774 575V660H560'
         }
         : {
-            discharge: 'M579 645H630V592H739V575',
-            liquid: 'M739 575V584H678V603',
-            expansion: 'M626 603H278V575',
-            suction: 'M278 575V681H507V683'
+            discharge: 'M560 660H610V603H716V575',
+            liquid: 'M762 575V630H678',
+            expansion: 'M260 575V630H626',
+            suction: 'M296 575V606M296 626V660H526'
         };
     ['discharge', 'liquid', 'expansion', 'suction'].forEach((name) => {
         const path = document.getElementById('refrigerant-' + name);
@@ -427,9 +468,18 @@ function updateHeatPumpMode(data) {
             path.setAttribute('d', circuit[name]);
             path.style.stroke = stroke;
             path.style.opacity = activeMode ? '0.96' : '0.4';
-            path.setAttribute('marker-end', marker);
+            path.removeAttribute('marker-start');
+            path.removeAttribute('marker-end');
+            if (name === 'expansion') {
+                path.setAttribute('marker-start', activeMode ? 'url(#arrowColdStart)' : 'url(#arrowRefNeutralStart)');
+            } else {
+                path.setAttribute('marker-end', marker);
+            }
         }
-        if (flow) flow.setAttribute('d', circuit[name]);
+        if (flow) {
+            flow.setAttribute('d', circuit[name]);
+            flow.style.animationDirection = name === 'expansion' ? 'reverse' : 'normal';
+        }
     });
 
     const compressorMode = document.getElementById('compressor-overview-mode');
@@ -437,10 +487,12 @@ function updateHeatPumpMode(data) {
         compressorMode.textContent = mode === 1 ? 'HEIZEN' : mode === 2 ? 'KÜHLEN' : mode === 0 || mode === 3 ? 'STANDBY' : '—';
         compressorMode.style.fill = activeMode ? color : '#738397';
     }
-    const compressorFrame = document.getElementById('compressor-overview-frame');
+    ['compressor-overview-state', 'compressor-overview-power'].forEach((id) => {
+        const reading = document.getElementById(id);
+        if (reading) reading.style.fill = activeMode ? color : '#192b3d';
+    });
     const compressorSymbol = document.querySelectorAll('#compressor-symbol .compressor-symbol, #compressor-symbol .compressor-symbol-mark');
     const compressorColor = activeMode ? color : '#8497a8';
-    if (compressorFrame) compressorFrame.style.stroke = activeMode ? color : '#aebdca';
     compressorSymbol.forEach((shape) => {
         shape.style.stroke = compressorColor;
         if (shape.classList.contains('compressor-symbol')) shape.style.fill = activeMode ? (mode === 1 ? '#fff3f1' : '#eef7fc') : '#fff';
@@ -473,6 +525,7 @@ function handleMessage(data) {
     updateAirflow(data);
     updateDamper(data);
     updateBypass(data);
+    updateFilterIndicators(data);
     updateHeatPumpMode(data);
     updateCompressorAnimation(data);
     updateTileStatus(data);
