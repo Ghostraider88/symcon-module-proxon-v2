@@ -91,6 +91,8 @@
 			"Extract Airflow Stage 4": "Abluftmenge Stufe 4",
 			"Actual Operating Mode": "Aktuelle Betriebsart",
 			"Actual Heat Pump Mode": "Aktueller Wärmepumpenmodus",
+			"Heating": "Heizen",
+			"Unknown mode code %d": "Unbekannter Moduscode %d",
 			"Supply Fan Speed": "Drehzahl Zuluftventilator",
 			"Extract Fan Speed": "Drehzahl Abluftventilator",
 			"Actual Supply Fan Stage": "Aktuelle Zuluftstufe",

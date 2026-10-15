@@ -30,7 +30,7 @@ Diese Seite beschreibt verfügbare Variablen aus den Instanzen **Proxon System C
 | `FanStage` | Auswahl 1–4 | Angeforderte Lüfterstufe | Schreibregister FC04 / 4x0022 | Bedienwert, kein Messwert |
 | `CoolingEnabled` | Boolean | Kühlfunktion freigeben/sperren | FC04 / 4x0062 | Bedienwert |
 | `ActualOperatingMode` | Text | Aktuell von der FWT gemeldete Betriebsart | FC04 / 4x0023 | Geeignet für Statusanzeige |
-| `ActualHeatPumpMode` | Text | Vom Modul dekodierter Wert des Wärmepumpenmodus | FC03 / 3x0069 | Registerliste nennt die Codes 0 = Aus, 1 = Heizbedarf, 2 = Kühlbedarf, 3 = Ventilation; Ist-/Soll-Rolle und Beziehung zu 4x0241 ungeklärt. Bis dahin nicht als bestätigter Ist-Modus für eine Kachel verwenden |
+| `ActualHeatPumpMode` | Text | Tatsächlicher Wärmepumpenmodus | FC04 / 4x0241 | Als reales Betriebsregister bestätigt; der Heizcode wurde im Heizbetrieb identifiziert. Weitere Codes bleiben ungeklärt und werden als Rohcode angezeigt. 3x0069 ist Test-/Debugwert und wird hierfür nicht verwendet |
 | `SupplyFanRPM` | rpm | Drehzahl Zuluftventilator | FC04 / 4x0000 | Statuswert |
 | `ExtractFanRPM` | rpm | Drehzahl Abluftventilator | FC04 / 4x0001 | Statuswert |
 | `SupplyFanStageActual` | Stufe | Tatsächliche Zuluftstufe | FC04 / 4x0154 | Statuswert |
@@ -135,6 +135,7 @@ Die Monitoring-Instanz liest FC04 / 4x0047–0051, 0157, 0170, 0172, 0174 und 01
 - 4x0184: Was genau ist die Quelle und Polarität des AUS/AN-Fehlereingangs?
 - 4x0185–0187, 4x0213, 4x0237, 4x0267–0268: Welche Zeitfenster, Zählbedingungen und Rücksetzregeln gelten?
 - 4x0190: Die Hersteller-App zeigt die Kompressordrehzahl in rpm. Die Excel nennt abweichend ppm; die Registerdarstellung im Modul verwendet rpm.
-- 4x0241: Excel führt „Akt_WP_Betriebsart“ als separates Input Register ohne Code-Tabelle. Die Beziehung zu FC03 / 3x0069 („Wärmepumpe Betriebsart“) und die Ist-/Soll-Rolle beider Register sind nicht dokumentiert; das Modul verwendet weiterhin die Code-Tabelle von 3x0069. Bis zur Klärung ist `ActualHeatPumpMode` kein bestätigter Istwert für eine Kachel.
+- 3x0069: Als Test-/Debugwert bestätigt; die Registerliste nennt 0 = Aus, 1 = Heizbedarf, 2 = Kühlbedarf und 3 = Ventilation. Nicht als tatsächliche Betriebsart verwenden.
+- 4x0241: Excel führt „Akt_WP_Betriebsart“ als Input Register ohne Code-Tabelle. Als reales Betriebsregister bestätigt; der Heizcode ist identifiziert, weitere Zustände müssen beobachtet werden.
 - Vierwegeventil: Im aktuellen Modul ist noch kein verifiziertes Register mit belastbarer Zustandsdekodierung vorhanden.
 - 4x0035/0036 (Gesamt-JAZ 365 Tage und Alter): In der Registerliste als nicht implementiert markiert und daher nicht im Modul verfügbar.
