@@ -5,6 +5,7 @@ declare(strict_types=1);
 class ProxonSystemControlMonitoring extends IPSModuleStrict
 {
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
+    private const ARCHIVE_MODULE_ID = '{43192F0B-135B-4CE7-A0A7-1475603F3060}';
 
     private array $pollCache = [];
 
@@ -13,9 +14,11 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
         parent::Create();
 
         $this->RegisterPropertyInteger('Interval', 60);
+        $this->RegisterPropertyInteger('PowerVariableID', 0);
         $this->RegisterAttributeFloat('AccumulatedEnergyKWh', 0.0);
         $this->RegisterAttributeFloat('LastPowerW', 0.0);
         $this->RegisterAttributeInteger('LastPowerTimestamp', 0);
+        $this->RegisterAttributeInteger('RegisteredPowerVariableID', 0);
         $this->RegisterTimer('Poller', 0, 'PROXONMON_RequestStatus($_IPS[\'TARGET\']);');
     }
 
@@ -23,6 +26,7 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
     {
         parent::ApplyChanges();
 
+        $this->UpdatePowerVariableReference();
         $this->RegisterMonitoringVariables();
         $this->SetTimerInterval('Poller', max(5, $this->ReadPropertyInteger('Interval')) * 1000);
     }
@@ -33,6 +37,7 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
         if (IPS_GetKernelRunlevel() !== KR_READY) {
             return;
         }
+        $this->UpdateArchivedEnergy();
         if (!$this->HasActiveParent()) {
             $this->SetValue('FaultStatusComplete', false);
             $this->SetValue('FaultSummary', $this->Translate('Fault status unavailable: no active Modbus parent connection.'));
@@ -108,6 +113,18 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
             'DIGITS' => 3
         ], 4);
         $this->SetValue('EnergySinceFirstSample', $this->ReadAttributeFloat('AccumulatedEnergyKWh'));
+        foreach ([
+            'EnergyToday' => ['caption' => 'Electricity Consumption Today', 'position' => 70],
+            'EnergyThisMonth' => ['caption' => 'Electricity Consumption This Month', 'position' => 71],
+            'EnergyThisYear' => ['caption' => 'Electricity Consumption This Year', 'position' => 72]
+        ] as $ident => $definition) {
+            $this->RegisterVariableFloat($ident, $this->Translate($definition['caption']), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                'SUFFIX' => ' kWh',
+                'DIGITS' => 2
+            ], $definition['position']);
+        }
+        $this->RegisterVariableString('EnergyArchiveStatus', $this->Translate('Energy Archive Status'), '', 73);
         $this->RegisterVariableString('LastSuccessfulRead', $this->Translate('Last Successful Read'), '', 90);
 
         foreach (array_merge($this->GetTechnicalFaultIdents(), ['FaultDetails']) as $ident) {
@@ -296,6 +313,114 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
         $this->WriteAttributeFloat('LastPowerW', max(0.0, $powerW));
         $this->WriteAttributeInteger('LastPowerTimestamp', $now);
         $this->SetValue('EnergySinceFirstSample', $energyKWh);
+    }
+
+    private function UpdatePowerVariableReference(): void
+    {
+        $variableID = $this->ReadPropertyInteger('PowerVariableID');
+        $registeredVariableID = $this->ReadAttributeInteger('RegisteredPowerVariableID');
+        $isValid = $variableID > 0 && IPS_VariableExists($variableID);
+
+        if ($registeredVariableID > 0 && (!$isValid || $registeredVariableID !== $variableID)) {
+            $this->UnregisterReference($registeredVariableID);
+        }
+
+        if ($isValid) {
+            $this->RegisterReference($variableID);
+        }
+
+        $this->WriteAttributeInteger('RegisteredPowerVariableID', $isValid ? $variableID : 0);
+    }
+
+    private function UpdateArchivedEnergy(): void
+    {
+        $variableID = $this->ReadPropertyInteger('PowerVariableID');
+        if ($variableID <= 0) {
+            $this->SetEnergyArchiveUnavailable('Select a logged total electrical power variable in watts.');
+            return;
+        }
+        if (!IPS_VariableExists($variableID)) {
+            $this->SetEnergyArchiveUnavailable('The selected power variable does not exist.');
+            return;
+        }
+
+        $variable = IPS_GetVariable($variableID);
+        if (!in_array($variable['VariableType'], [VARIABLETYPE_INTEGER, VARIABLETYPE_FLOAT], true)) {
+            $this->SetEnergyArchiveUnavailable('The selected power variable must be an integer or float in watts.');
+            return;
+        }
+
+        $archiveInstances = IPS_GetInstanceListByModuleID(self::ARCHIVE_MODULE_ID);
+        if ($archiveInstances === []) {
+            $this->SetEnergyArchiveUnavailable('No Archive Control instance is available.');
+            return;
+        }
+        $archiveID = (int) $archiveInstances[0];
+        if (!AC_GetLoggingStatus($archiveID, $variableID)) {
+            $this->SetEnergyArchiveUnavailable('Archive logging is not enabled for the selected power variable.');
+            return;
+        }
+        if (AC_GetAggregationType($archiveID, $variableID) !== 0) {
+            $this->SetEnergyArchiveUnavailable('The selected variable must use standard archive aggregation, not counter aggregation.');
+            return;
+        }
+
+        $now = time();
+        $periods = [
+            'EnergyToday' => [1, mktime(0, 0, 0, (int) date('n', $now), (int) date('j', $now), (int) date('Y', $now))],
+            'EnergyThisMonth' => [3, mktime(0, 0, 0, (int) date('n', $now), 1, (int) date('Y', $now))],
+            'EnergyThisYear' => [4, mktime(0, 0, 0, 1, 1, (int) date('Y', $now))]
+        ];
+
+        $availablePeriods = 0;
+        foreach ($periods as $ident => [$aggregationLevel, $periodStart]) {
+            $energyKWh = $this->ReadArchivedEnergyKWh($archiveID, $variableID, $aggregationLevel, $periodStart, $now);
+            if ($energyKWh === null) {
+                $this->SetValue($ident, 0.0);
+                continue;
+            }
+
+            $this->SetValue($ident, $energyKWh);
+            $availablePeriods++;
+        }
+
+        if ($availablePeriods === 0) {
+            $this->SetValue('EnergyArchiveStatus', $this->Translate('No aggregated archive data is available for the current day, month or year.'));
+        } elseif ($availablePeriods < count($periods)) {
+            $this->SetValue('EnergyArchiveStatus', $this->Translate('Energy values are calculated from available archive aggregates; one or more periods have no data yet.'));
+        } else {
+            $this->SetValue('EnergyArchiveStatus', $this->Translate('Energy values are calculated from archived average power and aggregation duration.'));
+        }
+    }
+
+    private function ReadArchivedEnergyKWh(int $archiveID, int $variableID, int $aggregationLevel, int $periodStart, int $now): ?float
+    {
+        $values = AC_GetAggregatedValues($archiveID, $variableID, $aggregationLevel, $periodStart, $now, 0);
+        $energyKWh = 0.0;
+        $hasData = false;
+
+        foreach ($values as $value) {
+            if (!isset($value['TimeStamp'], $value['Avg'], $value['Duration'])
+                || (int) $value['TimeStamp'] < $periodStart
+                || (int) $value['TimeStamp'] > $now
+                || (int) $value['Duration'] <= 0
+                || (float) $value['Avg'] < 0) {
+                continue;
+            }
+
+            $energyKWh += (float) $value['Avg'] * (int) $value['Duration'] / 3600000;
+            $hasData = true;
+        }
+
+        return $hasData ? $energyKWh : null;
+    }
+
+    private function SetEnergyArchiveUnavailable(string $message): void
+    {
+        foreach (['EnergyToday', 'EnergyThisMonth', 'EnergyThisYear'] as $ident) {
+            $this->SetValue($ident, 0.0);
+        }
+        $this->SetValue('EnergyArchiveStatus', $this->Translate($message));
     }
 
     private function ReadRegister(int $function, int $address): ?int
