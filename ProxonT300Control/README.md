@@ -2,7 +2,7 @@
 
 The control instance handles the T300 Holding Registers. It polls the documented settings every 60 seconds by default and exposes an Update Values action.
 
-Registers 2000-2003 are the only settings with write support confirmed by the existing Symcon configuration. Their actions are enabled by default. The other ten workbook write candidates stay read-only unless **Enable Advanced Controls** is explicitly selected. Their hardware write behavior has not been verified.
+The ten additional settings are documented as writable and have been verified on the T300 display. The four existing controls (registers 2000-2003), PV function and Legionella function are enabled for routine operation. The remaining eight settings are intended for maintenance or initial setup and stay read-only unless **Enable Maintenance and Setup Controls** is selected.
 
 Use the **Create Monitoring Instance** action to add the separate read-only FC4 module beside this instance. Remove an older T300 Control instance before switching to this split module layout so its previous measurement variables do not remain in the object tree.
 
@@ -14,12 +14,12 @@ Use the **Create Monitoring Instance** action to add the separate read-only FC4 
 | Normal Water Temperature | 2000 | 20-55 °C, raw value ÷ 10 |
 | Electric Heater Enabled | 2001 | 0 = off, 1 = on |
 | Electric Heater Temperature | 2003 | 20-70 °C, raw value ÷ 10 |
-| Daylight Saving Time | 2008 | 0 = off, 1 = on; advanced |
-| Screen Timeout | 2009 | 0-240; advanced, unit unspecified |
-| Legionella Function / PV Function | 2025 / 2010 | Boolean; advanced |
-| Hour / Minute / Weekday / Day / Month / Year | 2150-2155 | Clock fields; advanced |
+| Daylight Saving Time | 2008 | 0 = off, 1 = on; maintenance / setup |
+| Screen Timeout | 2009 | 0-240; maintenance / setup, unit unspecified |
+| Legionella Function / PV Function | 2025 / 2010 | Boolean; enabled for routine operation |
+| Hour / Minute / Weekday / Day / Month / Year | 2150-2155 | Clock fields; maintenance / setup |
 
-The workbook marks fifteen rows R/W at write-permission level 1 (some). Fourteen have a nontrivial allowed range, and all fourteen are implemented with matching limits. Register 2006 (Language) is omitted because its documented range is fixed at 0. The inspected manual Symcon configuration confirms FC6 writes only for 2000-2003; these four are enabled by default. The other ten stay read-only until Advanced Controls is selected. Their hardware write behavior has not been verified, and this module has sent no writes.
+The workbook marks fifteen rows R/W at write-permission level 1 (some). Fourteen have a nontrivial allowed range, and all fourteen are implemented with matching limits. Register 2006 (Language) is omitted because its documented range is fixed at 0. The manual Symcon configuration contains FC6 writes for 2000-2003. The additional ten settings are writable and have been verified on the T300 display. PV and Legionella are enabled for routine operation; the other eight are gated for maintenance and initial setup.
 
 ## Compatibility
 

@@ -9,11 +9,11 @@
         {
             "name": "AdvancedControlsEnabled",
             "type": "CheckBox",
-            "caption": "Enable Advanced Controls"
+            "caption": "Enable Maintenance and Setup Controls"
         },
         {
             "type": "Label",
-            "caption": "Only registers 2000-2003 have confirmed write support. Other settings stay read-only unless enabled."
+            "caption": "Operating controls (2000-2003, PV and Legionella) are enabled by default. Maintenance and initial setup controls require this option."
         },
         {
             "type": "Label",

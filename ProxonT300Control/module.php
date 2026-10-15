@@ -59,7 +59,7 @@ class ProxonT300Control extends IPSModuleStrict
 
         $definition = $definitions[$Ident];
         if ($this->IsAdvancedControl($definition) && !$this->ReadPropertyBoolean('AdvancedControlsEnabled')) {
-            throw new RuntimeException($this->Translate('Enable advanced controls before changing these settings.'));
+            throw new RuntimeException($this->Translate('Enable maintenance and setup controls before changing these settings.'));
         }
 
         [$normalizedValue, $rawValue] = $this->NormalizeValue($Value, $definition);
@@ -160,7 +160,7 @@ class ProxonT300Control extends IPSModuleStrict
 
     private function IsAdvancedControl(array $definition): bool
     {
-        return $definition['address'] < 2000 || $definition['address'] > 2003;
+        return $definition['advanced'] ?? true;
     }
 
     private function GetControlDefinitions(): array
@@ -173,6 +173,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 3,
                 'scale' => 1,
+                'advanced' => false,
                 'options' => [0 => 'Off', 1 => 'Demand', 2 => 'LF1', 3 => 'LF2'],
                 'position' => 1
             ],
@@ -183,6 +184,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 20,
                 'maximum' => 55,
                 'scale' => 10,
+                'advanced' => false,
                 'suffix' => " \u{00B0}C",
                 'position' => 2
             ],
@@ -193,6 +195,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 1,
                 'scale' => 1,
+                'advanced' => false,
                 'position' => 3
             ],
             'Hour' => [
@@ -202,6 +205,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 23,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 10
             ],
             'Minute' => [
@@ -211,6 +215,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 59,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 11
             ],
             'Weekday' => [
@@ -220,6 +225,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 1,
                 'maximum' => 7,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 12
             ],
             'Day' => [
@@ -229,6 +235,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 1,
                 'maximum' => 31,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 13
             ],
             'Month' => [
@@ -238,6 +245,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 1,
                 'maximum' => 12,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 14
             ],
             'Year' => [
@@ -247,6 +255,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 99,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 15
             ],
             'DaylightSavingTime' => [
@@ -256,6 +265,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 1,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 16
             ],
             'ElectricHeaterTemperature' => [
@@ -265,6 +275,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 20,
                 'maximum' => 70,
                 'scale' => 10,
+                'advanced' => false,
                 'suffix' => " \u{00B0}C",
                 'position' => 20
             ],
@@ -275,6 +286,7 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 240,
                 'scale' => 1,
+                'advanced' => true,
                 'position' => 21
             ],
             'LegionellaFunction' => [
@@ -284,7 +296,8 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 1,
                 'scale' => 1,
-                'position' => 22
+                'advanced' => false,
+                'position' => 4
             ],
             'PVFunction' => [
                 'caption' => 'PV Function',
@@ -293,7 +306,8 @@ class ProxonT300Control extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 1,
                 'scale' => 1,
-                'position' => 23
+                'advanced' => false,
+                'position' => 5
             ]
         ];
     }
