@@ -1,11 +1,16 @@
 # Changelog
 
-## 1.1 — Build 6 — 2026-10-15
+## 1.1 — Build 7 — 2026-10-15
 
 - Combined outdoor, room/extract and exhaust-air labels with their temperature readings; removed the redundant labels and tile headings.
 - Kept the outdoor-air inlet continuously green and moved the damper label clear of the supply-air reading. Distribution captions now say "bevorzugt" and "reduziert".
 - Integrated the expansion valve and refrigerant loop into the central plant drawing. Evaporator/condenser roles and coil colors follow heating or cooling mode; compressor speed and power appear at the component.
 - Removed empty airflow and generic measurement placeholders. Reworked the heat-pump panel around available electrical readings, fault status, runtimes and energy.
+
+## 1.1 — Build 6 — 2026-10-15
+
+- Decode the actual heat-pump mode from input register 4x0241: 0 = off, 1 = heating, 2 = cooling.
+- Pass the confirmed heat-pump mode values to the FWT tile; test/debug register 3x0069 is not used as the actual mode.
 
 ## 1.1 — Build 5 — 2026-10-15
 

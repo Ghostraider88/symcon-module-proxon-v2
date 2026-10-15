@@ -1,7 +1,10 @@
-Build 6 (15.10.2026)
+Build 7 (15.10.2026)
 geändert: Außenluft bleibt durchgehend grün. Temperaturwerte für Außenluft, Raum-/Abluft und Fortluft stehen direkt an den passenden Luftanschlüssen; Schiebertexte sind gekürzt und überlagern keine Temperaturanzeige.
 neu: Kältekreis mit Verdichter, Expansionsventil und dynamischer Verdampfer-/Verflüssigerrolle ist in die zentrale Anlagenzeichnung integriert. Drehzahl und Verdichterleistung stehen am Bauteil.
 geändert: Leere Luftmengen-/Messwerte-Platzhalter und redundante Kachel-Titel entfernt. Wärmepumpenbereich zeigt verfügbare Leistungen, Störungsstatus, Betriebszeiten und Energie.
+Build 6 (15.10.2026)
+geändert: Der tatsächliche Wärmepumpenmodus wird aus 4x0241 mit Aus, Heizen und Kühlen decodiert. Unbekannte Codes bleiben als Rohcode sichtbar.
+geändert: Die FWT-Kachel erhält die bestätigten 4x0241-Moduswerte; 3x0069 bleibt ein Test-/Debugwert.
 Build 5 (15.10.2026)
 geändert: Der Zuluftweg ab dem Verflüssiger einschl. EG-/OG-Abzweigungen ist im Heizbetrieb rot, im Kühlbetrieb blau und bei Lüftung/Aus grau.
 neu: Wenn kein bestätigter Heiz-/Kühlcode vorliegt, leitet die Kachel die Betriebsrichtung bei laufendem Verdichter aus Zu- und Frischlufttemperatur ab. Abgeleitete Zustände sind mit * markiert.

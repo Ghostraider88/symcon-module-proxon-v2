@@ -18,7 +18,7 @@ Room assignment values for CO2/RF sensors are 0 unassigned, 1 central panel room
 
 ## Status values
 
-The instance displays actual operating and heat pump modes, fan RPM and stages, fresh/supply/extract/exhaust air temperatures, connected panels, CO2/RF readings for the configured sensor count, filter runtimes, bypass status (3x0222) and damper position (3x0159). The damper position is shown as EG, EG preferred, balanced, OG preferred or OG for values 0–4. Both bypass status and damper position are read-only.
+The instance displays actual operating and heat-pump modes, fan RPM and stages, fresh/supply/extract/exhaust air temperatures, connected panels, CO2/RF readings for the configured sensor count, filter runtimes, bypass status (3x0222) and damper position (3x0159). Actual heat-pump mode comes from 4x0241: 0 = off, 1 = heating, 2 = cooling. Register 3x0069 is a test/debug value and is not used as the actual mode. The damper position is shown as EG, EG preferred, balanced, OG preferred or OG for values 0–4. Both bypass status and damper position are read-only.
 
 ## Advanced controls
 

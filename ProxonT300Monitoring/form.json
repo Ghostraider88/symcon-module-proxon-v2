@@ -1,0 +1,18 @@
+{
+    "elements": [
+        {
+            "name": "Interval",
+            "type": "NumberSpinner",
+            "caption": "Poll Interval",
+            "suffix": "Seconds"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Update Values",
+            "onClick": "PROXONT300MON_RequestStatus($id);"
+        }
+    ],
+    "status": []
+}
