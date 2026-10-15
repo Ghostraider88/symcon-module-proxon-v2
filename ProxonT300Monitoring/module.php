@@ -20,6 +20,13 @@ class ProxonT300Monitoring extends IPSModuleStrict
         parent::ApplyChanges();
 
         $this->RegisterInputVariables();
+        $this->RegisterVariableBoolean(
+            'ExternalSensorTemperatureAvailable',
+            $this->Translate('External Sensor Temperature Available'),
+            [],
+            158
+        );
+        $this->MaintainAction('ExternalSensorTemperatureAvailable', false);
         $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
     }
 
@@ -42,7 +49,12 @@ class ProxonT300Monitoring extends IPSModuleStrict
                     continue;
                 }
 
-                $this->SetValue($ident, $this->DecodeInputValue($values[$offset], $definition));
+                $rawValue = $values[$offset];
+                if ($ident === 'ExternalSensorTemperature') {
+                    $this->SetValue('ExternalSensorTemperatureAvailable', $rawValue !== 0);
+                }
+
+                $this->SetValue($ident, $this->DecodeInputValue($rawValue, $definition));
             }
         }
     }
