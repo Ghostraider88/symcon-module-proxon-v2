@@ -6,6 +6,7 @@ class ProxonT300Monitoring extends IPSModuleStrict
 {
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const READ_FUNCTION = 4;
+    private const EXTERNAL_SENSOR_UNAVAILABLE_RAW_VALUE = 2569;
 
     public function Create(): void
     {
@@ -20,6 +21,13 @@ class ProxonT300Monitoring extends IPSModuleStrict
         parent::ApplyChanges();
 
         $this->RegisterInputVariables();
+        $this->RegisterVariableBoolean(
+            'ExternalSensorTemperatureAvailable',
+            $this->Translate('External Sensor Temperature Available'),
+            [],
+            158
+        );
+        $this->MaintainAction('ExternalSensorTemperatureAvailable', false);
         $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
     }
 
@@ -42,7 +50,13 @@ class ProxonT300Monitoring extends IPSModuleStrict
                     continue;
                 }
 
-                $this->SetValue($ident, $this->DecodeInputValue($values[$offset], $definition));
+                $rawValue = $values[$offset];
+                if ($ident === 'ExternalSensorTemperature') {
+                    $available = $rawValue !== 0 && $rawValue !== self::EXTERNAL_SENSOR_UNAVAILABLE_RAW_VALUE;
+                    $this->SetValue('ExternalSensorTemperatureAvailable', $available);
+                }
+
+                $this->SetValue($ident, $this->DecodeInputValue($rawValue, $definition));
             }
         }
     }

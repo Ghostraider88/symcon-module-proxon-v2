@@ -1,6 +1,6 @@
 # Proxon T300 Monitoring
 
-The read-only Monitoring instance polls the documented T300 Input Registers with Modbus function 4 (FC4), grouped into seven blocks. It exposes 57 measurements, counters, relay states and operating/fault status values. The poll interval defaults to 60 seconds and can be changed in the instance configuration.
+The read-only Monitoring instance polls the documented T300 Input Registers with Modbus function 4 (FC4), grouped into seven blocks. It exposes 57 measurements, counters, relay states and operating/fault status values, plus an availability flag for the optional external sensor. The poll interval defaults to 60 seconds and can be changed in the instance configuration.
 
 The variables do not have actions, and the module does not enable archive logging. Debug output is available through the Symcon debug window for failed FC4 reads.
 
@@ -19,6 +19,8 @@ Create the instance from the **Create Monitoring Instance** action in Proxon T30
 | 898-900 | PV tank level and active heater/heat-pump states |
 
 Scaling and offsets follow the supplied T300 register workbook and the existing Symcon FC4 configuration. Values that previously caused an undefined `offset` warning now safely default to zero when the workbook does not specify an offset. Numeric presentations use supported `SUFFIX` settings only.
+
+The external sensor at input register 817 is optional. <code>ExternalSensorTemperatureAvailable</code> is false when the controller reports the sensor as absent; the scaled numeric value remains unchanged for compatibility and must be ignored while the availability flag is false.
 
 ## Compatibility
 

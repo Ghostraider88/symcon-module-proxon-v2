@@ -14,13 +14,16 @@ Diese Seite beschreibt verfügbare Variablen aus den Instanzen **Proxon System C
 | System Control | `SupplyAirTemperature` | °C | Zulufttemperatur | FC04 / 4x0195, signed / 100 |
 | System Control | `FreshAirTemperature` | °C | Außen-/Frischlufttemperatur laut Registerbezeichnung | FC04 / 4x0198, signed / 100 |
 | Monitoring | `TotalElectricalPower` | W | Elektrische Gesamtleistung laut FWT | FC04 / 4x0025, Registerwert / 10 |
+| Monitoring | `EnergyToday` | kWh | Geschätzter Stromverbrauch seit Tagesbeginn | Archivierte Durchschnittsleistung × Aggregationsdauer; Quelle muss in der Instanz ausgewählt sein |
+| Monitoring | `EnergyThisMonth` | kWh | Geschätzter Stromverbrauch seit Monatsbeginn | Wie `EnergyToday`; Monatsaggregation |
+| Monitoring | `EnergyThisYear` | kWh | Geschätzter Stromverbrauch seit Jahresbeginn | Wie `EnergyToday`; Jahresaggregation |
 | Monitoring | `FaultPresent` | Boolean | Mindestens ein gelesener Fehlerindikator ist ungleich null | Zusammenfassung der unten aufgeführten Fehlerregister; bei lückenhaftem Lesen zusätzlich `FaultStatusComplete` beachten |
 | Monitoring | `FaultSummary` | Text | Lesbare Störungsmeldung, ohne erfundene Code- oder Bitübersetzung | Aus den bestätigten Fehlerindikatoren abgeleitet |
 | Monitoring | `FaultStatusComplete` | Boolean | Alle zehn für die Störungsübersicht verwendeten Register wurden beim letzten Poll gelesen | Gültigkeit der beiden Störungswerte darüber |
-| Monitoring | `Airflow` | m³/h | Als „Air m³/h“ benannter Luftvolumenstrom | FC04 / 4x0026, Registerwert / 10; Messort und Luftstrombezug ungeklärt |
+| Monitoring | `Airflow` | m³/h | Als „Air m³/h“ benannter Luftvolumenstrom; im Symcon-Test bei gleichzeitig gemeldeten Ventilatordrehzahlen nicht plausibel | FC04 / 4x0026, Registerwert / 10; Messort und Luftstrombezug ungeklärt; bis zur Klärung kein bestätigter Kachelwert |
 | Monitoring | `TotalCOPJAZ1Hour` | Verhältniszahl | Vom Regler gemeldeter Gesamt-COP/JAZ für 1 Stunde | FC04 / 4x0033, Wert / 100; Berechnungsdefinition nicht unabhängig verifiziert |
 
-`FaultDetails` und die numerischen Fehlerregister sind Backend-Diagnosewerte. Sie werden nicht als Kachelwerte empfohlen. `EnergySinceFirstSample` ist eine lokale Leistungssummen-Schätzung, kein Zählerstand.
+`FaultDetails` und die numerischen Fehlerregister sind Backend-Diagnosewerte. Sie werden nicht als Kachelwerte empfohlen. `EnergyToday`, `EnergyThisMonth` und `EnergyThisYear` sind Schätzungen aus den Archivaggregaten einer auswählbaren Gesamtleistung in Watt, keine Stromzählerstände. `EnergyArchiveStatus` zeigt an, ob die Berechnung Daten verwenden kann. `EnergySinceFirstSample` bleibt eine separate lokale Leistungssummen-Schätzung.
 
 ## Standard-System-Control: Status- und Bedienwerte
 
@@ -67,7 +70,7 @@ Diese Werte sind optionale Raumkacheldaten und erscheinen nicht zwingend in eine
 | `ElectricalPowerPCB` | W | FC04 / 4x0019, / 10 | Elektrische Leistung der Platine laut Registerliste | Bezeichnung und Skalierung geklärt |
 | `ElectricalPowerInverter` | W | FC04 / 4x0020, / 10 | Elektrische Leistung des Umrichters laut Registerliste | Bezeichnung und Skalierung geklärt |
 | `TotalElectricalPower` | W | FC04 / 4x0025, / 10 | Elektrische Gesamtleistung laut FWT | Bezeichnung und Skalierung geklärt |
-| `Airflow` | m³/h | FC04 / 4x0026, / 10 | Registerbezeichnung „Air m³/h“ | **Ungeklärt:** Messort und genauer Luftstrombezug sind nicht näher beschrieben |
+| `Airflow` | m³/h | FC04 / 4x0026, / 10 | Registerbezeichnung „Air m³/h“ | **Ungeklärt:** Messort und genauer Luftstrombezug fehlen; der Symcon-Testwert war bei gemeldeten Ventilatordrehzahlen unplausibel. Nicht als bestätigten Ist-Volumenstrom in der Kachel verwenden |
 | `CompressorCOPJAZ1Minute` | Verhältniszahl | FC04 / 4x0027, / 100 | Kompressor-COP/JAZ, 1 Minute | Reglerwert; Berechnung/Begriff COP vs. JAZ nicht unabhängig verifiziert |
 | `CompressorCOPJAZ1Hour` | Verhältniszahl | FC04 / 4x0028, / 100 | Kompressor-COP/JAZ, 1 Stunde | Wie oben |
 | `CompressorCOPJAZ24Hours` | Verhältniszahl | FC04 / 4x0029, / 100 | Kompressor-COP/JAZ, 24 Stunden | Wie oben |
@@ -77,6 +80,10 @@ Diese Werte sind optionale Raumkacheldaten und erscheinen nicht zwingend in eine
 | `TotalCOPJAZ1Hour` | Verhältniszahl | FC04 / 4x0033, / 100 | Gesamt-COP/JAZ, 1 Stunde | Wie oben |
 | `TotalCOPJAZ24Hours` | Verhältniszahl | FC04 / 4x0034, / 100 | Gesamt-COP/JAZ, 24 Stunden | Wie oben |
 | `EnergySinceFirstSample` | kWh | lokal berechnet | Integration der Gesamtleistung seit dem ersten gültigen Messpunkt | Schätzwert; kein Zählerstand und keine Historie vor dem ersten Messpunkt |
+| `EnergyToday` | kWh | Archivaggregation | Durchschnittliche Gesamtleistung × Dauer der Tagesaggregation | Benötigt eine ausgewählte protokollierte Leistungsvariable in W; Schätzwert, kein Zählerstand |
+| `EnergyThisMonth` | kWh | Archivaggregation | Durchschnittliche Gesamtleistung × Dauer der Monatsaggregation seit Monatsbeginn | Benötigt dieselbe Archivquelle; Schätzwert, kein Zählerstand |
+| `EnergyThisYear` | kWh | Archivaggregation | Durchschnittliche Gesamtleistung × Dauer der Jahresaggregation seit Jahresbeginn | Benötigt dieselbe Archivquelle; Schätzwert, kein Zählerstand |
+| `EnergyArchiveStatus` | Text | Status | Verfügbarkeit und Grundlage der Archivberechnung | Backend-Status; Archivierung wird nicht automatisch aktiviert |
 | `FaultPresent` | Boolean | abgeleitet | Mindestens ein gelesener Fehlerindikator ist ungleich null | Bei unvollständigem Poll nur Aussage über gelesene Register; `FaultStatusComplete` mit auswerten |
 | `FaultSummary` | Text | abgeleitet | Lesbare Sammelmeldung: Anlagenstörung, schwerer Umrichterfehler und/oder interner Fehlerindikator | Keine Dekodierung von Fehlercodes oder einzelnen Bits |
 | `FaultStatusComplete` | Boolean | abgeleitet | Alle zehn Fehlerindikatoren sind beim letzten Poll erfolgreich gelesen | `false` bedeutet, dass die Störungsübersicht unvollständig ist |
@@ -128,7 +135,8 @@ Die Monitoring-Instanz liest FC04 / 4x0047–0051, 0157, 0170, 0172, 0174 und 01
 
 ## Offene Register- und Bedeutungsfragen
 
-- 4x0026: Excel nennt „Air m³/h“ und den Faktor 10; Messort und Luftstrombezug bleiben offen.
+- 4x0026: Excel nennt „Air m³/h“ und den Faktor 10. Im Symcon-Test war der Wert bei gleichzeitig gemeldeten Ventilatordrehzahlen unplausibel; Messort und Luftstrombezug bleiben offen. Bis zur Klärung nicht als belastbaren Volumenstrom in der Kachel verwenden.
+- 3x0398: Excel führt „Air m3/h K faktor“ im Holding-Registerblatt mit dem Format `*1000`, aber ohne Einheit. Das PDF bezeichnet dieselbe Funktion als 4x0398 und beschreibt ein nutzerspezifisches Luftvolumen im Nennlüftungsbetrieb zur JAZ-Berechnung. In den manuell angelegten Symcon-FWT-Registern gibt es keinen passenden Wert. Als möglichen Konfigurations-/Kalibrierwert behandeln, nicht als aktuellen Volumenstrom; Registeradresse und Skalierung vor einer Integration klären.
 - 4x0048–0051 und 4x0157: Welche Bits entsprechen welchen Fehlern?
 - 4x0152 und 4x0162: Welche Statuswerte bedeuten welche Ventilator-/Kompressorzustände?
 - 4x0170, 4x0172 und 4x0174: Welche Fehlercodes und FOF-Werte gibt es?

@@ -39,6 +39,7 @@
             "Compressor Temperature": "Kompressortemperatur",
             "Suction Gas Temperature": "Sauggastemperatur nach Verdampfer",
             "External Sensor Temperature": "Temperatur externer Fühler",
+            "External Sensor Temperature Available": "Externer Temperaturfühler verfügbar",
             "Evaporator Low-Side Pressure": "Niederdruck Verdampfer",
             "Defrost Differential Pressure": "Differenzdruck Abtauung",
             "Expansion Valve Position": "Position E-Ventil",

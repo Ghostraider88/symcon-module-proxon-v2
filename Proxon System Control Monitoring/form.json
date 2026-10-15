@@ -7,8 +7,14 @@
             "suffix": "Seconds"
         },
         {
+            "name": "PowerVariableID",
+            "type": "SelectVariable",
+            "caption": "Archived total electrical power (W)",
+            "validVariableTypes": [1, 2]
+        },
+        {
             "type": "Label",
-            "caption": "COP/JAZ values are reported by the FWT controller. The estimated energy counter starts with the first monitoring sample and does not include earlier consumption. Enable archive logging yourself if you want a history."
+            "caption": "Select a logged total electrical power variable in watts to calculate daily, monthly and yearly consumption from archive averages. The module does not enable archive logging. Energy Since First Sample remains a local estimate; COP/JAZ values are reported by the FWT controller."
         },
         {
             "type": "Label",
