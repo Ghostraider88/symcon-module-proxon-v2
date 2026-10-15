@@ -1,0 +1,12 @@
+{
+    "id": "{96EBFF26-A28F-4C3F-BB0B-166BDEE7B182}",
+    "name": "Proxon FWT System Control Advanced",
+    "type": 3,
+    "vendor": "Proxon",
+    "aliases": [],
+    "parentRequirements": ["{E310B701-4AE7-458E-B618-EC13A1A6F6A8}"],
+    "childRequirements": [],
+    "implemented": ["{77B31ABB-18FA-4B91-BB63-E5B2AB5588F4}"],
+    "url": "https://www.symcon.de",
+    "prefix": "PROXONADV"
+}

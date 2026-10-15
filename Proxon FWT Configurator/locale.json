@@ -1,0 +1,13 @@
+{
+    "translations": {
+        "de": {
+            "Proxon FWT Configurator": "Proxon FWT Konfigurator",
+            "Proxon FWT Panels": "Proxon FWT Bedienpanels",
+            "Secondary Panel": "Nebenbedienpanel",
+            "Main Secondary Panel": "Hauptnebenbedienpanel",
+            "Central Panel": "Zentralbedienpanel",
+            "System Control": "Anlagensteuerung",
+            "T300 Control": "T300 Steuerung"
+        }
+    }
+}
