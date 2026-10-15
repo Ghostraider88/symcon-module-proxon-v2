@@ -78,6 +78,11 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
                 ], $definition['position']);
             } elseif ($definition['type'] === 'enumeration') {
                 $this->RegisterVariableInteger($ident, $caption, $this->GetEnumerationPresentation($definition['options']), $definition['position']);
+            } elseif ($definition['type'] === 'integer') {
+                $this->RegisterVariableInteger($ident, $caption, [
+                    'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_INPUT,
+                    'SUFFIX' => $definition['suffix']
+                ], $definition['position']);
             } else {
                 $this->RegisterVariableFloat($ident, $caption, [
                     'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_INPUT,
@@ -107,15 +112,20 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
             'CompressorContinuousOperationOutdoorTemperature' => ['caption' => 'Compressor Continuous Operation Outdoor Temperature', 'address' => 48, 'type' => 'float', 'scale' => 100, 'minimum' => -15, 'maximum' => 5, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 7],
             'HeatPumpStartThreshold' => ['caption' => 'Heat Pump Start Threshold', 'address' => 42, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 3, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 8],
             'HeatPumpStopThreshold' => ['caption' => 'Heat Pump Stop Threshold', 'address' => 134, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 3, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 9],
-            'CompressorMinimumPower' => ['caption' => 'Compressor Minimum Power', 'address' => 44, 'type' => 'float', 'scale' => 100, 'minimum' => 25, 'maximum' => 50, 'suffix' => ' %', 'position' => 10],
-            'CompressorMaximumHeatingPower' => ['caption' => 'Compressor Maximum Heating Power', 'address' => 43, 'type' => 'float', 'scale' => 100, 'minimum' => 50, 'maximum' => 100, 'suffix' => ' %', 'position' => 11],
-            'CompressorMaximumCoolingPower' => ['caption' => 'Compressor Maximum Cooling Power', 'address' => 52, 'type' => 'float', 'scale' => 100, 'minimum' => 50, 'maximum' => 100, 'suffix' => ' %', 'position' => 12],
-            'MaximumCompressorTemperature' => ['caption' => 'Maximum Compressor Temperature', 'address' => 34, 'type' => 'float', 'scale' => 100, 'minimum' => 80, 'maximum' => 140, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 13],
-            'MaximumCondenserTemperatureCooling' => ['caption' => 'Maximum Condenser Temperature Cooling', 'address' => 45, 'type' => 'float', 'scale' => 100, 'minimum' => 45, 'maximum' => 55, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 14],
-            'FanMinimumAirflow' => ['caption' => 'Fan Minimum Airflow', 'address' => 11, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 15],
-            'FanMaximumAirflow' => ['caption' => 'Fan Maximum Airflow', 'address' => 12, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 16],
-            'Zone1SensorSource' => ['caption' => 'Zone 1 Temperature Source', 'address' => 115, 'type' => 'enumeration', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'options' => [0 => 'Central Panel Sensor', 1 => 'Internal Sensor T41'], 'position' => 17],
-            'Zone2SensorSource' => ['caption' => 'Zone 2 Temperature Source', 'address' => 116, 'type' => 'enumeration', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'options' => [0 => 'Main Secondary Panel Sensor', 1 => 'Internal Sensor T42'], 'position' => 18]
+            'CompressorRestartDelay' => ['caption' => 'Compressor Restart Delay', 'address' => 30, 'type' => 'integer', 'scale' => 1, 'minimum' => 0, 'maximum' => 3600, 'suffix' => ' s', 'position' => 10],
+            'MinimumCompressorRuntime' => ['caption' => 'Minimum Compressor Runtime', 'address' => 31, 'type' => 'integer', 'scale' => 1, 'minimum' => 0, 'maximum' => 3600, 'suffix' => ' s', 'position' => 11],
+            'CompressorPressureEqualizationTime' => ['caption' => 'Compressor Pressure Equalization Time', 'address' => 40, 'type' => 'integer', 'scale' => 1, 'minimum' => 0, 'maximum' => 180, 'suffix' => ' s', 'position' => 12],
+            'CompressorMinimumPowerRuntimeWithoutDemand' => ['caption' => 'Compressor Minimum-Power Runtime Without Demand', 'address' => 94, 'type' => 'integer', 'scale' => 1, 'minimum' => 0, 'maximum' => 1200, 'suffix' => ' s', 'position' => 13],
+            'MaximumCondenserTemperatureFanStage4' => ['caption' => 'Maximum Condenser Temperature Fan Stage 4', 'address' => 33, 'type' => 'float', 'scale' => 100, 'minimum' => 45, 'maximum' => 60, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 14],
+            'CompressorMinimumPower' => ['caption' => 'Compressor Minimum Power', 'address' => 44, 'type' => 'float', 'scale' => 100, 'minimum' => 25, 'maximum' => 50, 'suffix' => ' %', 'position' => 15],
+            'CompressorMaximumHeatingPower' => ['caption' => 'Compressor Maximum Heating Power', 'address' => 43, 'type' => 'float', 'scale' => 100, 'minimum' => 50, 'maximum' => 100, 'suffix' => ' %', 'position' => 16],
+            'CompressorMaximumCoolingPower' => ['caption' => 'Compressor Maximum Cooling Power', 'address' => 52, 'type' => 'float', 'scale' => 100, 'minimum' => 50, 'maximum' => 100, 'suffix' => ' %', 'position' => 17],
+            'MaximumCompressorTemperature' => ['caption' => 'Maximum Compressor Temperature', 'address' => 34, 'type' => 'float', 'scale' => 100, 'minimum' => 80, 'maximum' => 140, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 18],
+            'MaximumCondenserTemperatureCooling' => ['caption' => 'Maximum Condenser Temperature Cooling', 'address' => 45, 'type' => 'float', 'scale' => 100, 'minimum' => 45, 'maximum' => 55, 'suffix' => " \u{00B0}C", 'signed' => true, 'position' => 19],
+            'FanMinimumAirflow' => ['caption' => 'Fan Minimum Airflow', 'address' => 11, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 20],
+            'FanMaximumAirflow' => ['caption' => 'Fan Maximum Airflow', 'address' => 12, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 21],
+            'Zone1SensorSource' => ['caption' => 'Zone 1 Temperature Source', 'address' => 115, 'type' => 'enumeration', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'options' => [0 => 'Central Panel Sensor', 1 => 'Internal Sensor T41'], 'position' => 22],
+            'Zone2SensorSource' => ['caption' => 'Zone 2 Temperature Source', 'address' => 116, 'type' => 'enumeration', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'options' => [0 => 'Main Secondary Panel Sensor', 1 => 'Internal Sensor T42'], 'position' => 23]
         ];
 
         for ($stage = 1; $stage <= 4; $stage++) {
@@ -128,7 +138,7 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 100,
                 'suffix' => ' %',
-                'position' => 20 + $stage
+                'position' => 30 + $stage
             ];
             $definitions['ExtractAirflowStage' . $stage] = [
                 'caption' => 'Extract Airflow Stage %d',
@@ -139,7 +149,7 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
                 'minimum' => 0,
                 'maximum' => 100,
                 'suffix' => ' %',
-                'position' => 24 + $stage
+                'position' => 34 + $stage
             ];
         }
 
@@ -159,7 +169,7 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
                 'maximum' => 10,
                 'suffix' => " \u{00B0}C",
                 'signed' => true,
-                'position' => 30 + $panel
+                'position' => 40 + $panel
             ];
         }
 
@@ -286,7 +296,8 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
             $rawValue = $this->DecodeSignedValue($rawValue);
         }
 
-        return $rawValue / $definition['scale'];
+        $value = $rawValue / $definition['scale'];
+        return $definition['type'] === 'integer' ? (int) round($value) : $value;
     }
 
     private function WriteControl(string $ident, mixed $value, array $definition): void
@@ -322,7 +333,7 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
                 ));
             }
 
-            $normalizedValue = $numericValue;
+            $normalizedValue = $definition['type'] === 'integer' ? (int) round($numericValue) : $numericValue;
             $rawValue = (int) round($numericValue * $definition['scale']);
         }
 

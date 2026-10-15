@@ -14,7 +14,7 @@
         },
         {
             "type": "Label",
-            "caption": "These settings can change protective limits, compressor output and air distribution. They remain read-only unless Advanced Controls is enabled in the associated System Control instance."
+            "caption": "These settings can change protection limits, compressor cycling and air distribution. Several values are new and have not been written to the live unit. They remain read-only unless Advanced Controls is enabled in the associated System Control instance."
         }
     ],
     "actions": [

@@ -1,0 +1,252 @@
+<?php
+
+declare(strict_types=1);
+
+class ProxonSystemControlMonitoring extends IPSModuleStrict
+{
+    private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
+
+    private array $pollCache = [];
+
+    public function Create(): void
+    {
+        parent::Create();
+
+        $this->RegisterPropertyInteger('Interval', 60);
+        $this->RegisterAttributeFloat('AccumulatedEnergyKWh', 0.0);
+        $this->RegisterAttributeFloat('LastPowerW', 0.0);
+        $this->RegisterAttributeInteger('LastPowerTimestamp', 0);
+        $this->RegisterTimer('Poller', 0, 'PROXONMON_RequestStatus($_IPS[\'TARGET\']);');
+    }
+
+    public function ApplyChanges(): void
+    {
+        parent::ApplyChanges();
+
+        $this->RegisterMonitoringVariables();
+        $this->SetTimerInterval('Poller', max(5, $this->ReadPropertyInteger('Interval')) * 1000);
+    }
+
+    public function RequestStatus(): void
+    {
+        $this->pollCache = [];
+        if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+            return;
+        }
+
+        $successfulReads = 0;
+        foreach ($this->GetMonitoringDefinitions() as $ident => $definition) {
+            $rawValue = $this->ReadRegister($definition['function'], $definition['address']);
+            if ($rawValue === null) {
+                continue;
+            }
+
+            $value = $this->DecodeValue($rawValue, $definition);
+            $this->SetValue($ident, $value);
+            $successfulReads++;
+
+            if ($ident === 'TotalElectricalPower') {
+                $this->UpdateEnergyEstimate((float) $value);
+            }
+
+            if ($ident === 'FaultRegister') {
+                $this->SetValue('FaultPresent', $value > 0);
+            }
+        }
+
+        if ($successfulReads > 0) {
+            $this->SetValue('LastSuccessfulRead', date('Y-m-d H:i:s'));
+        }
+    }
+
+    public function ResetPendingFaults(): void
+    {
+        $this->SendServiceCommand(464, $this->Translate('Fault reset command sent.'));
+    }
+
+    public function RestartController(): void
+    {
+        $this->SendServiceCommand(465, $this->Translate('Controller restart command sent.'));
+    }
+
+    private function RegisterMonitoringVariables(): void
+    {
+        $this->RegisterVariableBoolean('FaultPresent', $this->Translate('Fault Present'), [], 19);
+
+        foreach ($this->GetMonitoringDefinitions() as $ident => $definition) {
+            $presentation = [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION
+            ];
+            if (($definition['suffix'] ?? '') !== '') {
+                $presentation['SUFFIX'] = $definition['suffix'];
+            }
+            if (isset($definition['digits'])) {
+                $presentation['DIGITS'] = $definition['digits'];
+            }
+
+            $caption = $this->Translate($definition['caption']);
+            if ($definition['type'] === 'boolean') {
+                $this->RegisterVariableBoolean($ident, $caption, [], $definition['position']);
+            } elseif ($definition['type'] === 'integer') {
+                $this->RegisterVariableInteger($ident, $caption, $presentation, $definition['position']);
+            } else {
+                $this->RegisterVariableFloat($ident, $caption, $presentation, $definition['position']);
+            }
+        }
+
+        $this->RegisterVariableFloat('EnergySinceFirstSample', $this->Translate('Estimated Energy Since First Sample'), [
+            'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+            'SUFFIX' => ' kWh',
+            'DIGITS' => 3
+        ], 4);
+        $this->SetValue('EnergySinceFirstSample', $this->ReadAttributeFloat('AccumulatedEnergyKWh'));
+        $this->RegisterVariableString('LastSuccessfulRead', $this->Translate('Last Successful Read'), '', 90);
+    }
+
+    private function GetMonitoringDefinitions(): array
+    {
+        return [
+            'ElectricalPowerPCB' => ['caption' => 'Electrical Power PCB', 'function' => 4, 'address' => 19, 'type' => 'float', 'scale' => 10, 'suffix' => ' W', 'digits' => 1, 'position' => 1],
+            'ElectricalPowerInverter' => ['caption' => 'Electrical Power Inverter', 'function' => 4, 'address' => 20, 'type' => 'float', 'scale' => 10, 'suffix' => ' W', 'digits' => 1, 'position' => 2],
+            'TotalElectricalPower' => ['caption' => 'Total Electrical Power', 'function' => 4, 'address' => 25, 'type' => 'float', 'scale' => 10, 'suffix' => ' W', 'digits' => 1, 'position' => 3],
+            'Airflow' => ['caption' => 'Airflow', 'function' => 4, 'address' => 26, 'type' => 'float', 'scale' => 10, 'suffix' => ' m³/h', 'digits' => 1, 'position' => 5],
+            'CompressorCOPJAZ1Minute' => ['caption' => 'Compressor COP/JAZ (1 minute)', 'function' => 4, 'address' => 27, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 6],
+            'CompressorCOPJAZ1Hour' => ['caption' => 'Compressor COP/JAZ (1 hour)', 'function' => 4, 'address' => 28, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 7],
+            'CompressorCOPJAZ24Hours' => ['caption' => 'Compressor COP/JAZ (24 hours)', 'function' => 4, 'address' => 29, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 8],
+            'CompressorCOPJAZ365Days' => ['caption' => 'Compressor COP/JAZ (365 days)', 'function' => 4, 'address' => 30, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 9],
+            'CompressorCOPJAZDays' => ['caption' => 'Compressor COP/JAZ days', 'function' => 4, 'address' => 31, 'type' => 'integer', 'scale' => 1, 'suffix' => ' d', 'position' => 10],
+            'TotalCOPJAZ1Minute' => ['caption' => 'Total COP/JAZ (1 minute)', 'function' => 4, 'address' => 32, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 11],
+            'TotalCOPJAZ1Hour' => ['caption' => 'Total COP/JAZ (1 hour)', 'function' => 4, 'address' => 33, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 12],
+            'TotalCOPJAZ24Hours' => ['caption' => 'Total COP/JAZ (24 hours)', 'function' => 4, 'address' => 34, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 13],
+            'FaultRegister' => ['caption' => 'Fault Register', 'function' => 4, 'address' => 47, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 20],
+            'FaultStatus1' => ['caption' => 'Fault Status 1 (raw)', 'function' => 4, 'address' => 48, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 21],
+            'FaultStatus2' => ['caption' => 'Fault Status 2 (raw)', 'function' => 4, 'address' => 49, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 22],
+            'FaultStatus3' => ['caption' => 'Fault Status 3 (raw)', 'function' => 4, 'address' => 50, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 23],
+            'FaultStatus4' => ['caption' => 'Fault Status 4 (raw)', 'function' => 4, 'address' => 51, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 24],
+            'FanStatus' => ['caption' => 'Fan Status (raw)', 'function' => 4, 'address' => 152, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 25],
+            'FanErrorRemainingTime' => ['caption' => 'Fan Error Remaining Time', 'function' => 4, 'address' => 153, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 26],
+            'ActualSupplyFanStage' => ['caption' => 'Actual Supply Fan Stage', 'function' => 4, 'address' => 154, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 27],
+            'SupplyFanVoltage' => ['caption' => 'Supply Fan Voltage', 'function' => 4, 'address' => 155, 'type' => 'float', 'scale' => 100, 'suffix' => ' V', 'digits' => 2, 'position' => 28],
+            'ExtractFanVoltage' => ['caption' => 'Extract Fan Voltage', 'function' => 4, 'address' => 156, 'type' => 'float', 'scale' => 100, 'suffix' => ' V', 'digits' => 2, 'position' => 29],
+            'SecondaryBoardFaultFlags' => ['caption' => 'Secondary Board Fault Flags (raw)', 'function' => 4, 'address' => 157, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 30],
+            'CompressorStatus' => ['caption' => 'Compressor Status (raw)', 'function' => 4, 'address' => 162, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 31],
+            'InverterErrorCode' => ['caption' => 'Inverter Error Code', 'function' => 4, 'address' => 170, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 32],
+            'CurrentCompressorPower' => ['caption' => 'Current Compressor Power', 'function' => 4, 'address' => 171, 'type' => 'float', 'scale' => 100, 'suffix' => ' %', 'digits' => 2, 'position' => 33],
+            'InverterErrorCode2' => ['caption' => 'Inverter Error Code 2', 'function' => 4, 'address' => 172, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 34],
+            'InverterFatalError' => ['caption' => 'Inverter Fatal Error', 'function' => 4, 'address' => 174, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 35],
+            'InverterErrorInput' => ['caption' => 'Inverter Error Input', 'function' => 4, 'address' => 184, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 36],
+            'InverterResetCounterTime' => ['caption' => 'Inverter Reset Counter Time', 'function' => 4, 'address' => 185, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 37],
+            'InverterErrorDelay' => ['caption' => 'Inverter Error Delay', 'function' => 4, 'address' => 186, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 38],
+            'InverterErrorCounter' => ['caption' => 'Inverter Error Counter', 'function' => 4, 'address' => 187, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 39],
+            'CompressorSpeed' => ['caption' => 'Compressor Speed', 'function' => 4, 'address' => 190, 'type' => 'integer', 'scale' => 1, 'suffix' => ' rpm', 'position' => 40],
+            'MaximumCompressorPower' => ['caption' => 'Maximum Compressor Power', 'function' => 4, 'address' => 201, 'type' => 'float', 'scale' => 100, 'suffix' => ' %', 'digits' => 2, 'position' => 41],
+            'InverterModbusErrorCounter' => ['caption' => 'Inverter Modbus Error Counter', 'function' => 4, 'address' => 213, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 42],
+            'EvaporatorTemperatureFromPressure' => ['caption' => 'Evaporator Temperature from Pressure', 'function' => 4, 'address' => 216, 'type' => 'float', 'scale' => 100, 'suffix' => ' °C', 'digits' => 2, 'signed' => true, 'position' => 43],
+            'InverterPowerModuleTemperature' => ['caption' => 'Inverter Power Module Temperature', 'function' => 4, 'address' => 233, 'type' => 'integer', 'scale' => 1, 'suffix' => ' °C', 'position' => 44],
+            'PacketErrorCounter' => ['caption' => 'Packet Error Counter', 'function' => 4, 'address' => 237, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 45],
+            'InverterModbusRestartCounter' => ['caption' => 'Inverter Modbus Restart Counter', 'function' => 4, 'address' => 267, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 46],
+            'InverterOneSecondErrorCounter' => ['caption' => 'Inverter 1-Second Error Counter', 'function' => 4, 'address' => 268, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 47],
+            'PlantRuntime' => ['caption' => 'Plant Runtime', 'function' => 3, 'address' => 467, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 60],
+            'RecirculationFilterRuntime' => ['caption' => 'Recirculation Runtime', 'function' => 3, 'address' => 468, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 61],
+            'DeviceFilterRuntime' => ['caption' => 'Device Filter Runtime', 'function' => 3, 'address' => 469, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 62],
+            'PreheaterRuntime' => ['caption' => 'Preheater Runtime', 'function' => 3, 'address' => 470, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 63],
+            'RecirculationRuntime' => ['caption' => 'Recirculation Runtime', 'function' => 3, 'address' => 471, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 64],
+            'InverterRuntime' => ['caption' => 'Inverter Runtime', 'function' => 3, 'address' => 472, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 65],
+            'CompressorCoolingRuntime' => ['caption' => 'Compressor Cooling Runtime', 'function' => 3, 'address' => 473, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 66],
+            'CompressorHeatingRuntime' => ['caption' => 'Compressor Heating Runtime', 'function' => 3, 'address' => 474, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 67],
+            'DefrostRuntime' => ['caption' => 'Defrost Runtime', 'function' => 3, 'address' => 475, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 68],
+            'FanRuntimeStage1' => ['caption' => 'Fan Runtime Stage 1', 'function' => 3, 'address' => 476, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 69],
+            'FanRuntimeStage2' => ['caption' => 'Fan Runtime Stage 2', 'function' => 3, 'address' => 477, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 70],
+            'FanRuntimeStage3' => ['caption' => 'Fan Runtime Stage 3', 'function' => 3, 'address' => 478, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 71],
+            'FanRuntimeStage4' => ['caption' => 'Fan Runtime Stage 4', 'function' => 3, 'address' => 479, 'type' => 'integer', 'scale' => 1, 'suffix' => ' h', 'position' => 72]
+        ];
+
+        return $definitions;
+    }
+
+    private function DecodeValue(int $rawValue, array $definition): mixed
+    {
+        if (($definition['signed'] ?? false) === true) {
+            $rawValue = $this->DecodeSignedValue($rawValue);
+        }
+
+        if ($definition['type'] === 'boolean') {
+            return $rawValue > 0;
+        }
+
+        $value = $rawValue / $definition['scale'];
+        return $definition['type'] === 'integer' ? (int) round($value) : (float) $value;
+    }
+
+    private function UpdateEnergyEstimate(float $powerW): void
+    {
+        $now = time();
+        $lastTimestamp = $this->ReadAttributeInteger('LastPowerTimestamp');
+        $lastPowerW = $this->ReadAttributeFloat('LastPowerW');
+        $energyKWh = $this->ReadAttributeFloat('AccumulatedEnergyKWh');
+        $maximumGap = max(300, max(5, $this->ReadPropertyInteger('Interval')) * 3);
+
+        if ($powerW >= 0 && $lastPowerW >= 0 && $lastTimestamp > 0 && $now > $lastTimestamp) {
+            $elapsed = $now - $lastTimestamp;
+            if ($elapsed <= $maximumGap) {
+                $energyKWh += (($lastPowerW + $powerW) / 2) * $elapsed / 3600000;
+            }
+        }
+
+        $this->WriteAttributeFloat('AccumulatedEnergyKWh', $energyKWh);
+        $this->WriteAttributeFloat('LastPowerW', max(0.0, $powerW));
+        $this->WriteAttributeInteger('LastPowerTimestamp', $now);
+        $this->SetValue('EnergySinceFirstSample', $energyKWh);
+    }
+
+    private function ReadRegister(int $function, int $address): ?int
+    {
+        $key = $function . ':' . $address;
+        if (array_key_exists($key, $this->pollCache)) {
+            return $this->pollCache[$key];
+        }
+
+        $response = $this->SendDataToParent(json_encode([
+            'DataID' => self::MODBUS_DATA_ID,
+            'Function' => $function,
+            'Address' => $address,
+            'Quantity' => 1,
+            'Data' => ''
+        ], JSON_THROW_ON_ERROR));
+
+        if (!is_string($response) || strlen($response) < 4) {
+            $this->pollCache[$key] = null;
+            return null;
+        }
+
+        $value = unpack('nvalue', substr($response, 2, 2));
+        $this->pollCache[$key] = $value === false ? null : $value['value'];
+        return $this->pollCache[$key];
+    }
+
+    private function SendServiceCommand(int $address, string $message): void
+    {
+        if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+            throw new RuntimeException($this->Translate('An active Modbus parent connection is required.'));
+        }
+
+        $response = $this->SendDataToParent(json_encode([
+            'DataID' => self::MODBUS_DATA_ID,
+            'Function' => 6,
+            'Address' => $address,
+            'Quantity' => 1,
+            'Data' => bin2hex(pack('n', 1))
+        ], JSON_THROW_ON_ERROR));
+
+        if ($response === false) {
+            throw new RuntimeException($this->Translate('The FWT service command could not be sent.'));
+        }
+
+        $this->LogMessage($message, KL_MESSAGE);
+    }
+
+    private function DecodeSignedValue(int $value): int
+    {
+        return $value >= 0x8000 ? $value - 0x10000 : $value;
+    }
+}

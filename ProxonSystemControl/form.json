@@ -31,6 +31,11 @@
 		},
 		{
 			"type": "Button",
+			"caption": "Create Monitoring Instance",
+			"onClick": "PROXON_CreateMonitoringInstance($id);"
+		},
+		{
+			"type": "Button",
 			"caption": "Create Advanced Instance",
 			"onClick": "PROXON_CreateAdvancedInstance($id);"
 		}

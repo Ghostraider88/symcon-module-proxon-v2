@@ -6,6 +6,7 @@ class ProxonSystemControl extends IPSModuleStrict
 {
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const ADVANCED_MODULE_ID = '{96EBFF26-A28F-4C3F-BB0B-166BDEE7B182}';
+    private const MONITORING_MODULE_ID = '{C48CB61D-8500-41F3-AC35-82DAF84EC870}';
 
     private const SENSOR_ROOM_REGISTERS = [
         1 => 394,
@@ -134,6 +135,44 @@ class ProxonSystemControl extends IPSModuleStrict
         }
 
         $this->LogMessage($this->Translate('The Advanced instance was created.'), KL_MESSAGE);
+    }
+
+    public function CreateMonitoringInstance(): void
+    {
+        if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+            throw new RuntimeException($this->Translate('The Modbus parent must be active before creating the Monitoring instance.'));
+        }
+
+        $connectionID = (int) IPS_GetInstance($this->InstanceID)['ConnectionID'];
+        if ($connectionID <= 0) {
+            throw new RuntimeException($this->Translate('No active Modbus parent connection was found.'));
+        }
+
+        foreach (IPS_GetInstanceListByModuleID(self::MONITORING_MODULE_ID) as $monitoringID) {
+            $instance = IPS_GetInstance($monitoringID);
+            if ((int) $instance['ConnectionID'] === $connectionID
+                && IPS_GetParent($monitoringID) === IPS_GetParent($this->InstanceID)) {
+                $this->LogMessage($this->Translate('The Monitoring instance already exists.'), KL_MESSAGE);
+                return;
+            }
+        }
+
+        $monitoringID = IPS_CreateInstance(self::MONITORING_MODULE_ID);
+        try {
+            if (!IPS_SetName($monitoringID, $this->Translate('Proxon System Control Monitoring'))
+                || !IPS_SetParent($monitoringID, IPS_GetParent($this->InstanceID))
+                || !IPS_ConnectInstance($monitoringID, $connectionID)
+                || !IPS_ApplyChanges($monitoringID)) {
+                throw new RuntimeException($this->Translate('The Monitoring instance could not be configured.'));
+            }
+        } catch (Throwable $exception) {
+            if (IPS_InstanceExists($monitoringID) && IPS_GetChildrenIDs($monitoringID) === []) {
+                IPS_DeleteInstance($monitoringID);
+            }
+            throw $exception;
+        }
+
+        $this->LogMessage($this->Translate('The Monitoring instance was created.'), KL_MESSAGE);
     }
 
     public function RequestStatus(): void

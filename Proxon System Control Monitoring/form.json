@@ -1,0 +1,67 @@
+{
+    "elements": [
+        {
+            "name": "Interval",
+            "type": "NumberSpinner",
+            "caption": "Polling interval",
+            "suffix": "Seconds"
+        },
+        {
+            "type": "Label",
+            "caption": "COP/JAZ values are reported by the FWT controller. The estimated energy counter starts with the first monitoring sample and does not include earlier consumption. Enable archive logging yourself if you want a history."
+        },
+        {
+            "type": "Label",
+            "caption": "Service commands are only available here in the backend. Reset clears pending faults; restart temporarily interrupts the system. Neither command is sent during monitoring."
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Update values",
+            "onClick": "PROXONMON_RequestStatus($id);"
+        },
+        {
+            "type": "PopupButton",
+            "caption": "Reset pending faults",
+            "popup": {
+                "caption": "Confirm fault reset",
+                "closeCaption": "Cancel",
+                "items": [
+                    {
+                        "type": "Label",
+                        "caption": "This writes the FWT fault reset command. It does not clear the displayed history in Symcon."
+                    }
+                ],
+                "buttons": [
+                    {
+                        "name": "ConfirmReset",
+                        "caption": "Reset faults",
+                        "onClick": "PROXONMON_ResetPendingFaults($id);"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "PopupButton",
+            "caption": "Restart FWT controller",
+            "popup": {
+                "caption": "Confirm device restart",
+                "closeCaption": "Cancel",
+                "items": [
+                    {
+                        "type": "Label",
+                        "caption": "This restarts the FWT controller and temporarily interrupts communication and operation."
+                    }
+                ],
+                "buttons": [
+                    {
+                        "name": "ConfirmRestart",
+                        "caption": "Restart controller",
+                        "onClick": "PROXONMON_RestartController($id);"
+                    }
+                ]
+            }
+        }
+    ]
+}
