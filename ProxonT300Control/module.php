@@ -329,7 +329,6 @@ class ProxonT300Control extends IPSModuleStrict
                 'address' => 834,
                 'type' => 'integer',
                 'scale' => 1,
-                'options' => [0 => 'Normal Operation', 1 => 'Emergency Operation'],
                 'position' => 141
             ],
             'CompressorStatusErrorDuration' => ['caption' => 'Compressor Status Error Duration', 'address' => 842, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 142],
@@ -341,25 +340,6 @@ class ProxonT300Control extends IPSModuleStrict
                 'address' => 861,
                 'type' => 'integer',
                 'scale' => 1,
-                'options' => [
-                    0 => 'No Fault',
-                    1 => 'Modbus',
-                    2 => 'Filter',
-                    3 => 'Compressor',
-                    4 => 'T9',
-                    5 => 'T11',
-                    6 => 'T13',
-                    7 => 'T21',
-                    8 => 'T20',
-                    9 => 'T6',
-                    10 => 'T5',
-                    11 => 'P19',
-                    12 => 'P14',
-                    13 => 'Compressor Temperature',
-                    14 => 'Fan',
-                    15 => 'Low Pressure',
-                    16 => 'Pressure Switch'
-                ],
                 'position' => 146
             ],
             'P19PressureErrorDuration' => ['caption' => 'P19 Pressure Error Duration', 'address' => 869, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 147],
@@ -384,18 +364,6 @@ class ProxonT300Control extends IPSModuleStrict
         }
         if (isset($definition['digits'])) {
             $presentation['DIGITS'] = $definition['digits'];
-        }
-        if (isset($definition['options'])) {
-            $presentationOptions = [];
-            foreach ($definition['options'] as $value => $caption) {
-                $presentationOptions[] = [
-                    'Value' => (int) $value,
-                    'Caption' => $this->Translate($caption),
-                    'IconActive' => false,
-                    'IconValue' => ''
-                ];
-            }
-            $presentation['OPTIONS'] = json_encode($presentationOptions, JSON_THROW_ON_ERROR);
         }
 
         return $presentation;
