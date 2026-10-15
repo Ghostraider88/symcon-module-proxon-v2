@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1 — Build 6 — 2026-10-15
+
+- Decode the actual heat-pump mode from input register 4x0241: 0 = off, 1 = heating, 2 = cooling.
+- Pass the confirmed heat-pump mode values to the FWT tile; test/debug register 3x0069 is not used as the actual mode.
+
 ## 1.1 — Build 5 — 2026-10-15
 
 - Extended heating/cooling colors from the condenser outlet through the EG/OG branch ducts; ventilation and off are neutral grey.

@@ -95,6 +95,7 @@
 			"Actual Operating Mode": "Aktuelle Betriebsart",
 			"Actual Heat Pump Mode": "Aktueller Wärmepumpenmodus",
 			"Heating": "Heizen",
+			"Cooling": "Kühlen",
 			"Unknown mode code %d": "Unbekannter Moduscode %d",
 			"Supply Fan Speed": "Drehzahl Zuluftventilator",
 			"Extract Fan Speed": "Drehzahl Abluftventilator",

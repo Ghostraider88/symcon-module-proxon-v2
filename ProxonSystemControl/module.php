@@ -600,8 +600,8 @@ class ProxonSystemControl extends IPSModuleStrict
             'systemControl' => $systemControl + [
                 'BypassOpen' => $hasLiveData && in_array($rawBypassStatus, [0, 1], true) ? $rawBypassStatus === 1 : null,
                 'DamperPositionCode' => $hasLiveData && $rawDamperPosition >= 0 && $rawDamperPosition <= 4 ? $rawDamperPosition : null,
-                // Code 1 has been confirmed as heating; leave other 4x0241 codes visually unknown.
-                'HeatPumpModeCode' => $hasLiveData && $rawHeatPumpMode === 1 ? 1 : null
+                // Symcon archive values confirm 0 = off, 1 = heating, and 2 = cooling.
+                'HeatPumpModeCode' => $hasLiveData && in_array($rawHeatPumpMode, [0, 1, 2], true) ? $rawHeatPumpMode : null
             ],
             'monitoring' => $monitoring,
             'rooms' => $this->GetVisualizationRooms()
@@ -763,12 +763,16 @@ class ProxonSystemControl extends IPSModuleStrict
 
     private function GetHeatPumpModeCaption(int $value): string
     {
-        // 4x0241 is the actual mode register. Only the heating code is confirmed so far.
-        if ($value === 1) {
-            return $this->Translate('Heating');
-        }
+        // 4x0241 is the actual mode register; these states are confirmed by the Symcon archive.
+        $captions = [
+            0 => 'Off',
+            1 => 'Heating',
+            2 => 'Cooling'
+        ];
 
-        return sprintf($this->Translate('Unknown mode code %d'), $value);
+        return isset($captions[$value])
+            ? $this->Translate($captions[$value])
+            : sprintf($this->Translate('Unknown mode code %d'), $value);
     }
 
     private function DecodeControlValue(int $rawValue, array $definition): mixed
