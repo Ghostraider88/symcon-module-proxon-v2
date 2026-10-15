@@ -1,0 +1,10 @@
+Build 2 (15.10.2026)
+geändert: Proxon Central kann als Rauminstanz für die Temperatur- und Sollwertanzeige gewählt werden. Die PTC-Freigabe wird weiterhin nicht als tatsächlicher Heizstatus gewertet.
+Build 1 (15.10.2026)
+neu: Raumzuordnung für die FWT-Visualisierung mit frei wählbaren Namen, EG/OG und PROXON-Rauminstanzen.
+neu: CO2, relative Feuchte und tatsächlicher PTC-Status können je Raum über externe Symcon-Variablen ergänzt werden. CO2 und Feuchte sind unabhängig zuordenbar.
+geändert: Eigene Luftanschlusslabels und verständliche Bezeichnungen ohne Registernummern in der Anzeige.
+neu: Überarbeitete kompakte FWT-Layoutvorschläge als Grafik. Das neue Anlagenlayout ist noch nicht in der aktiven HTML-Kachel umgesetzt; die konfigurierbaren Raumtabellen sind enthalten.
+geändert: Mit den bereits vorhandenen FWT-Registerkorrekturen sowie der T300-Steuerung und Statusanzeige zusammengeführt.
+
+Ältere Historie: siehe CHANGELOG.md

@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1270" role="img" aria-labelledby="title desc">
+<title id="title">FWT Layout-Vorschlag für die Symcon-Kachel</title>
+<desc id="desc">Vorschau mit großem Anlagenprozess über die gesamte Breite, klar getrennten Statuskarten und einer nach Messgruppen sortierten Wärmepumpen-Diagnose. Die Kreuzstrom-Wärmeübertragung bleibt mit zwei getrennten diagonalen Luftwegen dargestellt.</desc>
+<defs>
+  <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#edf2f7"/></linearGradient>
+  <linearGradient id="fresh" x2="1"><stop stop-color="#169b70"/><stop offset="1" stop-color="#64c59b"/></linearGradient>
+  <linearGradient id="supply" x2="1"><stop stop-color="#ef8874"/><stop offset="1" stop-color="#df493e"/></linearGradient>
+  <linearGradient id="extract" x2="0"><stop stop-color="#e5a03d"/><stop offset="1" stop-color="#f0c575"/></linearGradient>
+  <linearGradient id="exhaust" x2="0"><stop stop-color="#7bb9df"/><stop offset="1" stop-color="#3184be"/></linearGradient>
+  <marker id="arrowGreen" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#169b70"/></marker>
+  <marker id="arrowRed" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#df493e"/></marker>
+  <marker id="arrowAmber" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#e5a03d"/></marker>
+  <marker id="arrowBlue" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#3184be"/></marker>
+  <style>
+    .txt{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#192b3d}
+    .muted{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#718195}
+    .card{fill:#fff;stroke:#dfe7ef;stroke-width:2}
+    .label{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#192b3d;font-size:14px;font-weight:750}
+    .value{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#192b3d;font-size:20px;font-weight:750}
+    .mini{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#718195;font-size:12px}
+    .duct{fill:none;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+    .air{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-dasharray:2 18;opacity:.95}
+    .metric{fill:#f6f8fa;stroke:#e6ebf0}
+  </style>
+</defs>
+<rect width="1800" height="1270" fill="url(#bg)"/>
+
+<!-- Symcon hat bereits einen eigenen Instanznamen; daher keine zweite große Überschrift. -->
+<text class="muted" x="34" y="76" font-size="14" font-weight="750" letter-spacing="1.2">FWT · ANLAGENÜBERSICHT</text>
+<rect x="1548" y="52" width="218" height="38" rx="19" fill="#eaf7ef" stroke="#b8dec6"/>
+<circle cx="1571" cy="71" r="6" fill="#35a56d"/>
+<text class="txt" x="1587" y="76" font-size="13" font-weight="750">Anlage in Betrieb</text>
+
+<!-- Full-width air path: larger than in the current two-column layout. -->
+<rect class="card" x="28" y="104" width="1744" height="540" rx="22"/>
+<text class="muted" x="58" y="141" font-size="13" font-weight="800" letter-spacing="1">LUFTWEGE · ORIGINALER ANLAGENAUFBAU</text>
+<text class="muted" x="58" y="164" font-size="14">Frischluft und Abluft kreuzen sich getrennt im Wärmetauscher · Zuluft wird danach auf EG und OG verteilt</text>
+<rect x="124" y="188" width="1548" height="414" rx="20" fill="#f8fafc" stroke="#aebdca" stroke-width="3"/>
+<text class="muted" x="151" y="218" font-size="12" font-weight="800" letter-spacing="1">FWT · LUFTGERÄT</text>
+
+<!-- Air path labels and temperature chips -->
+<text class="label" x="60" y="310">AUSSENLUFT</text><text class="mini" x="60" y="330">Frischluft hinein</text>
+<rect class="card" x="58" y="244" width="166" height="52" rx="12"/><text class="mini" x="74" y="264" font-weight="750">T3 · FRISCHLUFT</text><text class="value" x="74" y="287">— °C</text>
+<text class="label" x="1510" y="245">RAUMLUFT</text><text class="mini" x="1510" y="264">Abluft hinein</text>
+<rect class="card" x="1320" y="192" width="166" height="52" rx="12"/><text class="mini" x="1336" y="212" font-weight="750">T7 · ABLUFT</text><text class="value" x="1336" y="235">— °C</text>
+<rect class="card" x="1000" y="548" width="166" height="48" rx="12"/><text class="mini" x="1016" y="567" font-weight="750">T1 · ZULUFT</text><text class="value" x="1016" y="588">— °C</text>
+<text class="label" x="60" y="552">FORTLUFT</text><text class="mini" x="60" y="571">abgekühlt hinaus</text>
+<rect class="card" x="264" y="548" width="166" height="48" rx="12"/><text class="mini" x="280" y="567" font-weight="750">T4 · FORTLUFT</text><text class="value" x="280" y="588">— °C</text>
+
+<!-- Bypass above the heat exchanger -->
+<path d="M500 382V286H1110V512" fill="none" stroke="#159a69" stroke-width="6" stroke-dasharray="12 9" stroke-linecap="round"/>
+<rect x="714" y="266" width="180" height="34" rx="17" fill="#fff" stroke="#c4d0d9"/>
+<text class="label" x="804" y="288" text-anchor="middle" font-size="12">BYPASS · R222 · —</text>
+<circle cx="500" cy="330" r="14" fill="#fff" stroke="#718195" stroke-width="3"/><path d="M491 339L509 321" stroke="#718195" stroke-width="3"/>
+
+<!-- Fresh air: outside, filter, supply fan, first exchanger diagonal, then two floor branches. -->
+<path class="duct" d="M98 382H265" stroke="#169b70" marker-end="url(#arrowGreen)"/>
+<path class="air" d="M104 382H256"/>
+<rect x="265" y="343" width="72" height="78" rx="9" fill="#fff" stroke="#aebdca" stroke-width="2"/>
+<path d="M278 353L324 411M278 374L308 411M298 353L324 387" stroke="#aebdca" stroke-width="3"/>
+<text class="mini" x="301" y="441" text-anchor="middle" font-weight="800">FILTER</text>
+<path class="duct" d="M337 382H451" stroke="#169b70" marker-end="url(#arrowGreen)"/>
+<path class="air" d="M340 382H445"/>
+<g transform="translate(475 382)"><circle r="29" fill="#fff" stroke="#aebdca" stroke-width="2"/><path d="M0 -5C-25 -28 -30 -5 -7 4C-29 7 -21 29 -2 9C7 32 27 19 6 4C30 -3 17 -26 0 -5Z" fill="#4eae88"/><circle r="5" fill="#526576"/></g>
+<text class="label" x="475" y="433" text-anchor="middle">ZULUFT-FAN</text><text class="mini" x="475" y="453" text-anchor="middle">— rpm</text>
+<path class="duct" d="M504 382H764" stroke="#169b70" marker-end="url(#arrowGreen)"/>
+<path class="air" d="M510 382H756"/>
+
+<!-- Extract air: room return fan and the opposing exchanger diagonal. -->
+<path class="duct" d="M1630 288H1380" stroke="#e5a03d" marker-end="url(#arrowAmber)"/>
+<path class="air" d="M1620 288H1390"/>
+<g transform="translate(1350 288)"><circle r="29" fill="#fff" stroke="#aebdca" stroke-width="2"/><path d="M0 -5C-25 -28 -30 -5 -7 4C-29 7 -21 29 -2 9C7 32 27 19 6 4C30 -3 17 -26 0 -5Z" fill="#e4a03f"/><circle r="5" fill="#526576"/></g>
+<text class="label" x="1350" y="340" text-anchor="middle">ABLUFT-FAN</text><text class="mini" x="1350" y="360" text-anchor="middle">— rpm</text>
+<path class="duct" d="M1321 288H1070V370" stroke="url(#extract)" marker-end="url(#arrowAmber)"/>
+<path class="air" d="M1310 288H1080V365"/>
+
+<!-- Heat exchanger core with the two separate diagonal streams crossing. -->
+<rect x="764" y="342" width="306" height="170" rx="12" fill="#e9eef2" stroke="#8699a9" stroke-width="3"/>
+<g stroke="#c2ccd4" stroke-width="4">
+  <path d="M780 356L864 440M780 390L900 510M815 351L969 505M866 350L1035 519M930 349L1061 480"/>
+  <path d="M1054 356L970 440M1054 390L934 510M1019 351L865 505M968 350L799 519M904 349L773 480"/>
+</g>
+<path class="duct" d="M764 382L1070 512" stroke="url(#fresh)" marker-end="url(#arrowGreen)"/>
+<path class="air" d="M770 384L1062 508"/>
+<path class="duct" d="M1070 370L764 512" stroke="url(#extract)" marker-end="url(#arrowAmber)"/>
+<path class="air" d="M1063 373L771 509"/>
+<path class="duct" d="M764 512H98" stroke="#3184be" marker-end="url(#arrowBlue)"/>
+<path class="air" d="M758 512H104"/>
+<circle cx="917" cy="427" r="25" fill="#fff" stroke="#aebdca" stroke-width="2"/>
+<path d="M901 421H930M925 416L931 421L925 426M933 433H904M909 428L903 433L909 438" fill="none" stroke="#718195" stroke-width="2.5"/>
+<text class="label" x="917" y="535" text-anchor="middle">KREUZSTROM-WÄRMETAUSCHER</text>
+
+<!-- Supply after heat recovery and a shared EG/OG damper. -->
+<path class="duct" d="M1070 512H1212" stroke="#df493e" marker-end="url(#arrowRed)"/>
+<path class="air" d="M1078 512H1204"/>
+<g transform="translate(1228 512)"><circle r="21" fill="#fff" stroke="#b84d45" stroke-width="2.5"/><text class="label" x="0" y="6" text-anchor="middle" fill="#9d423b">S</text></g>
+<text class="mini" x="1228" y="578" text-anchor="middle" font-weight="800">EG/OG-SCHIEBER</text>
+<path class="duct" d="M1249 512H1285V374H1630" stroke="url(#supply)" marker-end="url(#arrowRed)"/>
+<path class="air" d="M1254 512H1279V374H1620"/>
+<path class="duct" d="M1249 512H1630" stroke="#df493e" marker-end="url(#arrowRed)"/>
+<path class="air" d="M1255 512H1620"/>
+<text class="label" x="1510" y="353">OG · OBERGESCHOSS</text>
+<text class="label" x="1510" y="490">EG · ERDGESCHOSS</text>
+<text class="mini" x="1510" y="395">Zuluft nach Schieberstellung</text>
+<text class="mini" x="1510" y="534">Zuluft nach Schieberstellung</text>
+
+<!-- Quick status row -->
+<rect class="card" x="28" y="666" width="360" height="184" rx="18"/>
+<text class="muted" x="54" y="700" font-size="13" font-weight="800" letter-spacing="1">LUFTGERÄT</text>
+<text class="label" x="54" y="734">Zuluft-Fan</text><text class="value" x="354" y="734" text-anchor="end">— rpm</text>
+<text class="label" x="54" y="766">Abluft-Fan</text><text class="value" x="354" y="766" text-anchor="end">— rpm</text>
+<text class="label" x="54" y="798">Filterlaufzeit</text><text class="value" x="354" y="798" text-anchor="end">— h</text>
+<text class="mini" x="54" y="829">R26 Luftmenge: Einheit / Zuordnung offen</text>
+
+<rect class="card" x="406" y="666" width="558" height="184" rx="18"/>
+<text class="muted" x="432" y="700" font-size="13" font-weight="800" letter-spacing="1">EG / OG · RELATIVE LUFTVERTEILUNG</text>
+<text class="mini" x="432" y="725">EG bevorzugt</text><text class="mini" x="938" y="725" text-anchor="end">OG bevorzugt</text>
+<g font-family="Inter,Arial,sans-serif" font-size="12" font-weight="750" text-anchor="middle">
+  <rect x="432" y="738" width="96" height="34" rx="8" fill="#fff" stroke="#dfe7ef"/><text class="muted" x="480" y="760">0 · EG</text>
+  <rect x="532" y="738" width="96" height="34" rx="8" fill="#fff" stroke="#dfe7ef"/><text class="muted" x="580" y="760">1</text>
+  <rect x="632" y="738" width="96" height="34" rx="8" fill="#df493e" stroke="#c9433a"/><text x="680" y="760" fill="#fff">2</text>
+  <rect x="732" y="738" width="96" height="34" rx="8" fill="#fff" stroke="#dfe7ef"/><text class="muted" x="780" y="760">3</text>
+  <rect x="832" y="738" width="96" height="34" rx="8" fill="#fff" stroke="#dfe7ef"/><text class="muted" x="880" y="760">4 · OG</text>
+</g>
+<text class="label" x="432" y="802">OG</text><rect x="480" y="789" width="438" height="14" rx="7" fill="#edf1f4"/><rect x="480" y="789" width="219" height="14" rx="7" fill="#93cabb"/>
+<text class="label" x="432" y="829">EG</text><rect x="480" y="816" width="438" height="14" rx="7" fill="#edf1f4"/><rect x="480" y="816" width="219" height="14" rx="7" fill="#df887d"/>
+
+<rect class="card" x="982" y="666" width="790" height="184" rx="18"/>
+<text class="muted" x="1008" y="700" font-size="13" font-weight="800" letter-spacing="1">WÄRMEPUMPE · ZUSTAND UND FUNKTION</text>
+<rect x="1008" y="718" width="190" height="45" rx="12" fill="#f4f0fb" stroke="#ddd4ee"/>
+<text class="mini" x="1024" y="737" font-weight="750">BETRIEBSMODUS</text><text class="value" x="1024" y="757" font-size="17">—</text>
+<text class="label" x="1232" y="735">Verdichter</text><text class="value" x="1496" y="735">—</text>
+<text class="label" x="1232" y="765">Kühlfreigabe</text><text class="value" x="1496" y="765">—</text>
+<text class="label" x="1232" y="795">4-Wegeventil · R223</text><text class="value" x="1496" y="795">Code offen</text>
+<text class="label" x="1232" y="825">PTC EG / OG</text><text class="value" x="1496" y="825">Register zuordnen</text>
+
+<!-- Readable register groups; detailed values no longer compete with the main process. -->
+<rect class="card" x="28" y="872" width="558" height="346" rx="18"/>
+<text class="muted" x="54" y="908" font-size="13" font-weight="800" letter-spacing="1">ANTRIEB · LEISTUNG · JAZ / COP</text>
+<g class="mini" font-weight="700">
+ <text x="54" y="950">PCB · R19</text><text x="54" y="972" class="value" font-size="17">—</text>
+ <text x="188" y="950">FU · R20</text><text x="188" y="972" class="value" font-size="17">—</text>
+ <text x="322" y="950">Gesamt · R25</text><text x="322" y="972" class="value" font-size="17">—</text>
+ <text x="456" y="950">Kompressor · R171</text><text x="456" y="972" class="value" font-size="17">—</text>
+ <text x="54" y="1018">Drehzahl · R190</text><text x="54" y="1040" class="value" font-size="17">—</text>
+ <text x="188" y="1018">FU-Strom · R250</text><text x="188" y="1040" class="value" font-size="17">—</text>
+ <text x="322" y="1018">JAZ Kompressor</text><text x="322" y="1040" class="value" font-size="17">—</text>
+ <text x="456" y="1018">JAZ Gesamt</text><text x="456" y="1040" class="value" font-size="17">—</text>
+</g>
+<path d="M54 1070H558" stroke="#e6ebf0"/>
+<text class="mini" x="54" y="1100">JAZ-Zeiträume als eigene Reihe: 1 Monat · 1 Stunde · 24 Stunden · 365 Tage</text>
+<text class="mini" x="54" y="1130">Einheiten nur anzeigen, wenn sie im Register eindeutig feststehen.</text>
+
+<rect class="card" x="606" y="872" width="558" height="346" rx="18"/>
+<text class="muted" x="632" y="908" font-size="13" font-weight="800" letter-spacing="1">KÄLTEKREIS · TEMPERATUREN AM BAUTEIL</text>
+<path d="M770 982H1015V1118H770Z" fill="none" stroke="#91a2b1" stroke-width="3" stroke-dasharray="7 7"/>
+<rect x="644" y="944" width="206" height="64" rx="12" fill="#fff" stroke="#edb6b1" stroke-width="2"/>
+<text class="label" x="747" y="969" text-anchor="middle">VERDICHTER</text><text class="mini" x="747" y="990" text-anchor="middle">T13 · R180 · — °C</text>
+<rect x="932" y="944" width="194" height="64" rx="12" fill="#fff" stroke="#f0d3a8" stroke-width="2"/>
+<text class="label" x="1029" y="969" text-anchor="middle">KONDENSATOR</text><text class="mini" x="1029" y="990" text-anchor="middle">T10 / T12 · R179 / R178</text>
+<rect x="932" y="1062" width="194" height="64" rx="12" fill="#fff" stroke="#b7d6ec" stroke-width="2"/>
+<text class="label" x="1029" y="1087" text-anchor="middle">EXPANSIONSVENTIL</text><text class="mini" x="1029" y="1108" text-anchor="middle">Kühl / Heiz / Vorwärme</text>
+<rect x="644" y="1062" width="206" height="64" rx="12" fill="#fff" stroke="#b7d6ec" stroke-width="2"/>
+<text class="label" x="747" y="1087" text-anchor="middle">VERDAMPFER</text><text class="mini" x="747" y="1108" text-anchor="middle">Drucktemperatur · R216</text>
+<rect x="816" y="1024" width="168" height="44" rx="11" fill="#f5f8fa" stroke="#dce4eb"/>
+<text class="label" x="900" y="1043" text-anchor="middle" font-size="12">KREISLAUF · T8 / R177</text><text class="mini" x="900" y="1059" text-anchor="middle">Messpunkt</text>
+
+<rect class="card" x="1184" y="872" width="588" height="346" rx="18"/>
+<text class="muted" x="1210" y="908" font-size="13" font-weight="800" letter-spacing="1">FEHLER · LAUFZEITEN · ZUSATZHEIZUNG</text>
+<g class="label" font-size="13">
+ <text x="1210" y="948">Kompressorstatus · R162</text><text class="muted" x="1738" y="948" text-anchor="end">—</text>
+ <text x="1210" y="979">Inverterfehler 1 / 2 · R170 / R172</text><text class="muted" x="1738" y="979" text-anchor="end">— / —</text>
+ <text x="1210" y="1010">Laufzeit Heizen · R474</text><text class="muted" x="1738" y="1010" text-anchor="end">— h</text>
+ <text x="1210" y="1041">Laufzeit Kühlen · R473</text><text class="muted" x="1738" y="1041" text-anchor="end">— h</text>
+ <text x="1210" y="1072">Abtau-Laufzeit · R475</text><text class="muted" x="1738" y="1072" text-anchor="end">— h</text>
+ <text x="1210" y="1103">PTC EG / OG</text><text class="muted" x="1738" y="1103" text-anchor="end">Relaiszuordnung offen</text>
+</g>
+<rect x="1210" y="1130" width="536" height="48" rx="10" fill="#fff8eb" stroke="#efdfbf"/>
+<text class="mini" x="1225" y="1151">Registercodes und Einheiten erst nach Abgleich mit Excel/PDF</text>
+<text class="mini" x="1225" y="1168">als Klartext ausgeben; ungeklärte Werte sichtbar markieren.</text>
+</svg>

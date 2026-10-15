@@ -34,6 +34,7 @@ Previously exposed advanced variables in an existing System Control instance are
 | --- | --- | --- |
 | Interval | 30 seconds | Poll interval for control and status values |
 | Heat Pump Monitoring Instance | None | Optional Monitoring instance whose heat-pump readings are shown in the HTML tile |
+| Visualization Rooms | Empty list | Room display names, EG/OG assignment, selected PROXON rooms and optional external sensor variables |
 | CO2/RF sensor count | 1 | Number of installed sensors to show, from 1 to 5 |
 | Enable Advanced Controls | Off | Allows write actions in the associated Advanced instance |
 
@@ -43,7 +44,27 @@ The plant must already allow Modbus writes. This library does not change the wri
 
 System Control offers a read-only HTML-SDK tile. Add the instance to a Symcon visualization and select the matching Proxon System Control Monitoring instance in its configuration to include heat-pump measurements. The tile uses values already polled by these modules and does not add Modbus requests.
 
-The EG/OG branch thickness and bars visualize the five-position damper preference. They are relative indicators, not measured air volume per floor. Register units and state mappings that are still under review remain unlabeled or show as unavailable. The PTC relay's active state is not yet exposed by the current modules.
+The EG/OG branch thickness and bars visualize the five-position damper preference. They are relative indicators, not measured air volume per floor. Register units and state mappings that are still under review remain unlabeled or show as unavailable. Register addresses and sensor codes are not shown in the tile.
+
+### Room names and sensor mapping
+
+Open **Visualization Rooms** in the instance configuration and add one row per room. Editing a row provides these fields:
+
+| Field | Meaning |
+| --- | --- |
+| Room Name | Display name, independent of the instance name. When empty, use the selected PROXON room instance's name. A name is required for a room without a PROXON instance. |
+| Floor | EG or OG. The list order determines the room order within each floor. |
+| PROXON Room | Optional Panel, Zone or Central instance supplying `CurrentTemperature` and `TargetTemperature`; actual `PTCStatus` is used when that instance provides it. |
+| PROXON Air Quality Sensor | Optional sensor 1–5 from this System Control instance supplying CO2 and relative humidity. Select the sensor actually serving the room. |
+| External CO2 Variable | Optional integer/float Symcon variable, in ppm. Overrides only the selected room's CO2 value. |
+| External Humidity Variable | Optional integer/float Symcon variable, in percent (0–100). Overrides only the selected room's humidity value. |
+| Actual PTC Status Variable | Optional boolean Symcon variable for the actual heater state. Overrides the native actual PTC status. |
+
+CO2 and humidity can use different sources. For example, keep PROXON CO2 while supplying humidity from a separate sensor, or add a room with only external air-quality readings. Empty selectors (ID 0) mean no external override. A deleted, invalid or not-yet-updated selected variable displays as unavailable; it does not silently select a different source. Missing readings appear as `—`, and a valid numeric zero remains zero.
+
+The Zone module's `PTCRelease` is permission to heat and is never shown as an active heater. A Panel's actual `PTCStatus`, or an explicitly selected actual boolean status, can supply that indication; otherwise it stays unavailable.
+
+This room mapping is for display and does not change the device's own CO2/RF room assignment or heating controls. Only selected instances, selected variables and this instance's selected native sensors are read. References protect those objects, and variable updates refresh the room cards through a short debounce timer without extra Modbus requests. No external variable is written or archived automatically.
 
 ## Installation
 

@@ -28,9 +28,9 @@ class ProxonCentral extends IPSModuleStrict {
 				"TEMPLATE" => VARIABLE_TEMPLATE_SLIDER_ROOM_TEMPERATURE,
 				"MIN" => 10,
 				"MAX" => 30,
-				"STEP_SIZE" => 0.1,
+				"STEP_SIZE" => 1,
 				"SUFFIX" => " °C",
-				"DIGITS" => 1
+				"DIGITS" => 0
 			], 2);
 			$this->EnableAction("TargetTemperature");
 			$this->RegisterVariableBoolean("PTCRelease", $this->Translate("PTC Release"), [
@@ -79,6 +79,9 @@ class ProxonCentral extends IPSModuleStrict {
 			if ($Value < 10 || $Value > 30) {
 				throw new InvalidArgumentException($this->Translate("Target temperature must be between 10 and 30 °C."));
 			}
+
+			// The main control panel only supports whole-degree setpoints.
+			$Value = (float) round($Value);
 
 			$Address = 70;
 			$Data = pack("n*", (int) round($Value * 100));

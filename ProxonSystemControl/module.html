@@ -25,14 +25,87 @@
             min-width: 1180px;
             height: auto;
         }
+
+        .fwt-rooms { margin: 16px 28px 28px; padding: 24px; border: 1px solid #dfe6ed; border-radius: 18px; background: #fff; }
+        .fwt-rooms h2 { margin: 0 0 20px; font-size: 18px; }
+        .fwt-room-floors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+        .fwt-floor { min-width: 0; padding: 18px; border-radius: 12px; background: #f8fafc; }
+        .fwt-floor h3 { margin: 0 0 14px; font-size: 16px; }
+        .fwt-room-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .fwt-room-table th { font-size: 12px; font-weight: 500; color: #738397; }
+        .fwt-room-table td, .fwt-room-table th { padding: 12px 7px; border-bottom: 1px solid #e8edf2; }
+        .fwt-room-table td:first-child { overflow-wrap: anywhere; }
+        .fwt-room-table td:not(:first-child) { white-space: nowrap; }
+        .fwt-floor-scroll { overflow-x: auto; }
+        .fwt-ptc { display: inline-block; min-width: 40px; padding: 5px 8px; border-radius: 12px; text-align: center; background: #edf2f5; color: #738397; }
+        .fwt-ptc.active { background: #fff0e8; color: #ad654a; }
+        @media (max-width: 1100px) { .fwt-room-floors { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <main class="fwt-tile" aria-label="PROXON FWT Anlagenvisualisierung">
     <!-- FWT_SVG -->
+    <section class="fwt-rooms" id="fwt-rooms"></section>
 </main>
 <script>
 const initialData = __INITIAL_DATA__;
+const roomLabels = __ROOM_LABELS__;
+
+function updateRooms(data) {
+    const section = document.getElementById('fwt-rooms');
+    if (!section) return;
+    const rooms = Array.isArray(data.rooms) ? data.rooms : [];
+    section.replaceChildren();
+    const element = (tag, text, className) => {
+        const node = document.createElement(tag);
+        if (text !== undefined) node.textContent = text;
+        if (className) node.className = className;
+        return node;
+    };
+    section.append(element('h2', roomLabels.Rooms));
+    if (!rooms.length) {
+        section.append(element('p', roomLabels['No rooms assigned']));
+        return;
+    }
+    const floors = element('div', undefined, 'fwt-room-floors');
+    section.append(floors);
+    const number = (value, suffix = '', digits = 0) => typeof value === 'number' && Number.isFinite(value)
+        ? new Intl.NumberFormat(undefined, { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value) + suffix : '—';
+    for (const floor of ['EG', 'OG']) {
+        const selected = rooms.filter((room) => room.floor === floor);
+        if (!selected.length) continue;
+        const card = element('article', undefined, 'fwt-floor');
+        card.append(element('h3', roomLabels[floor === 'EG' ? 'Ground Floor' : 'Upper Floor']));
+        const scroll = element('div', undefined, 'fwt-floor-scroll');
+        const table = element('table', undefined, 'fwt-room-table');
+        const head = element('thead');
+        const headings = element('tr');
+        for (const caption of ['Room', 'Actual / Target', 'CO2', 'Relative Humidity', 'PTC Active']) {
+            const th = element('th', roomLabels[caption]);
+            th.scope = 'col';
+            headings.append(th);
+        }
+        head.append(headings);
+        table.append(head);
+        const body = element('tbody');
+        for (const room of selected) {
+            const row = element('tr');
+            row.append(element('td', room.name));
+            row.append(element('td', room.temperature == null && room.setpoint == null ? '—'
+                : number(room.temperature, '', 1) + ' / ' + number(room.setpoint, '', 1) + ' °C'));
+            row.append(element('td', number(room.co2, ' ppm')));
+            row.append(element('td', number(room.humidity, ' %', 1)));
+            const ptc = element('td');
+            ptc.append(element('span', room.ptc === true ? roomLabels.On : room.ptc === false ? roomLabels.Off : '—', 'fwt-ptc' + (room.ptc === true ? ' active' : '')));
+            row.append(ptc);
+            body.append(row);
+        }
+        table.append(body);
+        scroll.append(table);
+        card.append(scroll);
+        floors.append(card);
+    }
+}
 
 function getValueAtPath(source, path) {
     return path.split('.').reduce((value, key) => value && value[key], source);
@@ -113,6 +186,7 @@ function updateAirflow(data) {
 function updateDamper(data) {
     const system = data.systemControl || {};
     const position = system.DamperPositionCode;
+    const hasPosition = Number.isInteger(position) && position >= 0 && position <= 4;
     const captions = ['EG', 'EG bevorzugt', 'ausgeglichen', 'OG bevorzugt', 'OG'];
     const caption = document.getElementById('damper-caption');
 
@@ -121,14 +195,14 @@ function updateDamper(data) {
     });
 
     if (caption) {
-        caption.textContent = Number.isInteger(position)
+        caption.textContent = hasPosition
             ? 'Schieberposition ' + position + ' · ' + captions[position]
             : 'Schieberposition: —';
     }
 
     const egShares = [0.9, 0.75, 0.5, 0.25, 0.1];
-    const egShare = Number.isInteger(position) && egShares[position] !== undefined ? egShares[position] : 0.5;
-    const ogShare = 1 - egShare;
+    const egShare = hasPosition ? egShares[position] : 0;
+    const ogShare = hasPosition ? 1 - egShare : 0;
     const egMeter = document.getElementById('eg-flow-meter');
     const ogMeter = document.getElementById('og-flow-meter');
     const egBranch = document.getElementById('flow-branch-eg');
@@ -147,7 +221,7 @@ function updateDamper(data) {
         ogBranch.style.strokeWidth = String(4 + ogShare * 9);
     }
 
-    const describeShare = (share) => share > 0.6
+    const describeShare = (share) => !hasPosition ? '—' : share > 0.6
         ? 'relativ bevorzugt'
         : share < 0.4 ? 'relativ reduziert' : 'ausgeglichen';
     [
@@ -175,7 +249,7 @@ function updateBypass(data) {
     const valveBlade = valve && valve.querySelector('path');
 
     if (statusElement) {
-        statusElement.textContent = 'BYPASS · R222 · ' + (status || '—');
+        statusElement.textContent = 'BYPASS · ' + (status || '—');
     }
     if (path) {
         path.style.stroke = isOpen === true ? '#159a69' : '#8497a8';
@@ -252,6 +326,7 @@ function handleMessage(data) {
     updateBypass(data);
     updateHeatPumpMode(data);
     updateTileStatus(data);
+    updateRooms(data);
 }
 
 window.handleMessage = handleMessage;
