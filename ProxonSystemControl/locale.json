@@ -1,0 +1,28 @@
+{
+	"translations": {
+		"de": {
+			"System Control": "Anlagensteuerung",
+			"Operating Mode": "Betriebsart",
+			"Fan Stage": "Lüfterstufe",
+			"Cooling Enabled": "Kühlfreigabe",
+			"Intensive Ventilation Duration": "Intensivlüftungsdauer",
+			"Off": "Aus",
+			"Summer Operation": "Sommerbetrieb",
+			"Winter Operation": "Winterbetrieb",
+			"Eco Comfort": "ECO-Komfort",
+			"Stove Mode": "Ofenbetrieb",
+			"Emergency Operation": "Notbetrieb",
+			"Fan Stage 1": "Lüfterstufe 1",
+			"Fan Stage 2": "Lüfterstufe 2",
+			"Fan Stage 3": "Lüfterstufe 3",
+			"Fan Stage 4": "Lüfterstufe 4",
+			"Minutes": "Minuten",
+			"Interval": "Intervall",
+			"Seconds": "Sekunden",
+			"Update Values": "Werte aktualisieren",
+			"Unsupported operating mode.": "Nicht unterstützte Betriebsart.",
+			"Fan stage must be between 1 and 4.": "Die Lüfterstufe muss zwischen 1 und 4 liegen.",
+			"Intensive ventilation duration must be between 0 and 1440 minutes.": "Die Intensivlüftungsdauer muss zwischen 0 und 1440 Minuten liegen."
+		}
+	}
+}

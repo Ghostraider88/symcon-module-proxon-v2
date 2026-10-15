@@ -1,5 +1,8 @@
-<?
-	class ProxonCentral extends IPSModuleStrict {
+<?php
+
+declare(strict_types=1);
+
+class ProxonCentral extends IPSModuleStrict {
 		public function Create(): void {
 			//Never delete this line!
 			parent::Create();
@@ -16,39 +19,28 @@
 			
 			$this->RegisterVariableFloat("CurrentTemperature", $this->Translate("Current Temperature"), [
 				"PRESENTATION" => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-				"TEMPLATE" => VARIABLE_TEMPLATE_VALUE_PRESENTATION_ROOM_TEMPERATURE
+				"TEMPLATE" => VARIABLE_TEMPLATE_VALUE_PRESENTATION_ROOM_TEMPERATURE,
+				"SUFFIX" => " °C",
+				"DIGITS" => 1
 			], 1);
 			$this->RegisterVariableFloat("TargetTemperature", $this->Translate("Target Temperature"), [
 				"PRESENTATION" => VARIABLE_PRESENTATION_SLIDER,
-				"TEMPLATE" => VARIABLE_TEMPLATE_SLIDER_ROOM_TEMPERATURE
+				"TEMPLATE" => VARIABLE_TEMPLATE_SLIDER_ROOM_TEMPERATURE,
+				"MIN" => 10,
+				"MAX" => 30,
+				"STEP_SIZE" => 0.1,
+				"SUFFIX" => " °C",
+				"DIGITS" => 1
 			], 2);
 			$this->EnableAction("TargetTemperature");
-			$this->RegisterVariableInteger("OperatingMode", $this->Translate("Operating Mode"), [
-				"PRESENTATION" => VARIABLE_PRESENTATION_ENUMERATION,
-				"DISPLAY" => 0,
-				"LAYOUT" => 1,
-				"OPTIONS" => json_encode([
-					["Value" => 0, "Caption" => $this->Translate("Off"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 1, "Caption" => $this->Translate("Summer Operation"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 2, "Caption" => $this->Translate("Winter Operation"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 3, "Caption" => $this->Translate("Eco Comfort"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 4, "Caption" => $this->Translate("Stove Mode"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 6, "Caption" => $this->Translate("Emergency Operation"), "IconActive" => false, "IconValue" => ""]
-			])
+			$this->RegisterVariableBoolean("PTCRelease", $this->Translate("PTC Release"), [
+				"PRESENTATION" => VARIABLE_PRESENTATION_SWITCH
 			], 3);
-			$this->EnableAction("OperatingMode");
-			$this->RegisterVariableInteger("FanStage", $this->Translate("Fan Stage"), [
-				"PRESENTATION" => VARIABLE_PRESENTATION_ENUMERATION,
-				"DISPLAY" => 0,
-				"LAYOUT" => 1,
-				"OPTIONS" => json_encode([
-					["Value" => 1, "Caption" => $this->Translate("Fan Stage 1"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 2, "Caption" => $this->Translate("Fan Stage 2"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 3, "Caption" => $this->Translate("Fan Stage 3"), "IconActive" => false, "IconValue" => ""],
-					["Value" => 4, "Caption" => $this->Translate("Fan Stage 4"), "IconActive" => false, "IconValue" => ""]
-			])
-			], 4);
-			$this->EnableAction("FanStage");
+			$this->EnableAction("PTCRelease");
+
+			// Operating mode and fan stage now belong to the separate system control instance.
+			$this->MaintainVariable("OperatingMode", $this->Translate("Operating Mode"), VARIABLETYPE_INTEGER, "", 4, false);
+			$this->MaintainVariable("FanStage", $this->Translate("Fan Stage"), VARIABLETYPE_INTEGER, "", 5, false);
 			
 			$this->SetTimerInterval("Poller", $this->ReadPropertyInteger("Interval") * 1000);
 		}
@@ -74,73 +66,44 @@
 			if($TargetTemperature[1] >= pow(2, 15)) $TargetTemperature[1] -= pow(2, 16);
 
 			$this->SetValue("TargetTemperature", $TargetTemperature[1] / 100.0);			
-			// OperatingMode -> 4x0016, FC3, uint16 (0=Off, 1=Summer, 2=Winter, 3=Eco Comfort, 4=Stove, 6=Emergency)
-			$Address = 16;
+			// PTCRelease -> 4x0187, FC3, uint16 (0=locked, 1=released)
+			$Address = 187;
 			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
-			if($Data == false)
-				return;
-			$OperatingMode = (unpack("n*", substr($Data,2)));
-			$this->SetValue("OperatingMode", $OperatingMode[1]);
-
-			// FanStage -> 4x0022, FC3, uint16 (1-4)
-			$Address = 22;
-			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
-			if($Data == false)
-				return;
-			$FanStage = (unpack("n*", substr($Data,2)));
-			$this->SetValue("FanStage", $FanStage[1]);
+			if($Data !== false) {
+				$PTCRelease = unpack("n*", substr($Data, 2));
+				$this->SetValue("PTCRelease", $PTCRelease[1] > 0);
+			}
 		}
 
 		public function SetTemperature(float $Value): void {
+			if ($Value < 10 || $Value > 30) {
+				throw new InvalidArgumentException($this->Translate("Target temperature must be between 10 and 30 °C."));
+			}
+
 			$Address = 70;
-			$Data = pack("n*", intval($Value * 100));
-			$this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
-
-			$this->SetValue("TargetTemperature", $Value);
+			$Data = pack("n*", (int) round($Value * 100));
+			$Response = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
+			if ($Response !== false) {
+				$this->SetValue("TargetTemperature", $Value);
+			}
 		}
 
-		public function SetOperatingMode(int $Value): void {
-			if (!in_array($Value, [0, 1, 2, 3, 4, 6], true)) {
-				throw new InvalidArgumentException("Unsupported operating mode.");
-			}
-
-			// Write the selected mode to holding register 4x0016.
-			$Address = 16;
-			$Data = pack("n*", $Value);
+		public function SetPTC(bool $Release): void {
+			$Address = 187;
+			$Data = pack("n*", $Release ? 1 : 0);
 			$Response = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
-			if ($Response === false) {
-				return;
+			if ($Response !== false) {
+				$this->SetValue("PTCRelease", $Release);
 			}
-
-			$this->SetValue("OperatingMode", $Value);
-		}
-
-		public function SetFanStage(int $Value): void {
-			if ($Value < 1 || $Value > 4) {
-				throw new InvalidArgumentException("Fan stage must be between 1 and 4.");
-			}
-
-			// Write the selected fan stage to holding register 4x0022.
-			$Address = 22;
-			$Data = pack("n*", $Value);
-			$Response = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
-			if ($Response === false) {
-				return;
-			}
-
-			$this->SetValue("FanStage", $Value);
 		}
 
 		public function RequestAction(string $Ident, mixed $Value): void {
 			switch($Ident) {
 				case "TargetTemperature":
-					$this->SetTemperature($Value);
+					$this->SetTemperature((float) $Value);
 					break;
-				case "OperatingMode":
-					$this->SetOperatingMode($Value);
-					break;
-				case "FanStage":
-					$this->SetFanStage($Value);
+				case "PTCRelease":
+					$this->SetPTC((bool) $Value);
 					break;
 			}
 		}

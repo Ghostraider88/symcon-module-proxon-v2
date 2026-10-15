@@ -1,0 +1,17 @@
+{
+	"elements": [
+		{
+			"name": "Interval",
+			"type": "NumberSpinner",
+			"caption": "Interval",
+			"suffix": "Seconds"
+		}
+	],
+	"actions": [
+		{
+			"type": "Button",
+			"caption": "Update Values",
+			"onClick": "PROXON_RequestStatus($id);"
+		}
+	]
+}

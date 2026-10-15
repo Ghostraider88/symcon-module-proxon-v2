@@ -5,7 +5,8 @@
             "Proxon Controlpanels": "Proxon Bedienpanels",
             "Controlpanel %d": "Nebenbedienpanel %d",
             "Controlpanel Main": "Hauptnebenbedienpanel",
-            "Controlpanel Central": "Zentralbedienpanel"
+            "Controlpanel Central": "Zentralbedienpanel",
+            "System Control": "Anlagensteuerung"
         }
     }
 }

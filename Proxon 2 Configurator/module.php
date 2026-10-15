@@ -11,6 +11,28 @@ class ProxonConfigurator extends IPSModuleStrict
 			return json_encode($form);
 		}
 
+		$ConnectionID = IPS_GetInstance($this->InstanceID)['ConnectionID'];
+		$getSystemControlInstanceID = function() use ($ConnectionID) {
+			$ids = IPS_GetInstanceListByModuleID("{014DD20E-4090-4399-9C1F-D850E3DF4591}");
+			foreach ($ids as $id) {
+				if (IPS_GetInstance($id)['ConnectionID'] != $ConnectionID) {
+					continue;
+				}
+				return $id;
+			}
+			return null;
+		};
+
+		$form['actions'][0]['values'][] = [
+			"name" => $this->Translate("System Control"),
+			"address" => "System",
+			"create" => [
+				"moduleID" => "{014DD20E-4090-4399-9C1F-D850E3DF4591}",
+				"configuration" => new stdClass(),
+			],
+			"instanceID" => $getSystemControlInstanceID(),
+		];
+
 		$ControlPanels = $this->SendDataToParent(json_encode([
 			"DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", 
 			"Function" => 3, 

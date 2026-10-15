@@ -3,6 +3,8 @@
         "de": { 
             "Control Panel": "Bedienpanel",
             "PTC Release": "PTC Freigabe",
+            "Buttons Locked": "Tasten gesperrt",
+            "Target temperature must be within 3 °C of the room base temperature.": "Die Solltemperatur darf höchstens 3 °C vom Raumbasiswert abweichen.",
             "Current Temperature": "Ist Temperatur",
             "Target Temperature": "Soll Temperatur",
             "Interval": "Intervall",
