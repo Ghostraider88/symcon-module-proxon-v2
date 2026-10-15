@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1 — Build 8 — 2026-10-15
+
+- Aligned the FWT airflow and component positions with Anlage 1 of DIBt approval Z-51.3-342, including the heat-pump preheater, extract-air summer bypass and upper EG/lower OG supply outlets.
+- Replaced the compressor fan graphic with the DIBt compressor symbol and enlarged its RPM and power readings.
+- Added red/blue refrigerant lines with directional arrows; heating and cooling now show reversed component roles and cycle direction. Bypass animation follows extract-fan speed.
+
 ## 1.1 — Build 7 — 2026-10-15
 
 - Combined outdoor, room/extract and exhaust-air labels with their temperature readings; removed the redundant labels and tile headings.

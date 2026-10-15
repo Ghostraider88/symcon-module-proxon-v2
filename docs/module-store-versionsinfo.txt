@@ -1,3 +1,6 @@
+Build 8 (15.10.2026)
+geändert: Luftwege und Bauteile nach DIBt-Anlage 1 ausgerichtet; der Sommerbypass führt Abluft am Kreuzgegenstrom-Wärmetauscher vorbei. Zuluft EG liegt oben, OG unten; WP-Vorwärmung ist ergänzt.
+geändert: Verdichter mit DIBt-Symbol und größerer Anzeige für Drehzahl/Leistung. Kältekreis zeigt Heiz-/Kühlfarben und wechselt Flussrichtung mit der Betriebsart.
 Build 7 (15.10.2026)
 geändert: Außenluft bleibt durchgehend grün. Temperaturwerte für Außenluft, Raum-/Abluft und Fortluft stehen direkt an den passenden Luftanschlüssen; Schiebertexte sind gekürzt und überlagern keine Temperaturanzeige.
 neu: Kältekreis mit Verdichter, Expansionsventil und dynamischer Verdampfer-/Verflüssigerrolle ist in die zentrale Anlagenzeichnung integriert. Drehzahl und Verdichterleistung stehen am Bauteil.
@@ -8,11 +11,6 @@ geändert: Die FWT-Kachel erhält die bestätigten 4x0241-Moduswerte; 3x0069 ble
 Build 5 (15.10.2026)
 geändert: Der Zuluftweg ab dem Verflüssiger einschl. EG-/OG-Abzweigungen ist im Heizbetrieb rot, im Kühlbetrieb blau und bei Lüftung/Aus grau.
 neu: Wenn kein bestätigter Heiz-/Kühlcode vorliegt, leitet die Kachel die Betriebsrichtung bei laufendem Verdichter aus Zu- und Frischlufttemperatur ab. Abgeleitete Zustände sind mit * markiert.
-Build 4 (15.10.2026)
-geändert: Luftstromfarben verlaufen weicher durch den Kreuzstromwärmetauscher und folgen beim Übergang der Zuluft dem Betriebsmodus.
-geändert: Luftkanäle und animierte Strömungsmarker sind größer. Animationsgeschwindigkeit und Lüfterrotation folgen den gemessenen Lüfterdrehzahlen.
-neu: Verdampfer, Verflüssiger und Verdichter sind schematisch in die Anlagenübersicht integriert. Verdichteranimation und Laufanzeige folgen der Monitoring-Drehzahl.
-geändert: Leistungswerte und Verdichterdrehzahl zeigen ihre Einheiten.
 Build 3 (15.10.2026)
 geändert: Räume lassen sich in der System-Control-Konfiguration per Drag & Drop sortieren. Die Visualisierung übernimmt die Reihenfolge je Etage.
 Build 2 (15.10.2026)

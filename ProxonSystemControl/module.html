@@ -197,6 +197,9 @@ function updateCompressorAnimation(data) {
     const rpm = monitoring.CompressorSpeed;
     const hasSpeed = typeof rpm === 'number' && Number.isFinite(rpm) && rpm >= 0;
     const isRunning = hasSpeed && rpm > 0;
+    const plant = document.querySelector('.fwt-plant');
+    const heatPumpMode = plant ? plant.dataset.heatPumpMode : 'unknown';
+    const refrigerantIsMoving = isRunning && (heatPumpMode === '1' || heatPumpMode === '2');
     const statusText = !hasSpeed ? '—' : isRunning ? (roomLabels.Running || 'Running') : (roomLabels.Off || 'Off');
     const rpmText = hasSpeed
         ? new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(rpm) + ' rpm'
@@ -208,20 +211,18 @@ function updateCompressorAnimation(data) {
     const overviewSpeed = document.getElementById('compressor-overview-state');
     if (overviewSpeed) overviewSpeed.textContent = rpmText;
 
-    const lampColor = !hasSpeed ? '#8497a8' : isRunning ? '#159a69' : '#8497a8';
-    ['compressor-state-lamp', 'compressor-status-lamp-top'].forEach((id) => {
+    const lampColor = !hasSpeed || !isRunning
+        ? '#8497a8'
+        : heatPumpMode === '1' ? '#de493e' : heatPumpMode === '2' ? '#287cbd' : '#8497a8';
+    ['compressor-status-lamp-top'].forEach((id) => {
         const lamp = document.getElementById(id);
         if (lamp) lamp.setAttribute('fill', lampColor);
     });
 
-    document.querySelectorAll('.compressor-rotor').forEach((rotor) => {
-        rotor.style.animationDuration = duration + 's';
-        rotor.style.animationPlayState = isRunning ? 'running' : 'paused';
-    });
     document.querySelectorAll('.refrigerant-moving').forEach((path) => {
         path.style.animationDuration = duration + 's';
-        path.style.animationPlayState = isRunning ? 'running' : 'paused';
-        path.style.opacity = isRunning ? '0.92' : '0';
+        path.style.animationPlayState = refrigerantIsMoving ? 'running' : 'paused';
+        path.style.opacity = refrigerantIsMoving ? '0.92' : '0';
     });
 }
 
@@ -282,11 +283,13 @@ function updateDamper(data) {
 function updateBypass(data) {
     const isOpen = data.systemControl && data.systemControl.BypassOpen;
     const status = data.systemControl && data.systemControl.BypassStatus;
-    const supplyRPM = data.systemControl && data.systemControl.SupplyFanRPM;
-    const bypassFlowing = isOpen === true && typeof supplyRPM === 'number' && supplyRPM > 0;
+    const extractRPM = data.systemControl && data.systemControl.ExtractFanRPM;
+    const bypassFlowing = isOpen === true && typeof extractRPM === 'number' && extractRPM > 0;
     const statusElement = document.getElementById('bypass-status');
     const path = document.getElementById('bypass-path');
     const flow = document.getElementById('bypass-flow');
+    const extractCore = document.getElementById('extract-air-through-core');
+    const extractCoreFlow = document.getElementById('extract-core-flow');
     const valve = document.getElementById('bypass-valve');
     const valveBlade = valve && valve.querySelector('path');
 
@@ -294,8 +297,11 @@ function updateBypass(data) {
         statusElement.textContent = 'BYPASS · ' + (status || '—');
     }
     if (path) {
-        path.style.stroke = isOpen === true ? '#159a69' : '#8497a8';
+        path.style.stroke = isOpen === true ? '#dfa346' : '#8497a8';
+        path.setAttribute('marker-end', isOpen === true ? 'url(#arrowAmber)' : 'url(#arrowNeutral)');
     }
+    if (extractCore) extractCore.style.opacity = isOpen === true ? '0.22' : '1';
+    if (extractCoreFlow) extractCoreFlow.style.opacity = isOpen === true ? '0.12' : '0.92';
     if (flow) {
         flow.style.opacity = bypassFlowing ? '0.92' : '0';
         flow.style.animationPlayState = bypassFlowing ? 'running' : 'paused';
@@ -341,6 +347,8 @@ function updateHeatPumpMode(data) {
 
     const modeClass = ({ 0: 'status-off', 1: 'status-heating', 2: 'status-cooling', 3: 'status-off' })[mode] || 'status-unknown';
     element.classList.add(modeClass);
+    const plant = document.querySelector('.fwt-plant');
+    if (plant) plant.dataset.heatPumpMode = mode === null ? 'unknown' : String(mode);
 
     if (inferred) {
         element.textContent = mode === 1
@@ -349,6 +357,13 @@ function updateHeatPumpMode(data) {
         element.setAttribute('title', roomLabels['Mode Inferred'] || 'Inferred from compressor speed and air temperatures');
     } else {
         element.removeAttribute('title');
+        element.textContent = mode === 1
+            ? (roomLabels.Heating || 'Heizen')
+            : mode === 2
+                ? (roomLabels.Cooling || 'Kühlen')
+                : mode === 0
+                    ? (roomLabels.Off || 'Aus')
+                    : '—';
     }
 
     const color = ({ 0: '#8497a8', 1: '#de493e', 2: '#287cbd', 3: '#8497a8' })[mode] || '#8497a8';
@@ -369,10 +384,10 @@ function updateHeatPumpMode(data) {
     });
 
     const coilRoles = mode === 1
-        ? { left: ['VERDAMPFER', '#398fc4', '#f4faff'], right: ['VERFLÜSSIGER', '#df6d5f', '#fff8f5'] }
+        ? { left: ['VERDAMPFER', '#287cbd', '#f4faff'], right: ['VERFLÜSSIGER', '#df493e', '#fff8f5'] }
         : mode === 2
-            ? { left: ['VERFLÜSSIGER', '#df6d5f', '#fff8f5'], right: ['VERDAMPFER', '#398fc4', '#f4faff'] }
-            : { left: ['REGISTER', '#91a2af', '#f5f7f8'], right: ['REGISTER', '#91a2af', '#f5f7f8'] };
+            ? { left: ['VERFLÜSSIGER', '#df493e', '#fff8f5'], right: ['VERDAMPFER', '#287cbd', '#f4faff'] }
+            : { left: ['WÄRMETAUSCHER', '#91a2af', '#f5f7f8'], right: ['WÄRMETAUSCHER', '#91a2af', '#f5f7f8'] };
     ['left', 'right'].forEach((side) => {
         const [role, color, fill] = coilRoles[side];
         const label = document.getElementById('coil-' + side + '-role');
@@ -384,6 +399,51 @@ function updateHeatPumpMode(data) {
             frame.style.fill = fill;
         }
         if (line) line.style.stroke = color;
+    });
+
+    const activeMode = mode === 1 || mode === 2;
+    const circuit = mode === 2
+        ? {
+            discharge: 'M507 645H476V575H278',
+            liquid: 'M278 575V584H626V603',
+            expansion: 'M678 603H739V575',
+            suction: 'M739 575V681H579V683'
+        }
+        : {
+            discharge: 'M579 645H630V592H739V575',
+            liquid: 'M739 575V584H678V603',
+            expansion: 'M626 603H278V575',
+            suction: 'M278 575V681H507V683'
+        };
+    ['discharge', 'liquid', 'expansion', 'suction'].forEach((name) => {
+        const path = document.getElementById('refrigerant-' + name);
+        const flow = document.getElementById('refrigerant-flow-' + name);
+        const isHighSide = name === 'discharge' || name === 'liquid';
+        const stroke = activeMode ? (isHighSide ? '#df493e' : '#287cbd') : '#8497a8';
+        const marker = activeMode
+            ? (isHighSide ? 'url(#arrowHotSmall)' : 'url(#arrowColdSmall)')
+            : 'url(#arrowRefNeutralSmall)';
+        if (path) {
+            path.setAttribute('d', circuit[name]);
+            path.style.stroke = stroke;
+            path.style.opacity = activeMode ? '0.96' : '0.4';
+            path.setAttribute('marker-end', marker);
+        }
+        if (flow) flow.setAttribute('d', circuit[name]);
+    });
+
+    const compressorMode = document.getElementById('compressor-overview-mode');
+    if (compressorMode) {
+        compressorMode.textContent = mode === 1 ? 'HEIZEN' : mode === 2 ? 'KÜHLEN' : mode === 0 || mode === 3 ? 'STANDBY' : '—';
+        compressorMode.style.fill = activeMode ? color : '#738397';
+    }
+    const compressorFrame = document.getElementById('compressor-overview-frame');
+    const compressorSymbol = document.querySelectorAll('#compressor-symbol .compressor-symbol, #compressor-symbol .compressor-symbol-mark');
+    const compressorColor = activeMode ? color : '#8497a8';
+    if (compressorFrame) compressorFrame.style.stroke = activeMode ? color : '#aebdca';
+    compressorSymbol.forEach((shape) => {
+        shape.style.stroke = compressorColor;
+        if (shape.classList.contains('compressor-symbol')) shape.style.fill = activeMode ? (mode === 1 ? '#fff3f1' : '#eef7fc') : '#fff';
     });
 }
 
