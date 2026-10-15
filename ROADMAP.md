@@ -26,7 +26,13 @@
 - **Open:** no Symcon runtime or visualization tile has been exercised yet. Confirm the display on a TEST instance after installing the branch. EG/OG bars are qualitative preferences only; R26 airflow scope, power units, R190 unit, R162/R223 mappings, the R69/R241 mode source and actual PTC relay state still need confirmation.
 - Diagnostics and fault handling.
 - Additional comfort and automation features.
-- T300 support.
+- T300 read-only status and sensor monitoring from its Input Register list.
+
+## T300 control
+
+- **Implemented locally:** added a separate T300 control device with fourteen writable settings from the supplied T300 `Holding Register` sheet, grouped polling, range/type validation, and a Configurator entry. The fixed-value language register is omitted.
+- **Evidence:** mapped the sheet's register addresses, raw ranges and scales into the module. No Symcon runtime action or live Modbus write was performed.
+- **Open:** the T300 sheet labels these settings `3x` while placing them in `Holding Register`; its interface overview defines `3x` as FC4. The implementation follows the Holding Register group (read FC3, write FC6), pending verification of read function, address base and write permission on a dedicated T300 test device. No visualization is included in this step.
 
 ## FWT register catalogue and fault summary
 

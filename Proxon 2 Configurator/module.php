@@ -33,6 +33,27 @@ class ProxonConfigurator extends IPSModuleStrict
 			"instanceID" => $getSystemControlInstanceID(),
 		];
 
+		$getT300ControlInstanceID = function() use ($ConnectionID): ?int {
+			$ids = IPS_GetInstanceListByModuleID("{D38CFEE4-C43B-4793-8629-DE43C783F53C}");
+			foreach ($ids as $id) {
+				if (IPS_GetInstance($id)['ConnectionID'] != $ConnectionID) {
+					continue;
+				}
+				return $id;
+			}
+			return null;
+		};
+
+		$form['actions'][0]['values'][] = [
+			"name" => $this->Translate("T300 Control"),
+			"address" => "T300",
+			"create" => [
+				"moduleID" => "{D38CFEE4-C43B-4793-8629-DE43C783F53C}",
+				"configuration" => new stdClass(),
+			],
+			"instanceID" => $getT300ControlInstanceID(),
+		];
+
 		$ControlPanels = $this->SendDataToParent(json_encode([
 			"DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", 
 			"Function" => 3, 

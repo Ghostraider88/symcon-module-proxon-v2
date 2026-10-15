@@ -1,0 +1,35 @@
+{
+    "translations": {
+        "de": {
+            "Poll Interval": "Abfrageintervall",
+            "Seconds": "Sekunden",
+            "Enable Modbus write access in the T300 controller before using the controls.": "Aktiviere den Modbus-Schreibzugriff im T300, bevor du die Bedienelemente verwendest.",
+            "Update Values": "Werte aktualisieren",
+            "Operating Mode": "Betriebsart",
+            "Off": "Aus",
+            "Demand": "Bedarf",
+            "LF1": "LF1",
+            "LF2": "LF2",
+            "Normal Water Temperature": "Warmwassertemperatur",
+            "Electric Heater Enabled": "Elektroheizung freigegeben",
+            "Hour": "Stunde",
+            "Minute": "Minute",
+            "Weekday (1-7)": "Wochentag (1-7)",
+            "Day": "Tag",
+            "Month": "Monat",
+            "Year (0-99)": "Jahr (0-99)",
+            "Daylight Saving Time": "Sommerzeit",
+            "Electric Heater Temperature": "Temperatur Elektroheizung",
+            "Screen Timeout": "Bildschirm-Pausenzeit",
+            "Legionella Function": "Legionellenfunktion",
+            "PV Function": "PV-Funktion",
+            "The value must be numeric.": "Der Wert muss numerisch sein.",
+            "The value must be between %s and %s.": "Der Wert muss zwischen %s und %s liegen.",
+            "The value must be a whole number.": "Der Wert muss eine ganze Zahl sein.",
+            "Invalid selection value.": "Ungültiger Auswahlwert.",
+            "Boolean controls accept only true or false.": "Schalter akzeptieren nur true oder false.",
+            "The T300 Modbus parent is not available.": "Die T300-Modbus-Elterninstanz ist nicht verfügbar.",
+            "Writing T300 register %d failed.": "Das Schreiben von T300-Register %d ist fehlgeschlagen."
+        }
+    }
+}

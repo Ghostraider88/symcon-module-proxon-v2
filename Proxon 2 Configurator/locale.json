@@ -6,7 +6,8 @@
             "Controlpanel %d": "Nebenbedienpanel %d",
             "Controlpanel Main": "Hauptnebenbedienpanel",
             "Controlpanel Central": "Zentralbedienpanel",
-            "System Control": "Anlagensteuerung"
+            "System Control": "Anlagensteuerung",
+            "T300 Control": "T300-Steuerung"
         }
     }
 }
