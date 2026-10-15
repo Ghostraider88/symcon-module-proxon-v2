@@ -7,11 +7,25 @@
             "suffix": "Seconds"
         },
         {
+            "name": "AdvancedControlsEnabled",
+            "type": "CheckBox",
+            "caption": "Enable Advanced Controls"
+        },
+        {
+            "type": "Label",
+            "caption": "Only registers 2000-2003 have confirmed write support. Other settings stay read-only unless enabled."
+        },
+        {
             "type": "Label",
             "caption": "Enable Modbus write access in the T300 controller before using the controls."
         }
     ],
     "actions": [
+        {
+            "type": "Button",
+            "caption": "Create Monitoring Instance",
+            "onClick": "PROXONT300_CreateMonitoringInstance($id);"
+        },
         {
             "type": "Button",
             "caption": "Update Values",

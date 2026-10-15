@@ -9,13 +9,14 @@ This library integrates PROXON FWT 2.0/3.0 and T300 Modbus systems.
 - **Proxon Central** (`ProxonCentral`): the room assigned to the central TFT control panel.
 - **Proxon Zone** (`ProxonZone`): individual HNBP and NBP room controls, including room setpoint, PTC release, and panel key lock.
 - **Proxon Configurator** (`ProxonConfigurator`): discovers the central panel and configured room panels and offers the system control instance.
-- **Proxon T300 Control** (`ProxonT300Control`): controls the documented T300 operating mode, water temperatures, heater options and clock values, and reads the primary FC4 sensor and operating-status values.
+- **Proxon T300 Control** (`ProxonT300Control`): controls documented Holding Registers; only registers 2000-2003 have write actions enabled by default. Its configuration can create a separate read-only Monitoring instance.
+- **Proxon T300 Monitoring** (`ProxonT300Monitoring`): reads 57 T300 Input Register measurements and status values over FC4 without write actions or automatic archive logging.
 
-T300 read-only input values use FC4, matching the workbook and existing Symcon configurations. Writable controls follow FC3 reads and FC6 writes, but the workbook's `3x` address notation conflicts with its Holding Register classification; verify hardware write behavior on a dedicated T300 test device before relying on control writes.
+T300 read-only input values use FC4, matching the workbook and existing Symcon configurations. Holding-register actions are enabled by default only for registers 2000-2003; ten other candidate writes require an explicit advanced-controls switch and remain unverified on hardware.
 
 ## Setup
 
-Connect the Proxon Configurator to the Proxon Modbus parent. Use its configuration list to create system and room instances for an FWT, or the T300 Control instance for a T300.
+Connect the Proxon Configurator to the Proxon Modbus parent. Use its configuration list to create system and room instances for an FWT, or the T300 Control instance for a T300. Then use the T300 Control configuration action to create its separate Monitoring instance if needed.
 
 ## Migration note
 

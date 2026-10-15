@@ -1,6 +1,15 @@
 {
     "translations": {
         "de": {
+            "Enable Advanced Controls": "Erweiterte Bedienelemente freigeben",
+            "Only registers 2000-2003 have confirmed write support. Other settings stay read-only unless enabled.": "Nur für die Register 2000-2003 ist die Schreibfunktion bestätigt. Die übrigen Einstellungen bleiben schreibgeschützt, bis sie freigegeben werden.",
+            "Create Monitoring Instance": "Monitoring-Instanz anlegen",
+            "The Modbus parent must be active before creating the Monitoring instance.": "Vor dem Anlegen der Monitoring-Instanz muss die Modbus-Elterninstanz aktiv sein.",
+            "No active Modbus parent connection was found.": "Es wurde keine aktive Modbus-Elternverbindung gefunden.",
+            "The Monitoring instance already exists.": "Die Monitoring-Instanz ist bereits vorhanden.",
+            "The Monitoring instance could not be configured.": "Die Monitoring-Instanz konnte nicht eingerichtet werden.",
+            "The Monitoring instance was created.": "Die Monitoring-Instanz wurde angelegt.",
+            "Proxon T300 Monitoring": "Proxon T300 Monitoring",
             "Poll Interval": "Abfrageintervall",
             "Seconds": "Sekunden",
             "Enable Modbus write access in the T300 controller before using the controls.": "Aktiviere den Modbus-Schreibzugriff im T300, bevor du die Bedienelemente verwendest.",
