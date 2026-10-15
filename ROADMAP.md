@@ -22,6 +22,7 @@
 
 ## Later work
 
+- **Layout proposal:** reviewed the Symcon screenshot and created a full-width FWT process layout with larger grouped status/diagnostic cards in `docs/fwt-visualisierung/04-fwt-layout-vorschlag.svg` and PNG. XML parsing and a headless visual render completed; the cross-flow heat-exchanger paths remain separate and diagonal. **Open:** the proposal is not yet applied to the active HTML tile; confirm the layout before moving its bindings.
 - **Implemented locally:** added a read-only FWT HTML-SDK tile with animated fan/airflow paths, a separate EG/OG outlet view driven by damper position, bypass state, air temperatures and selected heat-pump Monitoring values. Added an explicit Monitoring instance selector; the tile reads that instance's direct child variables and does not add Modbus polling.
 - **Open:** no Symcon runtime or visualization tile has been exercised yet. Confirm the display on a TEST instance after installing the branch. EG/OG bars are qualitative preferences only; R26 airflow scope, power units, R190 unit, R162/R223 mappings, the R69/R241 mode source and actual PTC relay state still need confirmation.
 - Diagnostics and fault handling.
