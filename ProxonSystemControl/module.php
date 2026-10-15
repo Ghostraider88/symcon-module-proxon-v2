@@ -56,7 +56,6 @@ class ProxonSystemControl extends IPSModuleStrict
             'MIN' => 0,
             'MAX' => 1440,
             'STEP_SIZE' => 1,
-            'DIGITS' => 0,
             'SUFFIX' => ' ' . $this->Translate('Minutes')
         ], 4);
         $this->EnableAction('IntensiveVentilationDuration');
