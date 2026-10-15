@@ -43,10 +43,10 @@
 
 <!-- Four temperatures, equal widths and identical text baselines. -->
 <path d="M296 165V217M540 165V217M784 165V217" class="rule"/>
-<circle cx="58" cy="178" r="4" fill="#239a77"/><text class="small" x="71" y="182">Frischluft · T3</text><text class="reading" x="52" y="214">7,2 <tspan font-size="16" font-weight="400">°C</tspan></text>
-<circle cx="322" cy="178" r="4" fill="#dda13d"/><text class="small" x="335" y="182">Abluft · T7</text><text class="reading" x="316" y="214">21,4 <tspan font-size="16" font-weight="400">°C</tspan></text>
-<circle cx="566" cy="178" r="4" fill="#348abe"/><text class="small" x="579" y="182">Fortluft · T4</text><text class="reading" x="560" y="214">5,1 <tspan font-size="16" font-weight="400">°C</tspan></text>
-<circle cx="810" cy="178" r="4" fill="#db6453"/><text class="small" x="823" y="182">Zuluft · T1</text><text class="reading" x="804" y="214">32,0 <tspan font-size="16" font-weight="400">°C</tspan></text>
+<circle cx="58" cy="178" r="4" fill="#239a77"/><text class="small" x="71" y="182">Frischluft</text><text class="reading" x="52" y="214">7,2 <tspan font-size="16" font-weight="400">°C</tspan></text>
+<circle cx="322" cy="178" r="4" fill="#dda13d"/><text class="small" x="335" y="182">Abluft</text><text class="reading" x="316" y="214">21,4 <tspan font-size="16" font-weight="400">°C</tspan></text>
+<circle cx="566" cy="178" r="4" fill="#348abe"/><text class="small" x="579" y="182">Fortluft</text><text class="reading" x="560" y="214">5,1 <tspan font-size="16" font-weight="400">°C</tspan></text>
+<circle cx="810" cy="178" r="4" fill="#db6453"/><text class="small" x="823" y="182">Zuluft</text><text class="reading" x="804" y="214">32,0 <tspan font-size="16" font-weight="400">°C</tspan></text>
 
 <!-- Cabinet ratio follows the FWT-2's broad, shallow form. -->
 <rect x="100" y="248" width="880" height="454" rx="18" fill="#f6f8fa" stroke="#b5c4d0" stroke-width="2"/>
@@ -54,11 +54,11 @@
 <text class="small" x="960" y="278" text-anchor="end">Geräteschema</text>
 
 <!-- Inlet and outlet labels have reserved areas, away from the components. -->
-<text class="label" x="52" y="327">Außenluft</text><text class="small" x="52" y="346">hinein</text>
-<text class="label" x="1028" y="327" text-anchor="end">Raumluft</text><text class="small" x="1028" y="346" text-anchor="end">hinein</text>
-<text class="label" x="52" y="518">Fortluft</text>
-<text class="label" x="1028" y="484" text-anchor="end">EG · Zuluft</text>
-<text class="label" x="1028" y="651" text-anchor="end">OG · Zuluft</text>
+<rect x="40" y="300" width="124" height="36" rx="12" fill="#fff" stroke="#b5d8ca"/><text class="label" x="102" y="324" text-anchor="middle">Außenluft →</text>
+<rect x="896" y="300" width="144" height="36" rx="12" fill="#fff" stroke="#e5d3ae"/><text class="label" x="968" y="324" text-anchor="middle">← Raumluft</text>
+<rect x="40" y="488" width="124" height="36" rx="12" fill="#fff" stroke="#bfd8e7"/><text class="label" x="102" y="512" text-anchor="middle">← Fortluft</text>
+<rect x="930" y="465" width="110" height="31" rx="11" fill="#fff" stroke="#e6c9c1"/><text x="985" y="486" font-size="13" text-anchor="middle">EG · Zuluft →</text>
+<rect x="930" y="643" width="110" height="31" rx="11" fill="#fff" stroke="#e6c9c1"/><text x="985" y="664" font-size="13" text-anchor="middle">OG · Zuluft →</text>
 
 <!-- Fresh and extract air: balanced fan/filter sizes, matched inlet heights. -->
 <path class="pipe" d="M56 380H175" stroke="#239a77" marker-end="url(#a-green)"/><path class="particles" d="M60 380H167"/>
@@ -101,7 +101,7 @@
 
 <path class="pipe" d="M675 550H858" stroke="#db6453"/><path class="particles" d="M683 550H850"/>
 <use href="#coil" x="735" y="550" color="#d68d77"/>
-<text class="label" x="735" y="617" text-anchor="middle">Verflüssiger</text><text class="small" x="735" y="638" text-anchor="middle">T10 · 42,1 °C</text>
+<text class="label" x="735" y="617" text-anchor="middle">Verflüssiger</text><text class="small" x="735" y="638" text-anchor="middle">42,1 °C</text>
 
 <!-- Dashed links indicate only the heat pump's symbolic component coupling. -->
 <path d="M229 584H180V648H527M751 584H810V648H573" fill="none" stroke="#b1bfc9" stroke-width="2" stroke-dasharray="6 6"/>
@@ -120,19 +120,19 @@
 <rect x="1442" y="120" width="106" height="29" rx="14" fill="#fff0e9"/><text x="1495" y="139" text-anchor="middle" font-size="12" font-weight="600" fill="#ad654a">Heizen</text>
 <text class="label" x="1108" y="183">Verdichter</text><circle cx="1506" cy="178" r="4" fill="#349c75"/><text class="label" x="1548" y="183" text-anchor="end">Ein</text>
 <text class="label" x="1108" y="211">Kühlfreigabe</text><text x="1548" y="211" font-size="14" text-anchor="end" class="muted">gesperrt</text>
-<text class="label" x="1108" y="239">4-Wegeventil <tspan class="small">R223</tspan></text><text class="value" x="1548" y="239" text-anchor="end">—</text>
+<text class="label" x="1108" y="239">4-Wegeventil <tspan class="small"></tspan></text><text class="value" x="1548" y="239" text-anchor="end">—</text>
 <path class="rule" d="M1108 257H1548"/>
-<text class="small" x="1108" y="281">Kompressor · R171</text><text class="reading" x="1108" y="313">46 <tspan font-size="16" font-weight="400">%</tspan></text>
-<text class="small" x="1340" y="281">FU-Strom · R250</text><text class="reading" x="1340" y="313">4,2 <tspan font-size="16" font-weight="400">A</tspan></text>
-<text class="small" x="1108" y="343">PCB · R19</text><text class="value" x="1108" y="369">—</text>
-<text class="small" x="1273" y="343">FU · R20</text><text class="value" x="1273" y="369">—</text>
-<text class="small" x="1435" y="343">Gesamt · R25</text><text class="value" x="1435" y="369">—</text>
+<text class="small" x="1108" y="281">Kompressor</text><text class="reading" x="1108" y="313">46 <tspan font-size="16" font-weight="400">%</tspan></text>
+<text class="small" x="1340" y="281">Umrichterstrom</text><text class="reading" x="1340" y="313">4,2 <tspan font-size="16" font-weight="400">A</tspan></text>
+<text class="small" x="1108" y="343">Steuerplatine</text><text class="value" x="1108" y="369">—</text>
+<text class="small" x="1273" y="343">Umrichter</text><text class="value" x="1273" y="369">—</text>
+<text class="small" x="1435" y="343">Gesamt</text><text class="value" x="1435" y="369">—</text>
 <path class="rule" d="M1108 386H1548"/>
-<text class="label" x="1108" y="413">Verdichter · T13 <tspan class="small">R180</tspan></text><text class="value" x="1548" y="413" text-anchor="end">62,4 °C</text>
-<text class="label" x="1108" y="445">Verflüssiger · T10 <tspan class="small">R179</tspan></text><text class="value" x="1548" y="445" text-anchor="end">42,1 °C</text>
-<text class="label" x="1108" y="477">T12 vor Verflüssiger <tspan class="small">R178</tspan></text><text class="value" x="1548" y="477" text-anchor="end">30,8 °C</text>
-<text class="label" x="1108" y="509">Verdampfer aus Druck <tspan class="small">R216</tspan></text><text class="value" x="1548" y="509" text-anchor="end">1,8 °C</text>
-<text class="label" x="1108" y="541">Kreislauf · T8 <tspan class="small">R177</tspan></text><text class="value" x="1548" y="541" text-anchor="end">15,3 °C</text>
+<text class="label" x="1108" y="413">Verdichter<tspan class="small"></tspan></text><text class="value" x="1548" y="413" text-anchor="end">62,4 °C</text>
+<text class="label" x="1108" y="445">Verflüssiger<tspan class="small"></tspan></text><text class="value" x="1548" y="445" text-anchor="end">42,1 °C</text>
+<text class="label" x="1108" y="477">Vor Verflüssiger<tspan class="small"></tspan></text><text class="value" x="1548" y="477" text-anchor="end">30,8 °C</text>
+<text class="label" x="1108" y="509">Verdampfer aus Druck <tspan class="small"></tspan></text><text class="value" x="1548" y="509" text-anchor="end">1,8 °C</text>
+<text class="label" x="1108" y="541">Kreislauf<tspan class="small"></tspan></text><text class="value" x="1548" y="541" text-anchor="end">15,3 °C</text>
 
 <rect x="1108" y="565" width="440" height="155" rx="12" fill="#f5f8fa"/>
 <text class="label" x="1124" y="589">JAZ / COP</text>
@@ -159,9 +159,9 @@
 <text class="small" x="76" y="978">Raum</text><text class="small" x="245" y="978" text-anchor="middle">Ist / Soll °C</text><text class="small" x="356" y="978" text-anchor="middle">CO₂ ppm / rH %</text><text class="small" x="470" y="978" text-anchor="middle">PTC</text>
 <path d="M76 990H504M76 1034H504M76 1078H504" class="rule"/>
 <g font-size="14">
- <text x="76" y="1018">Raum 1</text><text x="245" y="1018" text-anchor="middle">21,5 / 22,0</text><text x="356" y="1018" text-anchor="middle">680 / 45</text>
- <text x="76" y="1062">Raum 2</text><text x="245" y="1062" text-anchor="middle">22,0 / 22,0</text><text x="356" y="1062" text-anchor="middle">550 / 43</text>
- <text x="76" y="1106">Raum 3</text><text x="245" y="1106" text-anchor="middle">21,6 / 22,0</text><text x="356" y="1106" text-anchor="middle">610 / 46</text>
+ <text x="76" y="1018">Wohnen</text><text x="245" y="1018" text-anchor="middle">21,5 / 22,0</text><text x="356" y="1018" text-anchor="middle">680 / 45</text>
+ <text x="76" y="1062">Essen</text><text x="245" y="1062" text-anchor="middle">22,0 / 22,0</text><text x="356" y="1062" text-anchor="middle">550 / 43</text>
+ <text x="76" y="1106">Büro</text><text x="245" y="1106" text-anchor="middle">21,6 / 22,0</text><text x="356" y="1106" text-anchor="middle">— / 46</text>
 </g>
 <rect x="435" y="998" width="69" height="27" rx="13" fill="#fff0e8"/><text x="469" y="1016" text-anchor="middle" font-size="12" fill="#ad654a">Ein</text>
 <rect x="435" y="1042" width="69" height="27" rx="13" fill="#edf2f5"/><text x="469" y="1060" text-anchor="middle" class="small">Aus</text>
@@ -173,9 +173,9 @@
 <text class="small" x="576" y="978">Raum</text><text class="small" x="745" y="978" text-anchor="middle">Ist / Soll °C</text><text class="small" x="856" y="978" text-anchor="middle">CO₂ ppm / rH %</text><text class="small" x="970" y="978" text-anchor="middle">PTC</text>
 <path d="M576 990H1004M576 1034H1004M576 1078H1004" class="rule"/>
 <g font-size="14">
- <text x="576" y="1018">Raum 1</text><text x="745" y="1018" text-anchor="middle">20,2 / 20,0</text><text x="856" y="1018" text-anchor="middle">480 / 44</text>
- <text x="576" y="1062">Raum 2</text><text x="745" y="1062" text-anchor="middle">21,0 / 21,0</text><text x="856" y="1062" text-anchor="middle">510 / 45</text>
- <text x="576" y="1106">Raum 3</text><text x="745" y="1106" text-anchor="middle">20,4 / 21,0</text><text x="856" y="1106" text-anchor="middle">620 / 46</text>
+ <text x="576" y="1018">Schlafen</text><text x="745" y="1018" text-anchor="middle">20,2 / 20,0</text><text x="856" y="1018" text-anchor="middle">— / —</text>
+ <text x="576" y="1062">Kind 1</text><text x="745" y="1062" text-anchor="middle">21,0 / 21,0</text><text x="856" y="1062" text-anchor="middle">510 / —</text>
+ <text x="576" y="1106">Kind 2</text><text x="745" y="1106" text-anchor="middle">20,4 / 21,0</text><text x="856" y="1106" text-anchor="middle">620 / 46</text>
 </g>
 <rect x="935" y="998" width="69" height="27" rx="13" fill="#edf2f5"/><text x="969" y="1016" text-anchor="middle" class="small">Aus</text>
 <rect x="935" y="1042" width="69" height="27" rx="13" fill="#edf2f5"/><text x="969" y="1060" text-anchor="middle" class="small">Aus</text>
@@ -184,16 +184,16 @@
 
 <text class="heading" x="1108" y="808">Diagnose und Laufzeiten</text>
 <g font-size="14">
- <text x="1108" y="850">Inverterfehler <tspan class="small">R170 / R172</tspan></text><text x="1548" y="850" text-anchor="end" font-weight="600">0 / 0</text>
- <text x="1108" y="883">Lüfterstatus <tspan class="small">R152</tspan></text><text x="1548" y="883" text-anchor="end">—</text>
- <text x="1108" y="916">Lüfterfehler Restzeit <tspan class="small">R153</tspan></text><text x="1548" y="916" text-anchor="end" font-weight="600">0 s</text>
- <text x="1108" y="949">Verdichterdrehzahl <tspan class="small">R190</tspan></text><text x="1548" y="949" text-anchor="end">—</text>
- <text x="1108" y="982">Laufzeit Heizen <tspan class="small">R474</tspan></text><text x="1548" y="982" text-anchor="end" font-weight="600">1.024 h</text>
- <text x="1108" y="1015">Laufzeit Kühlen <tspan class="small">R473</tspan></text><text x="1548" y="1015" text-anchor="end" font-weight="600">48 h</text>
- <text x="1108" y="1048">Abtauen <tspan class="small">R475</tspan></text><text x="1548" y="1048" text-anchor="end" font-weight="600">16 h</text>
+ <text x="1108" y="850">Inverterfehler <tspan class="small"></tspan></text><text x="1548" y="850" text-anchor="end" font-weight="600">0 / 0</text>
+ <text x="1108" y="883">Lüfterstatus <tspan class="small"></tspan></text><text x="1548" y="883" text-anchor="end">—</text>
+ <text x="1108" y="916">Lüfterfehler Restzeit <tspan class="small"></tspan></text><text x="1548" y="916" text-anchor="end" font-weight="600">0 s</text>
+ <text x="1108" y="949">Verdichterdrehzahl <tspan class="small"></tspan></text><text x="1548" y="949" text-anchor="end">—</text>
+ <text x="1108" y="982">Laufzeit Heizen <tspan class="small"></tspan></text><text x="1548" y="982" text-anchor="end" font-weight="600">1.024 h</text>
+ <text x="1108" y="1015">Laufzeit Kühlen <tspan class="small"></tspan></text><text x="1548" y="1015" text-anchor="end" font-weight="600">48 h</text>
+ <text x="1108" y="1048">Abtauen <tspan class="small"></tspan></text><text x="1548" y="1048" text-anchor="end" font-weight="600">16 h</text>
  <text x="1108" y="1081">Filterlaufzeit</text><text x="1548" y="1081" text-anchor="end" font-weight="600">360 h</text>
 </g>
 <path class="rule" d="M1108 1101H1548"/>
 <text class="small" x="1108" y="1128">Expansion Kühl / Heiz / Vorwärme</text><text x="1548" y="1128" font-size="14" text-anchor="end">— / — / —</text>
-<text class="small" x="1108" y="1152">R203 / R204 / R205</text>
+<text class="small" x="1108" y="1152"></text>
 </svg>

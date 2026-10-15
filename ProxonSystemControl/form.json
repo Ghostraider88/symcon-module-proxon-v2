@@ -13,6 +13,34 @@
 			"validModules": ["{C48CB61D-8500-41F3-AC35-82DAF84EC870}"]
 		},
 		{
+			"type": "ExpansionPanel",
+			"caption": "Visualization Rooms",
+			"items": [
+				{"type": "Label", "caption": "Assign room names and floors. A selected external variable replaces only that reading. CO2 must be in ppm, humidity in percent. PTC must be the actual heater status, not its release."},
+				{
+					"type": "List", "name": "VisualizationRooms", "caption": "Room Mapping", "rowCount": 6, "add": true, "delete": true,
+					"columns": [
+						{"name": "Name", "caption": "Room Name", "width": "auto", "add": "", "edit": {"type": "ValidationTextBox"}},
+						{"name": "Floor", "caption": "Floor", "width": "100px", "add": "EG", "edit": {"type": "Select", "options": [{"caption": "Ground Floor", "value": "EG"}, {"caption": "Upper Floor", "value": "OG"}]}},
+						{"name": "RoomInstanceID", "caption": "PROXON Room", "width": "220px", "add": 0, "edit": {"type": "SelectInstance", "validModules": ["{82991C5F-F554-4ED2-B2C7-2B2999B32C46}", "{9496FF42-B793-02E3-8271-541651A9085F}"]}},
+						{"name": "AirQualitySensor", "caption": "PROXON Air Quality Sensor", "width": "180px", "add": 0, "edit": {"type": "Select", "options": [{"caption": "None", "value": 0}, {"caption": "Sensor 1", "value": 1}, {"caption": "Sensor 2", "value": 2}, {"caption": "Sensor 3", "value": 3}, {"caption": "Sensor 4", "value": 4}, {"caption": "Sensor 5", "value": 5}]}},
+						{"name": "CO2VariableID", "caption": "External CO2 Variable", "width": "100px", "visible": false, "add": 0, "edit": {"type": "SelectVariable", "validVariableTypes": [1, 2]}},
+						{"name": "HumidityVariableID", "caption": "External Humidity Variable", "width": "100px", "visible": false, "add": 0, "edit": {"type": "SelectVariable", "validVariableTypes": [1, 2]}},
+						{"name": "PTCStatusVariableID", "caption": "Actual PTC Status Variable", "width": "100px", "visible": false, "add": 0, "edit": {"type": "SelectVariable", "validVariableTypes": [0]}}
+					],
+					"form": [
+						{"type": "ValidationTextBox", "name": "Name", "caption": "Room Name"},
+						{"type": "Select", "name": "Floor", "caption": "Floor", "options": [{"caption": "Ground Floor", "value": "EG"}, {"caption": "Upper Floor", "value": "OG"}]},
+						{"type": "SelectInstance", "name": "RoomInstanceID", "caption": "PROXON Room", "validModules": ["{82991C5F-F554-4ED2-B2C7-2B2999B32C46}", "{9496FF42-B793-02E3-8271-541651A9085F}"]},
+						{"type": "Select", "name": "AirQualitySensor", "caption": "PROXON Air Quality Sensor", "options": [{"caption": "None", "value": 0}, {"caption": "Sensor 1", "value": 1}, {"caption": "Sensor 2", "value": 2}, {"caption": "Sensor 3", "value": 3}, {"caption": "Sensor 4", "value": 4}, {"caption": "Sensor 5", "value": 5}]},
+						{"type": "SelectVariable", "name": "CO2VariableID", "caption": "External CO2 Variable", "validVariableTypes": [1, 2]},
+						{"type": "SelectVariable", "name": "HumidityVariableID", "caption": "External Humidity Variable", "validVariableTypes": [1, 2]},
+						{"type": "SelectVariable", "name": "PTCStatusVariableID", "caption": "Actual PTC Status Variable", "validVariableTypes": [0]}
+					]
+				}
+			]
+		},
+		{
 			"name": "CO2RFSensorCount",
 			"type": "NumberSpinner",
 			"caption": "CO2/RF Sensor Count",

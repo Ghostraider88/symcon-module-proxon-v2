@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../libs/FWTVisualizationRooms.php';
+
 class ProxonSystemControl extends IPSModuleStrict
 {
+    use FWTVisualizationRooms;
+
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const ADVANCED_MODULE_ID = '{96EBFF26-A28F-4C3F-BB0B-166BDEE7B182}';
     private const MONITORING_MODULE_ID = '{C48CB61D-8500-41F3-AC35-82DAF84EC870}';
@@ -49,6 +53,7 @@ class ProxonSystemControl extends IPSModuleStrict
         $this->RegisterAttributeInteger('RawDamperPosition', -1);
         $this->RegisterAttributeInteger('RawHeatPumpMode', -1);
         $this->RegisterAttributeInteger('LastVisualizationUpdate', 0);
+        $this->CreateVisualizationRooms();
         $this->RegisterTimer('Poller', 0, 'PROXON_RequestStatus($_IPS[\'TARGET\']);');
     }
 
@@ -89,6 +94,7 @@ class ProxonSystemControl extends IPSModuleStrict
         $this->RegisterPlantControlVariables();
         $this->RegisterStatusVariables();
         $this->RegisterSensorVariables();
+        $this->UpdateVisualizationRoomBindings();
         $this->HideLegacyAdvancedVariables();
 
         $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
@@ -120,11 +126,16 @@ class ProxonSystemControl extends IPSModuleStrict
             JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
         );
 
-        return str_replace(
-            ['<!-- FWT_SVG -->', '__INITIAL_DATA__'],
-            [$svg, $initialData],
-            $html
-        );
+        $roomLabels = [];
+        foreach (['Rooms', 'Room', 'Ground Floor', 'Upper Floor', 'Actual / Target', 'CO2', 'Relative Humidity', 'PTC Active', 'No rooms assigned', 'On', 'Off'] as $caption) {
+            $roomLabels[$caption] = $this->Translate($caption);
+        }
+
+        return strtr($html, [
+            '<!-- FWT_SVG -->' => $svg,
+            '__INITIAL_DATA__' => $initialData,
+            '__ROOM_LABELS__' => json_encode($roomLabels, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)
+        ]);
     }
 
     public function CreateAdvancedInstance(): void
@@ -591,7 +602,8 @@ class ProxonSystemControl extends IPSModuleStrict
                 'DamperPositionCode' => $hasLiveData && $rawDamperPosition >= 0 && $rawDamperPosition <= 4 ? $rawDamperPosition : null,
                 'HeatPumpModeCode' => $hasLiveData && $rawHeatPumpMode >= 0 && $rawHeatPumpMode <= 3 ? $rawHeatPumpMode : null
             ],
-            'monitoring' => $monitoring
+            'monitoring' => $monitoring,
+            'rooms' => $this->GetVisualizationRooms()
         ];
     }
 
