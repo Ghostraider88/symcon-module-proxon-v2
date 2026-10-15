@@ -20,7 +20,7 @@ Create the instance from the **Create Monitoring Instance** action in Proxon T30
 
 Scaling and offsets follow the supplied T300 register workbook and the existing Symcon FC4 configuration. Values that previously caused an undefined `offset` warning now safely default to zero when the workbook does not specify an offset. Numeric presentations use supported `SUFFIX` settings only.
 
-The external sensor at input register 817 is optional. `ExternalSensorTemperatureAvailable` is false when the raw register value is zero; the scaled numeric value remains unchanged for compatibility and must be ignored while the availability flag is false.
+The external sensor at input register 817 is optional. <code>ExternalSensorTemperatureAvailable</code> is false when the controller reports the sensor as absent; the scaled numeric value remains unchanged for compatibility and must be ignored while the availability flag is false.
 
 ## Compatibility
 
