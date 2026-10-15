@@ -1,12 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" class="fwt-plant" viewBox="0 0 1880 1150" role="img" aria-labelledby="title desc">
 <title id="title">PROXON FWT – Anlagenprozess mit EG/OG-Verteilung und Wärmepumpen-Messbild</title>
-<desc id="desc">Konzeptansicht der FWT. Die Frischluft und Abluft kreuzen sich getrennt im Kreuzstrom-Wärmetauscher. Die Zuluft wird am gemeinsamen Verteilerschieber auf zwei Stränge für Erdgeschoss und Obergeschoss aufgeteilt. Rechts sind Wärmepumpenbetrieb und dokumentierte Kältekreis-Messpunkte skizziert.</desc>
+<desc id="desc">Konzeptansicht der FWT. Frischluft und Abluft kreuzen sich getrennt im Kreuzstrom-Wärmetauscher. Verdampfer, Verflüssiger und Verdichter sind schematisch in die Luftwege und den unteren Gerätebereich integriert. Rechts stehen Wärmepumpenbetrieb und verfügbare Kältekreis-Messpunkte.</desc>
 <defs>
   <linearGradient id="background" x2="0" y2="1"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#edf2f7"/></linearGradient>
   <linearGradient id="freshBefore" x2="1"><stop stop-color="#0e9b68"/><stop offset="1" stop-color="#72c6a3"/></linearGradient>
   <linearGradient id="freshAfter" x2="1"><stop stop-color="#ef8874"/><stop offset="1" stop-color="#dc4037"/></linearGradient>
   <linearGradient id="extractBefore" x2="0"><stop stop-color="#df9a34"/><stop offset="1" stop-color="#efc36c"/></linearGradient>
   <linearGradient id="extractAfter" x2="0"><stop stop-color="#75b6df"/><stop offset="1" stop-color="#287cbd"/></linearGradient>
+  <linearGradient id="supply-core-gradient" gradientUnits="userSpaceOnUse" x1="412" y1="376" x2="654" y2="545"><stop stop-color="#21a477"/><stop offset=".58" stop-color="#6ab29b"/><stop offset="1" stop-color="#a9b9ad"/></linearGradient>
+  <linearGradient id="supply-after-gradient" gradientUnits="userSpaceOnUse" x1="654" y1="545" x2="810" y2="545"><stop stop-color="#a9b9ad"/><stop id="supply-mode-soft" offset=".68" stop-color="#efa79c"/><stop id="supply-mode-end" offset="1" stop-color="#df493e"/></linearGradient>
+  <linearGradient id="extract-air-gradient" gradientUnits="userSpaceOnUse" x1="1080" y1="350" x2="86" y2="545"><stop stop-color="#dfa346"/><stop offset=".34" stop-color="#e3b467"/><stop offset=".57" stop-color="#b9b8aa"/><stop offset=".76" stop-color="#83b9d8"/><stop offset="1" stop-color="#398fc4"/></linearGradient>
   <style>
     .txt{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#192b3d}
     .muted{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#738397}
@@ -14,15 +17,19 @@
     .label{font:700 14px Inter,"Segoe UI",Arial,sans-serif}
     .value{font:750 19px Inter,"Segoe UI",Arial,sans-serif}
     .card{fill:#fff;stroke:#e0e7ef;stroke-width:2}
-    .duct{fill:none;stroke-width:11;stroke-linecap:round;stroke-linejoin:round}
-    .moving{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:2 15;animation:air var(--flow-speed,1.6s) linear infinite;opacity:.92}
+    .duct{fill:none;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;transition:stroke .9s ease,stroke-width .35s ease}
+    .moving{fill:none;stroke:#fff;stroke-width:3.4;stroke-linecap:round;stroke-dasharray:4 18;animation:air var(--flow-speed,1.6s) linear infinite;opacity:.94}
     .supply-flow{animation-duration:var(--supply-flow-speed,1.6s)}
     .extract-flow{animation-duration:var(--extract-flow-speed,1.6s)}
-    .branchOG{stroke-width:7;opacity:.68;transition:stroke-width .35s ease}
-    .branchEG{stroke-width:12;opacity:1;transition:stroke-width .35s ease}
-    .movingOG{stroke-width:1.7;opacity:.7}
-    .movingEG{stroke-width:2.6;opacity:1}
+    .branchOG{stroke-width:10;opacity:.72;transition:stroke .9s ease,stroke-width .35s ease}
+    .branchEG{stroke-width:16;opacity:1;transition:stroke .9s ease,stroke-width .35s ease}
+    .movingOG{stroke-width:2.8;opacity:.76}
+    .movingEG{stroke-width:4.2;opacity:1}
+    .refrigerant-link{fill:none;stroke:#c99386;stroke-width:2;stroke-dasharray:5 7;opacity:.72}
     .blade{transform-box:fill-box;transform-origin:center;animation:spin var(--fan-speed,1s) linear infinite}
+    .compressor-rotor{transform-box:fill-box;transform-origin:center;animation:spin var(--compressor-speed,1s) linear infinite}
+    .refrigerant-moving{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:3 14;animation:air var(--compressor-speed,1.6s) linear infinite;opacity:0;transition:opacity .6s ease;pointer-events:none}
+    #supply-mode-soft,#supply-mode-end{transition:stop-color 1.2s ease}
     .pill{fill:#fff;stroke:#dfe7ef;stroke-width:1.5}
     .meter{fill:#edf1f5}
     #eg-flow-meter,#og-flow-meter{transition:width .35s ease}
@@ -67,7 +74,7 @@
 <rect x="870" y="275" width="220" height="57" rx="12" fill="#fff" stroke="#e5d3ae"/>
 <text class="txt small" x="882" y="300">RAUMLUFT</text>
 <text class="muted" x="882" y="319" font-size="12">Abluft hinein</text>
-<path class="duct" d="M1080 350H831" stroke="url(#extractBefore)" marker-end="url(#arrowAmber)"/>
+<path class="duct" d="M1080 350H831" stroke="url(#extract-air-gradient)" marker-end="url(#arrowAmber)"/>
 <path class="moving extract-flow" d="M1080 350H831"/>
 
 <!-- Fresh-air filter and supply fan -->
@@ -85,7 +92,7 @@
 <text class="muted" x="348" y="445" text-anchor="middle" font-size="12" data-bind="systemControl.SupplyFanRPM" data-suffix=" rpm">— rpm</text>
 
 <!-- Extract fan -->
-<path class="duct" d="M831 350H806" stroke="#e3aa4e"/>
+<path class="duct" d="M831 350H806" stroke="url(#extract-air-gradient)"/>
 <path class="moving extract-flow" d="M831 350H806"/>
 <g id="extract-fan" transform="translate(775 350)">
   <circle r="29" fill="#fff" stroke="#9fb3c2" stroke-width="2"/>
@@ -94,12 +101,12 @@
 </g>
 <text class="txt" x="775" y="399" text-anchor="middle" font-size="12" font-weight="750">ABLUFT-FAN</text>
 <text class="muted" x="775" y="418" text-anchor="middle" font-size="12" data-bind="systemControl.ExtractFanRPM" data-suffix=" rpm">— rpm</text>
-<path class="duct" d="M746 350H654" stroke="#e3aa4e"/>
+<path class="duct" d="M746 350H654" stroke="url(#extract-air-gradient)"/>
 <path class="moving extract-flow" d="M746 350H654"/>
 
 <!-- Bypass around the crossflow core -->
 <path id="bypass-path" d="M412 376V276H811V534" fill="none" stroke="#8497a8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 8"/>
-<path id="bypass-flow" class="moving" d="M412 376V276H811V534" style="opacity:0"/>
+<path id="bypass-flow" class="moving supply-flow" d="M412 376V276H811V534" style="opacity:0"/>
 <rect x="505" y="258" width="128" height="33" rx="16" fill="#fff" stroke="#c4d0d9"/>
 <text id="bypass-status" class="muted" x="569" y="280" text-anchor="middle" font-size="11" font-weight="750">BYPASS · —</text>
 <g id="bypass-valve" transform="translate(412 320)"><circle r="12" fill="#fff" stroke="#60778b" stroke-width="2"/><path d="M-7 7L7-7" stroke="#60778b" stroke-width="3.2" stroke-linecap="round"/></g>
@@ -109,12 +116,30 @@
 <rect x="430" y="350" width="224" height="200" rx="10" fill="#e9eef2" stroke="#8699a9" stroke-width="3"/>
 <path d="M440 362L644 537M440 388L614 537M440 414L584 537M440 440L554 537M440 466L524 537M440 492L494 537" stroke="#ccd5dd" stroke-width="3"/>
 <path d="M644 362L440 537M644 388L470 537M644 414L500 537M644 440L530 537M644 466L560 537M644 492L590 537" stroke="#bdc9d3" stroke-width="3"/>
-<path d="M412 376H430L542 448L654 545H810" fill="none" stroke="#1fa273" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="supply-air-after-hp" d="M654 545H810" fill="none" stroke="#df493e" stroke-width="10" stroke-linecap="round"/>
-<path d="M654 350H644L542 430L430 545H86" fill="none" stroke="#e2a142" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M430 545H86" fill="none" stroke="#398fc4" stroke-width="10" stroke-linecap="round"/>
+<path class="duct" d="M412 376H430L542 448L654 545" stroke="url(#supply-core-gradient)"/>
+<path id="supply-air-after-hp" class="duct" d="M654 545H810" stroke="url(#supply-after-gradient)"/>
+<path class="duct" d="M654 350H644L542 430L430 545H86" stroke="url(#extract-air-gradient)"/>
+<path class="duct" d="M430 545H86" stroke="url(#extract-air-gradient)"/>
 <path class="moving supply-flow" d="M412 376H430L542 448L654 545H810"/>
 <path class="moving extract-flow" d="M1080 350H831H654L542 430L430 545H86"/>
+
+<!-- Integrated heat pump components in the air path; dashed lines are symbolic -->
+<path class="refrigerant-link" d="M278 575V640H507M579 640H737V575"/>
+<rect x="242" y="516" width="72" height="59" rx="8" fill="#f4faff" fill-opacity=".94" stroke="#9cc8e0" stroke-width="2"/>
+<text class="txt" x="278" y="531" text-anchor="middle" font-size="7" font-weight="800">VERDAMPFER</text>
+<path d="M251 538L259 547L267 538L275 547L283 538L291 547L299 538L307 547" fill="none" stroke="#398fc4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="muted" x="278" y="565" text-anchor="middle" font-size="8" data-bind="monitoring.EvaporatorTemperatureFromPressure" data-suffix=" °C" data-digits="1">— °C</text>
+<rect x="703" y="516" width="72" height="59" rx="8" fill="#fff8f5" fill-opacity=".94" stroke="#eab3a9" stroke-width="2"/>
+<text class="txt" x="739" y="531" text-anchor="middle" font-size="7" font-weight="800">VERFLÜSSIGER</text>
+<path d="M712 538L720 547L728 538L736 547L744 538L752 547L760 538L768 547" fill="none" stroke="#df6d5f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="muted small" x="543" y="606" text-anchor="middle" font-size="8">WÄRMEPUMPE · SCHEMATISCH</text>
+<rect x="507" y="615" width="72" height="58" rx="10" fill="#fff8f5" stroke="#df988c" stroke-width="2"/>
+<text class="txt" x="543" y="630" text-anchor="middle" font-size="8" font-weight="800">VERDICHTER</text>
+<g transform="translate(543 651)"><g id="compressor-rotor-overview" class="compressor-rotor" fill="#dc806f">
+  <path d="M-2-14C6-15 9-9 3-3L0 0L-4-4Z"/><path d="M13 5C15 13 9 17 3 10L0 0L5 1Z"/><path d="M-11 9C-18 5-15-3-6-3L0 0L-3 5Z"/><circle r="3" fill="#fff"/>
+</g></g>
+<circle id="compressor-state-lamp" cx="568" cy="625" r="3.5" fill="#8497a8"/>
+<text id="compressor-overview-state" class="muted" x="543" y="686" text-anchor="middle" font-size="8" font-weight="750">—</text>
 <circle cx="542" cy="439" r="26" fill="#fff" stroke="#c6d2dc" stroke-width="2"/>
 <path d="M532 433H552M548 429L553 433L548 437M554 445H534M538 441L533 445L538 449" fill="none" stroke="#71869a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 <text class="muted" x="542" y="481" text-anchor="middle" font-size="9" font-weight="700">WÄRME</text>
@@ -139,7 +164,7 @@
 <rect x="38" y="560" width="140" height="48" rx="12" fill="#fff" stroke="#bfd8e7"/>
 <text class="txt small" x="45" y="583">FORTLUFT</text>
 <text class="muted" x="45" y="601" font-size="11">abgekühlt hinaus</text>
-<path d="M86 545H28" fill="none" stroke="#398fc4" stroke-width="10" stroke-linecap="round" marker-end="url(#arrowBlue)"/>
+<path class="duct" d="M86 545H28" stroke="url(#extract-air-gradient)" marker-end="url(#arrowBlue)"/>
 <path class="moving extract-flow" d="M86 545H28"/>
 
 <!-- Four air temperatures at their ports -->
@@ -188,9 +213,10 @@
 <rect x="1205" y="199" width="138" height="50" rx="12" fill="#fff" stroke="#d9cdec"/>
 <circle cx="1222" cy="216" r="5" fill="#d45447"/><text class="muted" x="1235" y="220" font-size="9" font-weight="750">WP-MODUS</text>
 <text id="heat-pump-mode" class="txt status-unknown" x="1222" y="240" font-size="15" font-weight="800" data-bind="systemControl.ActualHeatPumpMode">—</text>
-<text class="txt" x="1361" y="213" font-size="12" font-weight="750">Verdichterstatus</text>
-<text class="muted" x="1361" y="232" font-size="11" data-bind="monitoring.CompressorStatus" data-prefix="Rohwert ">—</text>
-<text class="txt" x="1361" y="251" font-size="11" font-weight="700">Kühlfreigabe:</text><text class="muted" x="1445" y="251" font-size="11" data-bind="systemControl.CoolingEnabled" data-format="boolean">—</text>
+<circle id="compressor-status-lamp-top" cx="1376" cy="225" r="6" fill="#8497a8"/>
+<text class="txt" x="1391" y="213" font-size="12" font-weight="750">Verdichter</text>
+<text id="compressor-state" class="muted" x="1391" y="234" font-size="11" font-weight="750">—</text>
+<text class="txt" x="1391" y="251" font-size="11" font-weight="700">Kühlfreigabe:</text><text class="muted" x="1475" y="251" font-size="11" data-bind="systemControl.CoolingEnabled" data-format="boolean">—</text>
 <rect x="1658" y="199" width="128" height="50" rx="12" fill="#fff" stroke="#d9cdec"/>
 <text class="muted" x="1672" y="218" font-size="9" font-weight="750">4-WEGEVENTIL</text>
 <text class="txt" x="1672" y="239" font-size="12" font-weight="750">Status nicht verfügbar</text>
@@ -199,11 +225,11 @@
 <rect x="1188" y="279" width="616" height="169" rx="15" fill="#f7f9fb"/>
 <text class="muted small" x="1207" y="305">ANTRIEB · LEISTUNG · JAZ / COP</text>
 <g class="txt" font-size="11">
-  <text x="1208" y="332" font-weight="700">Steuerplatine</text><text x="1208" y="351" font-size="14" font-weight="750" data-bind="monitoring.ElectricalPowerPCB" data-digits="1">—</text>
-  <text x="1347" y="332" font-weight="700">Umrichter</text><text x="1347" y="351" font-size="14" font-weight="750" data-bind="monitoring.ElectricalPowerInverter" data-digits="1">—</text>
-  <text x="1483" y="332" font-weight="700">Gesamt</text><text x="1483" y="351" font-size="14" font-weight="750" data-bind="monitoring.TotalElectricalPower" data-digits="1">—</text>
+  <text x="1208" y="332" font-weight="700">Steuerplatine</text><text x="1208" y="351" font-size="14" font-weight="750" data-bind="monitoring.ElectricalPowerPCB" data-suffix=" W" data-digits="1">—</text>
+  <text x="1347" y="332" font-weight="700">Umrichter</text><text x="1347" y="351" font-size="14" font-weight="750" data-bind="monitoring.ElectricalPowerInverter" data-suffix=" W" data-digits="1">—</text>
+  <text x="1483" y="332" font-weight="700">Gesamt</text><text x="1483" y="351" font-size="14" font-weight="750" data-bind="monitoring.TotalElectricalPower" data-suffix=" W" data-digits="1">—</text>
   <text x="1660" y="332" font-weight="700">Kompressor</text><text x="1660" y="351" font-size="14" font-weight="750" data-bind="monitoring.CurrentCompressorPower" data-suffix=" %" data-digits="1">—</text>
-  <text x="1208" y="378" font-weight="700">Verdichterdrehzahl</text><text x="1208" y="397" font-size="14" font-weight="750" data-bind="monitoring.CompressorSpeed" data-digits="0">—</text>
+  <text x="1208" y="378" font-weight="700">Verdichterdrehzahl</text><text x="1208" y="397" font-size="14" font-weight="750" data-bind="monitoring.CompressorSpeed" data-suffix=" rpm" data-digits="0">—</text>
   <text x="1347" y="378" font-weight="700">Umrichterstrom</text><text x="1347" y="397" font-size="14" font-weight="750">—</text>
 </g>
 <text class="muted" x="1483" y="378" font-size="10" font-weight="750">JAZ KOMP</text>
@@ -214,16 +240,20 @@
 <rect x="1188" y="461" width="616" height="323" rx="15" fill="#f7f9fb"/>
 <text class="muted small" x="1207" y="488">KÄLTEKREIS · SENSORWERTE AM BAUTEIL</text>
 <rect x="1208" y="501" width="132" height="31" rx="15" fill="#fff" stroke="#dfe7ef"/><text class="txt" x="1274" y="521" text-anchor="middle" font-size="10" font-weight="750">4-WEGEVENTIL</text>
-<path d="M1248 589H1305" fill="none" stroke="#de493e" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowRed)"/>
-<path d="M1450 589H1515" fill="none" stroke="#e09b3d" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowAmber)"/>
-<path d="M1584 615V659" fill="none" stroke="#287cbd" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowBlue)"/>
-<path d="M1515 689H1450" fill="none" stroke="#398fc4" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowBlue)"/>
-<path d="M1305 689H1248" fill="none" stroke="#5ab99b" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowGreen)"/>
-<path d="M1228 659V615" fill="none" stroke="#5ab99b" stroke-width="7" stroke-linecap="round" marker-end="url(#arrowGreen)"/>
+<path d="M1248 589H1305" fill="none" stroke="#de493e" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowRed)"/>
+<path d="M1450 589H1515" fill="none" stroke="#e09b3d" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowAmber)"/>
+<path d="M1584 615V659" fill="none" stroke="#287cbd" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowBlue)"/>
+<path d="M1515 689H1450" fill="none" stroke="#398fc4" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowBlue)"/>
+<path d="M1305 689H1248" fill="none" stroke="#5ab99b" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowGreen)"/>
+<path d="M1228 659V615" fill="none" stroke="#5ab99b" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowGreen)"/>
+<path class="refrigerant-moving" d="M1248 589H1305M1450 589H1515M1584 615V659M1515 689H1450M1305 689H1248M1228 659V615"/>
 <rect x="1208" y="548" width="132" height="67" rx="12" fill="#fff" stroke="#e7b8b3" stroke-width="1.5"/>
-<text class="txt" x="1274" y="570" text-anchor="middle" font-size="11" font-weight="800">VERDICHTER</text>
-<text class="muted" x="1274" y="591" text-anchor="middle" font-size="10">— °C</text>
-<text class="muted" x="1274" y="606" text-anchor="middle" font-size="9"></text>
+<g transform="translate(1228 581)"><g id="compressor-rotor-circuit" class="compressor-rotor" fill="#dc806f">
+  <path d="M-2-13C6-14 8-8 3-3L0 0L-4-4Z"/><path d="M12 5C14 12 8 15 3 9L0 0L5 1Z"/><path d="M-10 8C-16 4-14-3-6-3L0 0L-3 5Z"/><circle r="2.5" fill="#fff"/>
+</g></g>
+<text class="txt" x="1251" y="570" font-size="10" font-weight="800">VERDICHTER</text>
+<text id="compressor-circuit-state" class="muted" x="1251" y="588" font-size="9" font-weight="750">—</text>
+<text class="muted" x="1251" y="606" font-size="9" data-bind="monitoring.CompressorSpeed" data-suffix=" rpm" data-digits="0">—</text>
 <rect x="1515" y="548" width="138" height="67" rx="12" fill="#fff" stroke="#efd7ad" stroke-width="1.5"/>
 <text class="txt" x="1584" y="570" text-anchor="middle" font-size="11" font-weight="800">KONDENSATOR</text>
 <text class="muted" x="1584" y="591" text-anchor="middle" font-size="10">— °C</text>
@@ -265,5 +295,5 @@
 <rect x="1188" y="1014" width="616" height="70" rx="12" fill="#f7f9fb" stroke="#e1e8ef"/>
 <text class="txt" x="1207" y="1037" font-size="12" font-weight="750">Messwerte</text>
 <text class="muted" x="1207" y="1059" font-size="11">Nicht verfügbare Werte erscheinen als —.</text>
-<text class="muted" x="34" y="1130" font-size="11">Grün: Frischluft · Orange: Abluft · Blau: Fortluft · Zuluftfarbe entsprechend dem Betriebszustand.</text>
+<text class="muted" x="34" y="1130" font-size="11">Frischluft, Abluft und Fortluft wechseln im Kreuzstromkern weich die Farbe · Zuluftfarbe folgt dem Betriebszustand.</text>
 </svg>

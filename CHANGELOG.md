@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1 — Build 4 — 2026-10-15
+
+- Smoothed airflow temperature colors and increased the visible size of duct and flow markers.
+- Connected airflow animation speed and fan rotation to measured fan RPM.
+- Integrated schematic evaporator, condenser and compressor graphics into the main airflow overview. Compressor animation and running state follow Monitoring compressor RPM.
+- Clarified power and RPM units in the heat-pump panel.
+
 ## 1.1 — Build 3 — 2026-10-15
 
 - Enabled drag-and-drop ordering of visualization room rows in the instance configuration.

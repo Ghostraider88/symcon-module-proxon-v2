@@ -183,6 +183,36 @@ function updateAirflow(data) {
     updateFanAnimation('extract-fan', extractRPM);
 }
 
+function updateCompressorAnimation(data) {
+    const monitoring = data.monitoring || {};
+    const rpm = monitoring.CompressorSpeed;
+    const hasSpeed = typeof rpm === 'number' && Number.isFinite(rpm) && rpm >= 0;
+    const isRunning = hasSpeed && rpm > 0;
+    const speedText = !hasSpeed ? '—' : isRunning ? (roomLabels.Running || 'Running') : (roomLabels.Off || 'Off');
+    const duration = isRunning ? Math.max(0.28, Math.min(2.4, 1800 / rpm)) : 1.6;
+
+    ['compressor-state', 'compressor-circuit-state', 'compressor-overview-state'].forEach((id) => {
+        const state = document.getElementById(id);
+        if (state) state.textContent = speedText;
+    });
+
+    const lampColor = !hasSpeed ? '#8497a8' : isRunning ? '#159a69' : '#8497a8';
+    ['compressor-state-lamp', 'compressor-status-lamp-top'].forEach((id) => {
+        const lamp = document.getElementById(id);
+        if (lamp) lamp.setAttribute('fill', lampColor);
+    });
+
+    document.querySelectorAll('.compressor-rotor').forEach((rotor) => {
+        rotor.style.animationDuration = duration + 's';
+        rotor.style.animationPlayState = isRunning ? 'running' : 'paused';
+    });
+    document.querySelectorAll('.refrigerant-moving').forEach((path) => {
+        path.style.animationDuration = duration + 's';
+        path.style.animationPlayState = isRunning ? 'running' : 'paused';
+        path.style.opacity = isRunning ? '0.92' : '0';
+    });
+}
+
 function updateDamper(data) {
     const system = data.systemControl || {};
     const position = system.DamperPositionCode;
@@ -215,10 +245,10 @@ function updateDamper(data) {
         ogMeter.setAttribute('width', String(450 * ogShare));
     }
     if (egBranch) {
-        egBranch.style.strokeWidth = String(4 + egShare * 9);
+        egBranch.style.strokeWidth = String(hasPosition ? 9 + egShare * 10 : 8);
     }
     if (ogBranch) {
-        ogBranch.style.strokeWidth = String(4 + ogShare * 9);
+        ogBranch.style.strokeWidth = String(hasPosition ? 9 + ogShare * 10 : 8);
     }
 
     const describeShare = (share) => !hasPosition ? '—' : share > 0.6
@@ -278,8 +308,13 @@ function updateHeatPumpMode(data) {
     element.classList.add(modeClass);
 
     const color = ({ 0: '#8497a8', 1: '#de493e', 2: '#287cbd', 3: '#159a69' })[mode] || '#8497a8';
+    const softColor = ({ 0: '#b8c1c7', 1: '#efa79c', 2: '#9ec7df', 3: '#8bc6ac' })[mode] || '#b8c1c7';
+    const softStop = document.getElementById('supply-mode-soft');
+    const endStop = document.getElementById('supply-mode-end');
+    if (softStop) softStop.style.stopColor = softColor;
+    if (endStop) endStop.style.stopColor = color;
     const arrow = ({ 1: 'url(#arrowRed)', 2: 'url(#arrowBlue)', 3: 'url(#arrowGreen)' })[mode] || 'url(#arrowNeutral)';
-    ['supply-air-after-hp', 'flow-branch-og', 'flow-branch-eg'].forEach((id) => {
+    ['flow-branch-og', 'flow-branch-eg'].forEach((id) => {
         const path = document.getElementById(id);
         if (path) {
             path.style.stroke = color;
@@ -325,6 +360,7 @@ function handleMessage(data) {
     updateDamper(data);
     updateBypass(data);
     updateHeatPumpMode(data);
+    updateCompressorAnimation(data);
     updateTileStatus(data);
     updateRooms(data);
 }

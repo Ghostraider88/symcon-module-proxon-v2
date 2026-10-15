@@ -46,6 +46,8 @@ System Control offers a read-only HTML-SDK tile. Add the instance to a Symcon vi
 
 The EG/OG branch thickness and bars visualize the five-position damper preference. They are relative indicators, not measured air volume per floor. Register units and state mappings that are still under review remain unlabeled or show as unavailable. Register addresses and sensor codes are not shown in the tile.
 
+The airflow paths use gradual temperature-color transitions through the crossflow core and larger moving markers. Their animation speed and both fan symbols follow `SupplyFanRPM` and `ExtractFanRPM`. The main device diagram shows the evaporator, condenser and compressor as a schematic heat-pump circuit. The compressor rotor and running indicator follow the selected Monitoring instance's `CompressorSpeed`; available electrical power, compressor power, speed, COP/JAZ and evaporator temperature are shown in the adjacent heat-pump panel. An RPM above zero indicates that the compressor is turning; undocumented compressor status codes are not decoded.
+
 ### Room names and sensor mapping
 
 Open **Visualization Rooms** in the instance configuration and add one row per room. Editing a row provides these fields:

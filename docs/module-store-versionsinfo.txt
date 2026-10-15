@@ -1,3 +1,8 @@
+Build 4 (15.10.2026)
+geändert: Luftstromfarben verlaufen weicher durch den Kreuzstromwärmetauscher und folgen beim Übergang der Zuluft dem Betriebsmodus.
+geändert: Luftkanäle und animierte Strömungsmarker sind größer. Animationsgeschwindigkeit und Lüfterrotation folgen den gemessenen Lüfterdrehzahlen.
+neu: Verdampfer, Verflüssiger und Verdichter sind schematisch in die Anlagenübersicht integriert. Verdichteranimation und Laufanzeige folgen der Monitoring-Drehzahl.
+geändert: Leistungswerte und Verdichterdrehzahl zeigen ihre Einheiten.
 Build 3 (15.10.2026)
 geändert: Räume lassen sich in der System-Control-Konfiguration per Drag & Drop sortieren. Die Visualisierung übernimmt die Reihenfolge je Etage.
 Build 2 (15.10.2026)

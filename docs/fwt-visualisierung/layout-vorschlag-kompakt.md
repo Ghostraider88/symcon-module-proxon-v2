@@ -36,7 +36,7 @@ Externe CO₂- und Feuchtevariablen lassen sich unabhängig voneinander ergänze
 
 Für PTC wird ein tatsächlicher Status benötigt. Die Heizfreigabe `PTCRelease` wird nicht als aktives Heizelement ausgegeben. Unterstützt werden ein vorhandener tatsächlicher Status der Rauminstanz oder eine ausdrücklich ausgewählte externe boolesche Statusvariable. Die HTML-Raumkarten lesen diese Zuordnung und aktualisieren sich bei Änderungen der ausgewählten Variablen.
 
-Die komplette neue Geräteanordnung bleibt eine statische Layoutvorschau. Die bestehende HTML-Kachel im Branch hat bereits die konfigurierbaren Raumkarten und bereinigte Bezeichnungen; die Übertragung der neuen Geräteanordnung ist ein eigener nachfolgender Abschnitt.
+Die vollständige neue Geräteanordnung bleibt eine statische Layoutvorschau. In der aktiven HTML-Kachel sind inzwischen die weicheren Luftstromfarben, drehzahlabhängigen Lüfteranimationen und schematischen Wärmepumpenkomponenten übernommen. Die Anordnung des übrigen Geräts folgt weiterhin dem bestehenden Kachellayout.
 
 Die frühere Variante [05-fwt-kompakt-vorschlag.svg](05-fwt-kompakt-vorschlag.svg) bleibt zum Vergleich erhalten. Die aktuelle Fassung liegt als [SVG](06-fwt-proportionen.svg) und [PNG](06-fwt-proportionen.png) vor.
 
@@ -46,4 +46,4 @@ Die frühere Variante [05-fwt-kompakt-vorschlag.svg](05-fwt-kompakt-vorschlag.sv
 - [PROXON FWT 2 2.0 Datenblatt](https://www.zimmermann-lueftung.de/fileadmin/user_upload/downloads/Datenblatt_PROXON_FWT-2_2.0.pdf) – Geräteaufbau, Anschlüsse, Maße und integrierte Baugruppen.
 - [PROXON FWT-Serie Zentralgerät](https://www.zimmermann-lueftung.de/komforttechnik/die-proxon-geraete/proxon-fwt-serie-zentralgeraet/) – Zonenregelung, Raumdaten und Bedienkonzept.
 
-Die SVG und PNG sind statische Entwürfe. Die aktive HTML-Kachel wurde noch nicht umgebaut.
+Die SVG und PNG sind statische Entwürfe. Die aktive HTML-Kachel übernimmt ausgewählte Bauteile und Messwertgruppen, jedoch nicht die komplette Geräteanordnung.
