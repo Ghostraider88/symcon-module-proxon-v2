@@ -1,3 +1,8 @@
+Build 9 (15.10.2026)
+geändert: Verdichter kompakter in den Kältekreis integriert; Symbol dreht bei laufendem Verdichter. Leitungen zwischen Verflüssiger und Expansion sind dicker und weiter getrennt.
+geändert: Sommerbypass führt von Außenluft vor zum Zuluftweg nach dem Kreuzstrom-Wärmetauscher; Animation folgt dem Zuluftventilator.
+neu: Pollen- und Abluftfilter einheitlich gezeichnet. Restlaufzeit-Balken zeigen „—“, bis die passenden Register bestätigt und zugeordnet sind.
+geändert: Grafik 28 px tiefer; größere Verdichterwerte in Heiz-/Kühlfarbe.
 Build 8 (15.10.2026)
 geändert: Luftwege und Bauteile nach DIBt-Anlage 1 ausgerichtet; der Sommerbypass führt Abluft am Kreuzgegenstrom-Wärmetauscher vorbei. Zuluft EG liegt oben, OG unten; WP-Vorwärmung ist ergänzt.
 geändert: Verdichter mit DIBt-Symbol und größerer Anzeige für Drehzahl/Leistung. Kältekreis zeigt Heiz-/Kühlfarben und wechselt Flussrichtung mit der Betriebsart.
@@ -8,9 +13,6 @@ geändert: Leere Luftmengen-/Messwerte-Platzhalter und redundante Kachel-Titel e
 Build 6 (15.10.2026)
 geändert: Der tatsächliche Wärmepumpenmodus wird aus 4x0241 mit Aus, Heizen und Kühlen decodiert. Unbekannte Codes bleiben als Rohcode sichtbar.
 geändert: Die FWT-Kachel erhält die bestätigten 4x0241-Moduswerte; 3x0069 bleibt ein Test-/Debugwert.
-Build 5 (15.10.2026)
-geändert: Der Zuluftweg ab dem Verflüssiger einschl. EG-/OG-Abzweigungen ist im Heizbetrieb rot, im Kühlbetrieb blau und bei Lüftung/Aus grau.
-neu: Wenn kein bestätigter Heiz-/Kühlcode vorliegt, leitet die Kachel die Betriebsrichtung bei laufendem Verdichter aus Zu- und Frischlufttemperatur ab. Abgeleitete Zustände sind mit * markiert.
 Build 3 (15.10.2026)
 geändert: Räume lassen sich in der System-Control-Konfiguration per Drag & Drop sortieren. Die Visualisierung übernimmt die Reihenfolge je Etage.
 Build 2 (15.10.2026)
