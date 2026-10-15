@@ -1,0 +1,16 @@
+{
+	"id": "{9496FF42-B793-02E3-8271-541651A9085F}",
+	"name": "ProxonZone",
+	"type": 3,
+	"vendor": "Proxon",
+	"aliases": 
+	[
+		"Proxon FWT 2.0 Zone",
+		"Proxon FWT 3.0 Zone"
+	],
+	"parentRequirements": ["{E310B701-4AE7-458E-B618-EC13A1A6F6A8}"],
+	"childRequirements": [],
+	"implemented": ["{77B31ABB-18FA-4B91-BB63-E5B2AB5588F4}"],
+	"url": "https://www.symcon.de",
+	"prefix": "PROXON"
+}

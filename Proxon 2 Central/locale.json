@@ -1,0 +1,22 @@
+{
+    "translations": {
+        "de": { 
+            "Control Panel": "Bedienpanel",
+            "Current Temperature": "Ist Temperatur",
+            "Target Temperature": "Soll Temperatur",
+            "Operating Mode": "Betriebsart",
+            "Fan Stage": "Lüfterstufe",
+            "Off": "Aus",
+            "Eco Summer": "Eco Sommer",
+            "Eco Winter": "Eco Winter",
+            "Test": "Test",
+            "Fan Stage 1": "Lüfterstufe 1",
+            "Fan Stage 2": "Lüfterstufe 2",
+            "Fan Stage 3": "Lüfterstufe 3",
+            "Fan Stage 4": "Lüfterstufe 4",
+            "Interval": "Intervall",
+            "Seconds": "Sekunden",
+            "Update Values": "Werte aktualisieren"
+        }
+    }
+}

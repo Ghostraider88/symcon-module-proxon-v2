@@ -1,0 +1,16 @@
+{
+	"id": "{2AA27F83-E4DA-48D5-86CF-613C09F1B4B5}",
+	"name": "ProxonConfigurator",
+	"type": 4,
+	"vendor": "ModBus",
+	"aliases": 
+	[
+		"Proxon FWT 2.0 Configurator",
+		"Proxon FWT 3.0 Configurator"
+	],
+	"parentRequirements": ["{E310B701-4AE7-458E-B618-EC13A1A6F6A8}"],
+	"childRequirements": [],
+	"implemented": ["{77B31ABB-18FA-4B91-BB63-E5B2AB5588F4}"],
+	"url": "https://www.symcon.de",
+	"prefix": "PROXON"
+}

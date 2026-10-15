@@ -1,0 +1,190 @@
+<?
+	class ProxonPanel extends IPSModuleStrict {
+		public function Create(): void {
+			//Never delete this line!
+			parent::Create();
+			
+			$this->RegisterPropertyInteger("ControlPanel", 1);
+			$this->RegisterPropertyInteger("Interval", 30);
+
+			$this->RegisterAttributeFloat("BaseTemperature", 0);
+
+			$this->RegisterTimer("Poller", 0, "PROXON_RequestStatus(\$_IPS['TARGET']);");
+ 
+		}
+
+		public function ApplyChanges(): void {
+			//Never delete this line!
+			parent::ApplyChanges();
+			
+			$this->RegisterVariableFloat("CurrentTemperature", $this->Translate("Current Temperature"), [
+				"PRESENTATION" => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+				"TEMPLATE" => VARIABLE_TEMPLATE_VALUE_PRESENTATION_ROOM_TEMPERATURE
+			], 1);
+			$this->RegisterVariableInteger("TargetTemperature", $this->Translate("Target Temperature"), [
+				"PRESENTATION" => VARIABLE_PRESENTATION_SLIDER,
+				"MIN" => 18,
+				"MAX" => 24,
+				"STEP_SIZE" => 1,
+				"USAGE_TYPE" => 0,
+				"GRADIENT_TYPE" => 1, 
+				"SUFFIX" => " °C", 
+				"ICON" => "temperature-half"
+			], 2);
+
+			$this->EnableAction("TargetTemperature");
+			$this->RegisterVariableBoolean("PTCRelease", $this->Translate("PTC Release"), [
+				"PRESENTATION" => VARIABLE_PRESENTATION_SWITCH
+			], 3);
+			$this->EnableAction("PTCRelease");
+
+			$this->RegisterVariableBoolean("PTCStatus", $this->Translate("PTC Status"), [
+				"PRESENTATION" =>  	VARIABLE_PRESENTATION_VALUE_PRESENTATION
+			], 3);
+
+			$this->SetTimerInterval("Poller", $this->ReadPropertyInteger("Interval") * 1000);
+		}
+
+		private function readTemperature(int $AddressBase, float $format = 1, int $relation = 1) {
+			$Address = $AddressBase + ($this->ReadPropertyInteger("ControlPanel") - $relation);
+			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
+			if($Data == false)
+				return;
+			$Data = (unpack("n*", substr($Data,2)));
+			// CurrentTemperature is a signed value, so we need to convert it (there is no value for unpacking a signed short)
+			if($Data[1] >= pow(2, 15)) $Data[1] -= pow(2, 16);
+
+			$finalValue = $Data[1]/ $format;
+			$this->SendDebug($Address."-read", "get temperature for Panel ".$this->ReadPropertyInteger("ControlPanel")." with value: ".($finalValue)." Address: ".$Address." - Function: 3", 0);
+			
+			return $finalValue;
+		}
+
+		private function readAndUpdateTemperatureVariable(int $AddressBase, string $saveTo, float $format = 1, int $relation = 1) {
+			$finalValue = $this->readTemperature($AddressBase, $format, $relation);
+			if ($finalValue) {
+				$this->SetValue($saveTo, $finalValue);
+				$this->SendDebug($saveTo, "update temperature Variable for Panel ".$this->ReadPropertyInteger("ControlPanel")." with value: ".($finalValue)."", 0);
+			} else {
+				$this->SendDebug($saveTo, "ERROR Reading temperature for Panel ".$this->ReadPropertyInteger("ControlPanel")."", 0);
+			}
+		}
+
+		private function readAndCheckBitMask(int $Address, string $saveTo): void {
+			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
+			if($Data == false)
+				return;
+			$Data = (unpack("n*", substr($Data,2)));
+			$decBitMask = $Data[1];
+
+			//Create BitMask for Panel
+			$bitmask = 1 << ($this->ReadPropertyInteger("ControlPanel") - 1);
+			// Check if Bit is set
+			$bitCheck = ($decBitMask & $bitmask) !== 0;
+
+			$this->SetValue($saveTo, $bitCheck);	
+			$this->SendDebug($saveTo, "Get Status for Panel ".$this->ReadPropertyInteger("ControlPanel")." with value: ".$decBitMask." - Bit: ".$bitmask."", 0);
+		}
+
+		public function RequestStatus(): void {		
+			// CurrentTemperature -> FC3, 150 + X, INT16 (0.1 °C Resolution)
+			$Data = $this->readAndUpdateTemperatureVariable(150, "CurrentTemperature", 10.0);
+
+			// BaseTemperature -> FC3, 220 + X, INT16 (1.0 °C Resolution)
+			// Only for Panels > 1
+			if ($this->ReadPropertyInteger("ControlPanel") > 1) {
+				$baseTemp = $this->readTemperature(220, 10.0, 2);				
+
+				// Read last value of BaseTemperature
+				$oldBaseTemp = $this->ReadAttributeFloat("BaseTemperature");
+
+				// Edit Presentation only on Change
+				if ($baseTemp != $oldBaseTemp) {
+					// We want to store the BaseTemperature in a attribute, to use it for SetTemperature / comparison
+					$this->WriteAttributeFloat("BaseTemperature", $baseTemp);
+					$this->SendDebug("BaseTemperature", "read base temp for Panel ".$this->ReadPropertyInteger("ControlPanel")." with value: ".$baseTemp." - Function: 3", 0);
+
+					$minTemp = $baseTemp-3;
+					$maxTemp = $baseTemp+3;
+					$this->RegisterVariableInteger("TargetTemperature", $this->Translate("Target Temperature"), [
+						"PRESENTATION" => VARIABLE_PRESENTATION_SLIDER,
+						"MIN" => $minTemp,
+						"MAX" => $maxTemp,
+						"STEP_SIZE" => 1,
+						"USAGE_TYPE" => 0,
+						"GRADIENT_TYPE" => 1, 
+						"SUFFIX" => " °C", 
+						"ICON" => "temperature-half"
+					], 2);
+					$this->SendDebug("presentation", "set new presentation for target-temp values for Panel ".$this->ReadPropertyInteger("ControlPanel")." with value: Min: ".$minTemp." / Max: ".$maxTemp, 0);
+				} else {
+					$this->SendDebug("presentation", "Base Temperature for Panel ".$this->ReadPropertyInteger("ControlPanel")." has not changed - skipping CustomPresentation", 0);
+				}
+			} else {
+				$this->SendDebug("base-temp", "no base temp for Panel ".$this->ReadPropertyInteger("ControlPanel")." available - skipping", 0);
+			}
+
+			// TargetTemperature -> FC3, 180 + X, INT16 (1.0 °C Resolution)
+			$this->readAndUpdateTemperatureVariable(180, "TargetTemperature", 10.0);
+
+			// PTCRelease -> FC3, 302 Bitmask, INT16 (0 = Gesperrt, 1 = Freigegeben)
+			$this->readAndCheckBitMask(302, "PTCRelease");
+
+			// PTCStatus -> FC3, 300 Bitmask, INT16 (0 = Gesperrt, 1 = Freigegeben)
+			$this->readAndCheckBitMask(300, "PTCStatus");
+		}
+
+		public function SetTemperature(int $Value): void {
+			// Set always absolute value
+			$OffsetTemperature = $Value;
+		
+			// OffsetTemperature -> FC6, 200 + X, INT16 (1.0 °C Resolution)
+			$Address = 200 + ($this->ReadPropertyInteger("ControlPanel") - 1);
+			$Data = pack("n*", $OffsetTemperature);
+			$this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
+
+			$this->SetValue("TargetTemperature", $Value);
+			$this->SendDebug("target-temp", "set target temp for Panel ".$this->ReadPropertyInteger("ControlPanel")." with value: ".$Value, 0);
+		}
+
+		public function SetPTC(bool $Release): void {
+			// PTCRelease -> FC3, 302 Bitmask, INT16 (0 = Gesperrt, 1 = Freigegeben)
+			$Address = 302;
+			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
+			if($Data == false)
+				return;
+			$Data = (unpack("n*", substr($Data,2)));
+			$decBitMask = $Data[1];
+		
+			// PTCRelease -> FC3, 301 Bitmask, INT16 (0 = Gesperrt, 1 = Freigegeben)
+			$Address = 301;
+
+			//Create BitMask for Panel
+			$bit = 1 << ($this->ReadPropertyInteger("ControlPanel") - 1);
+
+			if ($Release) {
+				$decBitMask |= $bit;      // EIN
+			} else {
+				$decBitMask &= ~$bit;     // AUS
+			}
+
+			$Data = pack("n*", $decBitMask);
+			$this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
+
+			$this->SetValue("PTCRelease", $Release);
+			$this->SendDebug("ptc-release", "Set Status for Panel ".$this->ReadPropertyInteger("ControlPanel")." with value: ".$decBitMask." - TargetState: ".json_encode($Release), 0);
+
+		}
+
+		public function RequestAction(string $Ident, mixed $Value): void {
+			switch($Ident) {
+				case "TargetTemperature":
+					$this->SetTemperature($Value);
+					break;
+				case "PTCRelease":
+					$this->SetPTC($Value);
+					break;
+			}
+		}
+	}
+?>

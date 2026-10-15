@@ -1,0 +1,16 @@
+{
+	"id": "{1D1DC6F5-A07B-FC2B-84E4-D68E6B71D401}",
+	"name": "ProxonCentral",
+	"type": 3,
+	"vendor": "Proxon",
+	"aliases": 
+	[
+		"Proxon FWT 2.0 Central",
+		"Proxon FWT 3.0 Central"
+	],
+	"parentRequirements": ["{E310B701-4AE7-458E-B618-EC13A1A6F6A8}"],
+	"childRequirements": [],
+	"implemented": ["{77B31ABB-18FA-4B91-BB63-E5B2AB5588F4}"],
+	"url": "https://www.symcon.de",
+	"prefix": "PROXON"
+}
