@@ -10,6 +10,8 @@ COP/JAZ values are reported by the controller. They are not independently valida
 
 The monitoring instance exposes a readable `FaultSummary`, a `FaultPresent` marker and `FaultStatusComplete`. The summary only groups documented fault indicators; it does not invent text for unknown codes or bits. Raw fault registers and `FaultDetails` remain available in the backend and are hidden from visualizations. `FaultDetails` lists the read values and any unavailable fault registers for backend diagnosis. Without an active Modbus parent, the summary reports that the fault status is unavailable.
 
+The module can estimate device-filter runtime remaining from the PROXON app. Enter the app's remaining time as total hours in the backend, apply the configuration, then run **Capture filter runtime reference**. The module reads 4x0469 once and estimates total filter runtime as that counter value plus the entered remaining hours. Later polls update the remaining estimate from 4x0469. This is an estimate and assumes the app countdown and 4x0469 use the same operating-hour basis, and that the counter represents device-filter operating hours since the last filter change. The month setting 4x0460 is not converted into operating hours. Capture a new reference after a filter change or if 4x0469 resets.
+
 See [REGISTERS.md](REGISTERS.md) for the tile candidate values, variable idents, units, register sources and unresolved register meanings. It covers values from this monitoring module and the standard System Control instance. No visualization files are part of this module documentation.
 
 ## Setup

@@ -13,9 +13,13 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
         parent::Create();
 
         $this->RegisterPropertyInteger('Interval', 60);
+        $this->RegisterPropertyInteger('DeviceFilterRemainingHoursAtReference', 0);
         $this->RegisterAttributeFloat('AccumulatedEnergyKWh', 0.0);
         $this->RegisterAttributeFloat('LastPowerW', 0.0);
         $this->RegisterAttributeInteger('LastPowerTimestamp', 0);
+        $this->RegisterAttributeInteger('DeviceFilterRuntimeAtReference', -1);
+        $this->RegisterAttributeInteger('DeviceFilterRemainingHoursAtStoredReference', 0);
+        $this->RegisterAttributeInteger('DeviceFilterRuntimeReferenceTimestamp', 0);
         $this->RegisterTimer('Poller', 0, 'PROXONMON_RequestStatus($_IPS[\'TARGET\']);');
     }
 
@@ -24,6 +28,7 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
         parent::ApplyChanges();
 
         $this->RegisterMonitoringVariables();
+        $this->UpdateDeviceFilterRuntimeEstimate();
         $this->SetTimerInterval('Poller', max(5, $this->ReadPropertyInteger('Interval')) * 1000);
     }
 
@@ -59,6 +64,10 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
 
         $this->UpdateFaultStatus($successfulIdentifiers);
 
+        if (in_array('DeviceFilterRuntime', $successfulIdentifiers, true)) {
+            $this->UpdateDeviceFilterRuntimeEstimate();
+        }
+
         if ($successfulReads > 0) {
             $this->SetValue('LastSuccessfulRead', date('Y-m-d H:i:s'));
         }
@@ -74,12 +83,45 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
         $this->SendServiceCommand(465, $this->Translate('Controller restart command sent.'));
     }
 
+    public function CaptureDeviceFilterRuntimeReference(): void
+    {
+        $remainingHours = $this->ReadPropertyInteger('DeviceFilterRemainingHoursAtReference');
+        if ($remainingHours <= 0) {
+            throw new InvalidArgumentException($this->Translate('Enter a positive app remaining time in hours first.'));
+        }
+        if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+            throw new RuntimeException($this->Translate('An active Modbus parent connection is required.'));
+        }
+
+        $this->pollCache = [];
+        $rawValue = $this->ReadRegister(3, 469);
+        if ($rawValue === null) {
+            throw new RuntimeException($this->Translate('Device filter runtime could not be read; no reference was saved.'));
+        }
+
+        $runtime = (int) $this->DecodeValue($rawValue, $this->GetMonitoringDefinitions()['DeviceFilterRuntime']);
+        $now = time();
+        $this->SetValue('DeviceFilterRuntime', $runtime);
+        $this->WriteAttributeInteger('DeviceFilterRuntimeAtReference', $runtime);
+        $this->WriteAttributeInteger('DeviceFilterRemainingHoursAtStoredReference', $remainingHours);
+        $this->WriteAttributeInteger('DeviceFilterRuntimeReferenceTimestamp', $now);
+        $this->UpdateDeviceFilterRuntimeEstimate();
+    }
+
     private function RegisterMonitoringVariables(): void
     {
         $this->RegisterVariableBoolean('FaultPresent', $this->Translate('Fault Present'), [], 19);
         $this->RegisterVariableString('FaultSummary', $this->Translate('Fault Summary'), '', 18);
         $this->RegisterVariableString('FaultDetails', $this->Translate('Fault Details'), '', 48);
         $this->RegisterVariableBoolean('FaultStatusComplete', $this->Translate('Fault Status Complete'), [], 49);
+
+        $estimatePresentation = [
+            'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+            'SUFFIX' => ' h'
+        ];
+        $this->RegisterVariableString('DeviceFilterRuntimeEstimateStatus', $this->Translate('Device Filter Runtime Estimate Status'), '', 73);
+        $this->RegisterVariableInteger('DeviceFilterEstimatedTotalRuntime', $this->Translate('Estimated Total Device Filter Runtime'), $estimatePresentation, 74);
+        $this->RegisterVariableInteger('DeviceFilterRemainingRuntimeEstimate', $this->Translate('Estimated Remaining Device Filter Runtime'), $estimatePresentation, 75);
 
         foreach ($this->GetMonitoringDefinitions() as $ident => $definition) {
             $presentation = [
@@ -116,6 +158,37 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
                 IPS_SetHidden($variableID, true);
             }
         }
+    }
+
+    private function UpdateDeviceFilterRuntimeEstimate(): void
+    {
+        $runtimeAtReference = $this->ReadAttributeInteger('DeviceFilterRuntimeAtReference');
+        $remainingAtReference = $this->ReadAttributeInteger('DeviceFilterRemainingHoursAtStoredReference');
+        $referenceTimestamp = $this->ReadAttributeInteger('DeviceFilterRuntimeReferenceTimestamp');
+
+        if ($runtimeAtReference < 0 || $remainingAtReference <= 0 || $referenceTimestamp <= 0) {
+            $this->SetValue('DeviceFilterRuntimeEstimateStatus', $this->Translate('No app reference captured.'));
+            $this->SetValue('DeviceFilterEstimatedTotalRuntime', 0);
+            $this->SetValue('DeviceFilterRemainingRuntimeEstimate', 0);
+            return;
+        }
+
+        $currentRuntime = (int) $this->GetValue('DeviceFilterRuntime');
+        if ($currentRuntime < $runtimeAtReference) {
+            $this->SetValue('DeviceFilterRuntimeEstimateStatus', $this->Translate('The filter runtime counter moved below its reference; capture a new app reference.'));
+            $this->SetValue('DeviceFilterEstimatedTotalRuntime', 0);
+            $this->SetValue('DeviceFilterRemainingRuntimeEstimate', 0);
+            return;
+        }
+
+        $estimatedTotalRuntime = $runtimeAtReference + $remainingAtReference;
+        $remainingRuntime = max(0, $estimatedTotalRuntime - $currentRuntime);
+        $this->SetValue('DeviceFilterRuntimeEstimateStatus', sprintf(
+            $this->Translate('Estimate based on app reference captured %s; assumes the app and 4x0469 use the same filter operating hours.'),
+            date('Y-m-d H:i', $referenceTimestamp)
+        ));
+        $this->SetValue('DeviceFilterEstimatedTotalRuntime', $estimatedTotalRuntime);
+        $this->SetValue('DeviceFilterRemainingRuntimeEstimate', $remainingRuntime);
     }
 
     private function UpdateFaultStatus(array $successfulIdentifiers): void

@@ -19,8 +19,21 @@ Diese Seite beschreibt verfügbare Variablen aus den Instanzen **Proxon System C
 | Monitoring | `FaultStatusComplete` | Boolean | Alle zehn für die Störungsübersicht verwendeten Register wurden beim letzten Poll gelesen | Gültigkeit der beiden Störungswerte darüber |
 | Monitoring | `Airflow` | m³/h | Luftvolumenstrom laut Registerliste | FC04 / 4x0026, Registerwert / 10; Messgröße/Bezug ungeklärt |
 | Monitoring | `TotalCOPJAZ1Hour` | Verhältniszahl | Vom Regler gemeldeter Gesamt-COP/JAZ für 1 Stunde | FC04 / 4x0033, Wert / 100; Berechnungsdefinition nicht unabhängig verifiziert |
+| Monitoring | `DeviceFilterRemainingRuntimeEstimate` | h | Geschätzte verbleibende Gerätefilter-Betriebsstunden | Berechnet aus einer manuell erfassten App-Referenz und FC03 / 4x0469; Schätzwert |
+| Monitoring | `DeviceFilterEstimatedTotalRuntime` | h | Geschätzte Gesamt-Betriebsstunden bis zum Filterwechsel | Zählerstand 4x0469 bei Referenzerfassung plus App-Reststunden; Schätzwert |
+| Monitoring | `DeviceFilterRuntimeEstimateStatus` | Text | Gültigkeit und Annahme der Filterlaufzeit-Schätzung | Kein Anlagenregister |
 
 `FaultDetails` und die numerischen Fehlerregister sind Backend-Diagnosewerte. Sie werden nicht als Kachelwerte empfohlen. `EnergySinceFirstSample` ist eine lokale Leistungssummen-Schätzung, kein Zählerstand.
+
+### Gerätefilter-Restlaufzeit (Schätzung)
+
+Die Registerliste enthält keinen eigenen Wert für die verbleibenden Filterstunden. Der Monatswert des Gerätefilters liegt auf FC03 / 4x0460; FC03 / 4x0469 ist der Gerätefilter-Stundenzähler. Die Monitoring-Instanz kann eine Reststunden-Anzeige auf Basis einer manuell erfassten App-Referenz weiterführen:
+
+1. Die in der App angezeigte Restzeit in Gesamtstunden in der Konfiguration eintragen.
+2. Konfiguration übernehmen und **Filter-Referenz jetzt erfassen** ausführen. Dabei liest das Modul 4x0469 einmal und speichert den Zählerstand samt App-Reststunden lokal.
+3. `DeviceFilterEstimatedTotalRuntime` ist der erfasste Zählerstand plus App-Reststunden. `DeviceFilterRemainingRuntimeEstimate` zieht spätere Zählerstände von dieser geschätzten Gesamtlaufzeit ab.
+
+Die Schätzung ist nur gültig, wenn die App-Restzeit und 4x0469 dieselben Betriebsstunden meinen, 4x0469 seit dem Filterwechsel zählt und bei laufendem Betrieb fortschreitet. Die Herstelleranleitung bezeichnet die App-Restlaufzeit als Stunden bis zum Wechsel, klärt aber nicht, ob nur Anlagenbetriebsstunden ablaufen. Ein zurückspringender Zähler macht die Schätzung ungültig; nach dem nächsten App-Wert ist die Referenz neu zu erfassen. Der eingestellte Monatsintervallwert 4x0460 wird nicht in Betriebsstunden umgerechnet.
 
 ## Standard-System-Control: Status- und Bedienwerte
 

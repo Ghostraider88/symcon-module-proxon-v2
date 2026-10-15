@@ -34,3 +34,9 @@
 - **Implemented locally:** added a generic fault summary, active-marker and poll-completeness variables. Raw fault registers and the backend details string are hidden from visualizations; code/bit mappings remain unresolved where the register sheet does not define them.
 - **Validation:** inspected the module mappings and register catalogue diff. No Symcon instance, Modbus device or visualization file was changed; no fault reset/restart was sent.
 - **Open:** validate the new variables after loading the module in Symcon; resolve airflow scope, error-code/bit mappings, compressor-speed units, and the heat-pump-mode source conflict before treating those as definitive tile values.
+
+## Device filter runtime estimate
+
+- **Implemented locally:** Monitoring can capture the remaining hours shown by the app together with the current FC03 / 4x0469 counter, then expose estimated total and remaining filter runtime. The estimate status names the assumption that 4x0469 counts device-filter runtime since replacement.
+- **Evidence reviewed:** the project workbook labels 4x0460 as device-filter stand time in months and 4x0469 as device-filter hours; the manufacturer FWT 3.0 guide describes filter remaining time in hours. The workbook contains no separate remaining-time register.
+- **Not executed:** no module was installed and no Modbus write was sent. Confirm on the installation that the app countdown uses the same operating-hour basis as 4x0469, and that 4x0469 advances and resets on filter replacement.
