@@ -100,6 +100,7 @@ check($rooms[2]['name'] === 'Central Living Room', 'Central room name fallback')
 check($rooms[2]['temperature'] === 22.1 && $rooms[2]['setpoint'] === 22.5, 'Central room temperatures');
 check($rooms[2]['ptc'] === null, 'Central PTC release must not become actual state');
 check($rooms[3]['co2'] === null && $rooms[3]['temperature'] === null, 'Bad or missing readings remain unavailable');
+check(array_column($rooms, 'name') === ['Wohnen <img src=x>', 'Native Panel', 'Central Living Room', 'Büro'], 'Keep configured room order');
 check(!in_array(505, $reads, true), 'Do not read unselected variables');
 $module->bind();
 check(isset($module->messages[501], $module->messages[102]) && !isset($module->messages[203]), 'Subscribe to actual selected data only');

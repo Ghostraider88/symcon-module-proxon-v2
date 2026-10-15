@@ -1,3 +1,5 @@
+Build 3 (15.10.2026)
+geändert: Räume lassen sich in der System-Control-Konfiguration per Drag & Drop sortieren. Die Visualisierung übernimmt die Reihenfolge je Etage.
 Build 2 (15.10.2026)
 geändert: Proxon Central kann als Rauminstanz für die Temperatur- und Sollwertanzeige gewählt werden. Die PTC-Freigabe wird weiterhin nicht als tatsächlicher Heizstatus gewertet.
 Build 1 (15.10.2026)

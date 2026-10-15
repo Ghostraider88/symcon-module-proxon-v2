@@ -16,9 +16,10 @@
 			"type": "ExpansionPanel",
 			"caption": "Visualization Rooms",
 			"items": [
+				{"type": "Label", "caption": "Drag rows to set the room order. The visualization preserves this order within each floor."},
 				{"type": "Label", "caption": "Assign room names and floors. A selected external variable replaces only that reading. CO2 must be in ppm, humidity in percent. PTC must be the actual heater status, not its release."},
 				{
-					"type": "List", "name": "VisualizationRooms", "caption": "Room Mapping", "rowCount": 6, "add": true, "delete": true,
+					"type": "List", "name": "VisualizationRooms", "caption": "Room Mapping", "rowCount": 6, "add": true, "delete": true, "changeOrder": true,
 					"columns": [
 						{"name": "Name", "caption": "Room Name", "width": "auto", "add": "", "edit": {"type": "ValidationTextBox"}},
 						{"name": "Floor", "caption": "Floor", "width": "100px", "add": "EG", "edit": {"type": "Select", "options": [{"caption": "Ground Floor", "value": "EG"}, {"caption": "Upper Floor", "value": "OG"}]}},

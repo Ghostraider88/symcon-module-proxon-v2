@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1 — Build 3 — 2026-10-15
+
+- Enabled drag-and-drop ordering of visualization room rows in the instance configuration.
+- The visualization preserves each floor's row order.
+
 ## 1.1 — Build 2 — 2026-10-15
 
 - Added Proxon Central as a room mapping source for current and target temperature. Its PTC release value is not treated as actual heater status.

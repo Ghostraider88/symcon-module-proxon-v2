@@ -24,6 +24,7 @@
 			"PTC Active": "PTC aktiv",
 			"No rooms assigned": "Keine Räume zugeordnet",
 			"On": "Ein",
+			"Drag rows to set the room order. The visualization preserves this order within each floor.": "Ziehe die Zeilen in die gewünschte Reihenfolge. Die Visualisierung übernimmt diese Reihenfolge je Etage.",
 			"Assign room names and floors. A selected external variable replaces only that reading. CO2 must be in ppm, humidity in percent. PTC must be the actual heater status, not its release.": "Raumnamen und Etagen zuordnen. Eine ausgewählte externe Variable ersetzt nur diesen Messwert. CO₂ wird in ppm, Feuchte in Prozent erwartet. PTC muss den tatsächlichen Heizstatus liefern, nicht die Freigabe.",
 			"The visualization room mapping must be a JSON list.": "Die Raumzuordnung der Visualisierung muss eine JSON-Liste sein.",
 			"System Control": "Anlagensteuerung",
