@@ -600,7 +600,8 @@ class ProxonSystemControl extends IPSModuleStrict
             'systemControl' => $systemControl + [
                 'BypassOpen' => $hasLiveData && in_array($rawBypassStatus, [0, 1], true) ? $rawBypassStatus === 1 : null,
                 'DamperPositionCode' => $hasLiveData && $rawDamperPosition >= 0 && $rawDamperPosition <= 4 ? $rawDamperPosition : null,
-                'HeatPumpModeCode' => $hasLiveData && $rawHeatPumpMode >= 0 && $rawHeatPumpMode <= 3 ? $rawHeatPumpMode : null
+                // Code 1 has been confirmed as heating; leave other 4x0241 codes visually unknown.
+                'HeatPumpModeCode' => $hasLiveData && $rawHeatPumpMode === 1 ? 1 : null
             ],
             'monitoring' => $monitoring,
             'rooms' => $this->GetVisualizationRooms()
@@ -637,7 +638,7 @@ class ProxonSystemControl extends IPSModuleStrict
             $this->SetValue('ActualOperatingMode', $this->GetOperatingModeCaption($mode));
         }
 
-        $heatPumpMode = $this->ReadRegister(3, 69);
+        $heatPumpMode = $this->ReadRegister(4, 241);
         if ($heatPumpMode !== null) {
             $this->WriteAttributeInteger('RawHeatPumpMode', $heatPumpMode);
             $this->SetValue('ActualHeatPumpMode', $this->GetHeatPumpModeCaption($heatPumpMode));
@@ -762,14 +763,12 @@ class ProxonSystemControl extends IPSModuleStrict
 
     private function GetHeatPumpModeCaption(int $value): string
     {
-        $captions = [
-            0 => 'Off',
-            1 => 'Heating Demand',
-            2 => 'Cooling Demand',
-            3 => 'Ventilation'
-        ];
+        // 4x0241 is the actual mode register. Only the heating code is confirmed so far.
+        if ($value === 1) {
+            return $this->Translate('Heating');
+        }
 
-        return isset($captions[$value]) ? $this->Translate($captions[$value]) : (string) $value;
+        return sprintf($this->Translate('Unknown mode code %d'), $value);
     }
 
     private function DecodeControlValue(int $rawValue, array $definition): mixed
