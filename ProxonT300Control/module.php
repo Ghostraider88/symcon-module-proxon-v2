@@ -323,7 +323,56 @@ class ProxonT300Control extends IPSModuleStrict
             'DefrostStartTemperature' => ['caption' => 'Defrost Start Temperature', 'address' => 892, 'type' => 'float', 'scale' => 10, 'offset' => -100, 'suffix' => " \u{00B0}C", 'digits' => 1, 'position' => 137],
             'PVTankLevel' => ['caption' => 'PV Tank Level', 'address' => 898, 'type' => 'integer', 'scale' => 1, 'offset' => 0, 'suffix' => ' %', 'position' => 138],
             'PVElectricHeaterActive' => ['caption' => 'PV Electric Heater Active', 'address' => 899, 'type' => 'boolean', 'scale' => 1, 'position' => 139],
-            'PVHeatPumpActive' => ['caption' => 'PV Heat Pump Active', 'address' => 900, 'type' => 'boolean', 'scale' => 1, 'position' => 140]
+            'PVHeatPumpActive' => ['caption' => 'PV Heat Pump Active', 'address' => 900, 'type' => 'boolean', 'scale' => 1, 'position' => 140],
+            'EmergencyOperation' => [
+                'caption' => 'Emergency Operation',
+                'address' => 834,
+                'type' => 'integer',
+                'scale' => 1,
+                'options' => [0 => 'Normal Operation', 1 => 'Emergency Operation'],
+                'position' => 141
+            ],
+            'CompressorStatusErrorDuration' => ['caption' => 'Compressor Status Error Duration', 'address' => 842, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 142],
+            'FanErrorDuration' => ['caption' => 'Fan Error Duration', 'address' => 844, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 143],
+            'CompressorTemperatureErrorDuration' => ['caption' => 'Compressor Temperature Error Duration', 'address' => 845, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 144],
+            'P14PressureErrorDuration' => ['caption' => 'P14 Pressure Error Duration', 'address' => 846, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 145],
+            'FaultCode' => [
+                'caption' => 'Fault Code',
+                'address' => 861,
+                'type' => 'integer',
+                'scale' => 1,
+                'options' => [
+                    0 => 'No Fault',
+                    1 => 'Modbus',
+                    2 => 'Filter',
+                    3 => 'Compressor',
+                    4 => 'T9',
+                    5 => 'T11',
+                    6 => 'T13',
+                    7 => 'T21',
+                    8 => 'T20',
+                    9 => 'T6',
+                    10 => 'T5',
+                    11 => 'P19',
+                    12 => 'P14',
+                    13 => 'Compressor Temperature',
+                    14 => 'Fan',
+                    15 => 'Low Pressure',
+                    16 => 'Pressure Switch'
+                ],
+                'position' => 146
+            ],
+            'P19PressureErrorDuration' => ['caption' => 'P19 Pressure Error Duration', 'address' => 869, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 147],
+            'P14ErrorDuration' => ['caption' => 'P14 Error Duration', 'address' => 870, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 148],
+            'T5ErrorDuration' => ['caption' => 'T5 Error Duration', 'address' => 871, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 149],
+            'T6ErrorDuration' => ['caption' => 'T6 Error Duration', 'address' => 872, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 150],
+            'T20ErrorDuration' => ['caption' => 'T20 Error Duration', 'address' => 873, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 151],
+            'T21ErrorDuration' => ['caption' => 'T21 Error Duration', 'address' => 874, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 152],
+            'T13ErrorDuration' => ['caption' => 'T13 Error Duration', 'address' => 875, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 153],
+            'T11ErrorDuration' => ['caption' => 'T11 Error Duration', 'address' => 876, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 154],
+            'T9ErrorDuration' => ['caption' => 'T9 Error Duration', 'address' => 877, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 155],
+            'CompressorMaximumTemperatureErrorDuration' => ['caption' => 'Compressor Maximum Temperature Error Duration', 'address' => 878, 'type' => 'integer', 'scale' => 1, 'suffix' => ' s', 'position' => 156],
+            'RestartCount' => ['caption' => 'Restart Count', 'address' => 880, 'type' => 'integer', 'scale' => 1, 'position' => 157]
         ];
     }
 
@@ -335,6 +384,20 @@ class ProxonT300Control extends IPSModuleStrict
         }
         if (isset($definition['digits'])) {
             $presentation['DIGITS'] = $definition['digits'];
+        }
+        if (isset($definition['options'])) {
+            $presentationOptions = [];
+            foreach ($definition['options'] as $value => $caption) {
+                $presentationOptions[] = [
+                    'Value' => (int) $value,
+                    'Caption' => $this->Translate($caption),
+                    'IconActive' => false,
+                    'IconValue' => ''
+                ];
+            }
+            $presentation['DISPLAY'] = 1;
+            $presentation['LAYOUT'] = 1;
+            $presentation['OPTIONS'] = json_encode($presentationOptions, JSON_THROW_ON_ERROR);
         }
 
         return $presentation;
@@ -355,6 +418,8 @@ class ProxonT300Control extends IPSModuleStrict
         return [
             ['address' => 811, 'quantity' => 20],
             ['address' => 832, 'quantity' => 10],
+            ['address' => 842, 'quantity' => 5],
+            ['address' => 861, 'quantity' => 1],
             ['address' => 862, 'quantity' => 1],
             ['address' => 868, 'quantity' => 25],
             ['address' => 898, 'quantity' => 3]
