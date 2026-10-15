@@ -112,7 +112,7 @@ class ProxonSystemControl extends IPSModuleStrict
 
         foreach (IPS_GetInstanceListByModuleID(self::ADVANCED_MODULE_ID) as $advancedID) {
             if ((int) IPS_GetProperty($advancedID, 'SystemControlInstanceID') === $this->InstanceID) {
-                $this->LogMessage($this->Translate('The Advanced instance already exists.'), LOGMESSAGE_INFO);
+                $this->LogMessage($this->Translate('The Advanced instance already exists.'), KL_MESSAGE);
                 return;
             }
         }
@@ -133,7 +133,7 @@ class ProxonSystemControl extends IPSModuleStrict
             throw $exception;
         }
 
-        $this->LogMessage($this->Translate('The Advanced instance was created.'), LOGMESSAGE_INFO);
+        $this->LogMessage($this->Translate('The Advanced instance was created.'), KL_MESSAGE);
     }
 
     public function RequestStatus(): void
@@ -293,7 +293,7 @@ class ProxonSystemControl extends IPSModuleStrict
 
             $this->MaintainAction($ident, false);
             if (!IPS_SetHidden($childID, true)) {
-                $this->LogMessage(sprintf($this->Translate('Could not hide legacy advanced variable %s.'), $ident), LOGMESSAGE_WARNING);
+                $this->LogMessage(sprintf($this->Translate('Could not hide legacy advanced variable %s.'), $ident), KL_WARNING);
             }
         }
     }

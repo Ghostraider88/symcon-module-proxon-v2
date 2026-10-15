@@ -56,7 +56,7 @@
 
 				$this->MaintainAction("SensorTemperatureOffset", false);
 				if (!IPS_SetHidden($ChildID, true)) {
-					$this->LogMessage($this->Translate("Could not hide legacy sensor temperature offset."), LOGMESSAGE_WARNING);
+					$this->LogMessage($this->Translate("Could not hide legacy sensor temperature offset."), KL_WARNING);
 				}
 			}
 		}

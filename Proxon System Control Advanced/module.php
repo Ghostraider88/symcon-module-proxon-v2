@@ -88,7 +88,7 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
             if ($this->GetPanelFromIdent($ident) !== null) {
                 $variableID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
                 if (!IPS_SetHidden($variableID, true)) {
-                    $this->LogMessage($this->Translate('Could not hide an unavailable panel temperature correction.'), LOGMESSAGE_WARNING);
+                    $this->LogMessage($this->Translate('Could not hide an unavailable panel temperature correction.'), KL_WARNING);
                 }
                 $this->MaintainAction($ident, false);
             }
@@ -203,7 +203,7 @@ class ProxonSystemControlAdvanced extends IPSModuleStrict
             if ($panel !== null) {
                 $variableID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
                 if (!IPS_SetHidden($variableID, !$panelConnected)) {
-                    $this->LogMessage($this->Translate('Could not update panel temperature correction visibility.'), LOGMESSAGE_WARNING);
+                    $this->LogMessage($this->Translate('Could not update panel temperature correction visibility.'), KL_WARNING);
                 }
             }
         }

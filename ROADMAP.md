@@ -17,6 +17,7 @@
 - **Implemented locally:** added read-only Bypass Status (FC4/register 222) and text Damper Position (FC4/register 159) to standard System Control. Position labels use the existing Symcon mapping for values 0–4.
 - **Evidence executed:** inspected the PDF register entries and the configured read-only Modbus instances in Symcon. The bypass entry specifies `1 = open`; the damper entry identifies EG/OG distribution, while the existing Symcon presentation provides the five position labels. No writes or configuration changes were made to the live Modbus instances.
 - **Migration:** variables for advanced controls already owned by System Control and Proxon Zone are retained, hidden and made read-only when those module instances apply the update; the Advanced instance owns the new controls.
+- **Fixed locally:** replaced undefined `LOGMESSAGE_*` names with supported Symcon `KL_MESSAGE` and `KL_WARNING` constants in the System Control, Advanced and Zone modules. Source search confirms no `LOGMESSAGE_*` references remain; re-run the Advanced creation action in Symcon after updating the module.
 - **Open:** the updated library has not been loaded into Symcon yet. Confirm polling, labels and action lockout after installing the update. Keep Advanced disabled unless these settings are required and understood.
 
 ## Later work
