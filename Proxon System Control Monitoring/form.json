@@ -13,6 +13,16 @@
             "validVariableTypes": [1, 2]
         },
         {
+            "name": "DeviceFilterRemainingHoursAtReference",
+            "type": "NumberSpinner",
+            "caption": "Remaining filter runtime from app",
+            "suffix": "hours"
+        },
+        {
+            "type": "Label",
+            "caption": "Convert the app value to total hours (days × 24 + additional hours). Apply the setting, then capture the reference. The estimate assumes the app value and register 4x0469 use the same operating-hour basis, and 4x0469 counts since replacement."
+        },
+        {
             "type": "Label",
             "caption": "Select a logged total electrical power variable in watts to calculate daily, monthly and yearly consumption from archive averages. The module does not enable archive logging. Energy Since First Sample remains a local estimate."
         },
@@ -26,6 +36,11 @@
             "type": "Button",
             "caption": "Update values",
             "onClick": "PROXONMON_RequestStatus($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Capture filter runtime reference",
+            "onClick": "PROXONMON_CaptureDeviceFilterRuntimeReference($id);"
         },
         {
             "type": "PopupButton",

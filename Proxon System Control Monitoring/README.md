@@ -12,6 +12,10 @@ The monitoring instance exposes a readable `FaultSummary`, a `FaultPresent` mark
 
 No measured airflow value is exposed: Symcon reports 0 for both 4x0026 and the checked 3x0398 source. The 4x0026 `Airflow` variable was removed because its register meaning, scaling and measurement point are still unresolved.
 
+The module can estimate device-filter runtime remaining from the PROXON app. Enter the app's remaining time as total hours in the backend, apply the configuration, then run **Capture filter runtime reference**. The module reads 4x0469 once and estimates total filter runtime as that counter value plus the entered remaining hours. Later polls update the remaining estimate from 4x0469. This is an estimate and assumes the app countdown and 4x0469 use the same operating-hour basis, and that the counter represents device-filter operating hours since the last filter change. The month setting 4x0460 is not converted into operating hours. Capture a new reference after a filter change or if 4x0469 resets.
+
+No reference has been captured on the installation. Treat this as an unverified backend estimate until the relationship between the app countdown and 4x0469 is confirmed.
+
 See [REGISTERS.md](REGISTERS.md) for the tile candidate values, variable idents, units, register sources and unresolved register meanings. It covers values from this monitoring module and the standard System Control instance. No visualization files are part of this module documentation.
 
 ## Setup
