@@ -53,9 +53,6 @@ class ProxonSystemControl extends IPSModuleStrict
 
         $this->RegisterVariableInteger('IntensiveVentilationDuration', $this->Translate('Intensive Ventilation Duration'), [
             'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_INPUT,
-            'MIN' => 0,
-            'MAX' => 1440,
-            'STEP_SIZE' => 1,
             'SUFFIX' => ' ' . $this->Translate('Minutes')
         ], 4);
         $this->EnableAction('IntensiveVentilationDuration');
