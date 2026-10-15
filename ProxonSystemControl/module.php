@@ -5,6 +5,7 @@ declare(strict_types=1);
 class ProxonSystemControl extends IPSModuleStrict
 {
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
+    private const ADVANCED_MODULE_ID = '{96EBFF26-A28F-4C3F-BB0B-166BDEE7B182}';
 
     private const SENSOR_ROOM_REGISTERS = [
         1 => 394,
@@ -38,6 +39,7 @@ class ProxonSystemControl extends IPSModuleStrict
 
         $this->RegisterPropertyInteger('Interval', 30);
         $this->RegisterPropertyInteger('CO2RFSensorCount', 1);
+        $this->RegisterPropertyBoolean('AdvancedControlsEnabled', false);
         $this->RegisterTimer('Poller', 0, 'PROXON_RequestStatus($_IPS[\'TARGET\']);');
     }
 
@@ -75,8 +77,63 @@ class ProxonSystemControl extends IPSModuleStrict
         $this->RegisterPlantControlVariables();
         $this->RegisterStatusVariables();
         $this->RegisterSensorVariables();
+        $this->HideLegacyAdvancedVariables();
 
         $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
+    }
+
+    public function GetConfigurationForm(): string
+    {
+        $form = json_decode((string) file_get_contents(__DIR__ . '/form.json'), true, 512, JSON_THROW_ON_ERROR);
+        if (!$this->ReadPropertyBoolean('AdvancedControlsEnabled')) {
+            $form['actions'] = array_values(array_filter(
+                $form['actions'],
+                static fn (array $action): bool => ($action['caption'] ?? '') !== 'Create Advanced Instance'
+            ));
+        }
+
+        return json_encode($form, JSON_THROW_ON_ERROR);
+    }
+
+    public function CreateAdvancedInstance(): void
+    {
+        if (!$this->ReadPropertyBoolean('AdvancedControlsEnabled')) {
+            throw new RuntimeException($this->Translate('Enable advanced controls before creating the Advanced instance.'));
+        }
+
+        if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+            throw new RuntimeException($this->Translate('The Modbus parent must be active before creating the Advanced instance.'));
+        }
+
+        $connectionID = (int) IPS_GetInstance($this->InstanceID)['ConnectionID'];
+        if ($connectionID <= 0) {
+            throw new RuntimeException($this->Translate('No active Modbus parent connection was found.'));
+        }
+
+        foreach (IPS_GetInstanceListByModuleID(self::ADVANCED_MODULE_ID) as $advancedID) {
+            if ((int) IPS_GetProperty($advancedID, 'SystemControlInstanceID') === $this->InstanceID) {
+                $this->LogMessage($this->Translate('The Advanced instance already exists.'), LOGMESSAGE_INFO);
+                return;
+            }
+        }
+
+        $advancedID = IPS_CreateInstance(self::ADVANCED_MODULE_ID);
+        try {
+            if (!IPS_SetName($advancedID, $this->Translate('Proxon System Control Advanced'))
+                || !IPS_SetParent($advancedID, IPS_GetParent($this->InstanceID))
+                || !IPS_SetProperty($advancedID, 'SystemControlInstanceID', $this->InstanceID)
+                || !IPS_ConnectInstance($advancedID, $connectionID)
+                || !IPS_ApplyChanges($advancedID)) {
+                throw new RuntimeException($this->Translate('The Advanced instance could not be configured.'));
+            }
+        } catch (Throwable $exception) {
+            if (IPS_InstanceExists($advancedID) && IPS_GetChildrenIDs($advancedID) === []) {
+                IPS_DeleteInstance($advancedID);
+            }
+            throw $exception;
+        }
+
+        $this->LogMessage($this->Translate('The Advanced instance was created.'), LOGMESSAGE_INFO);
     }
 
     public function RequestStatus(): void
@@ -153,56 +210,12 @@ class ProxonSystemControl extends IPSModuleStrict
     private function GetPlantControlDefinitions(): array
     {
         $definitions = [
-            'PtcSwitchOnThreshold' => ['caption' => 'PTC Switch-On Threshold', 'address' => 317, 'type' => 'float', 'scale' => 10, 'minimum' => 0, 'maximum' => 50, 'suffix' => ' °C', 'signed' => true, 'position' => 10],
-            'PtcSwitchOffThreshold' => ['caption' => 'PTC Switch-Off Threshold', 'address' => 318, 'type' => 'float', 'scale' => 10, 'minimum' => 0, 'maximum' => 50, 'suffix' => ' °C', 'signed' => true, 'position' => 11],
-            'GlobalPtcEnabled' => ['caption' => 'Global PTC Enabled', 'address' => 325, 'type' => 'boolean', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'position' => 12],
-            'MinimumFreshAirTemperature' => ['caption' => 'Minimum Fresh Air Temperature', 'address' => 19, 'type' => 'float', 'scale' => 100, 'minimum' => 8, 'maximum' => 20, 'suffix' => ' °C', 'signed' => true, 'position' => 13],
-            'HeatPumpCoolingThreshold' => ['caption' => 'Heat Pump Cooling Threshold', 'address' => 41, 'type' => 'float', 'scale' => 100, 'minimum' => 3, 'maximum' => 6, 'suffix' => ' °C', 'signed' => true, 'position' => 14],
-            'CoolingMinimumOutdoorTemperature' => ['caption' => 'Cooling Minimum Outdoor Temperature', 'address' => 46, 'type' => 'float', 'scale' => 100, 'minimum' => 5, 'maximum' => 20, 'suffix' => ' °C', 'signed' => true, 'position' => 15],
-            'CompressorContinuousOperationOutdoorTemperature' => ['caption' => 'Compressor Continuous Operation Outdoor Temperature', 'address' => 48, 'type' => 'float', 'scale' => 100, 'minimum' => -15, 'maximum' => 5, 'suffix' => ' °C', 'signed' => true, 'position' => 16],
-            'HeatPumpStartThreshold' => ['caption' => 'Heat Pump Start Threshold', 'address' => 42, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 3, 'suffix' => ' °C', 'signed' => true, 'position' => 17],
-            'HeatPumpStopThreshold' => ['caption' => 'Heat Pump Stop Threshold', 'address' => 134, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 3, 'suffix' => ' °C', 'signed' => true, 'position' => 18],
-            'CompressorMinimumPower' => ['caption' => 'Compressor Minimum Power', 'address' => 44, 'type' => 'float', 'scale' => 100, 'minimum' => 25, 'maximum' => 50, 'suffix' => ' %', 'position' => 19],
-            'CompressorMaximumHeatingPower' => ['caption' => 'Compressor Maximum Heating Power', 'address' => 43, 'type' => 'float', 'scale' => 100, 'minimum' => 50, 'maximum' => 100, 'suffix' => ' %', 'position' => 20],
-            'CompressorMaximumCoolingPower' => ['caption' => 'Compressor Maximum Cooling Power', 'address' => 52, 'type' => 'float', 'scale' => 100, 'minimum' => 50, 'maximum' => 100, 'suffix' => ' %', 'position' => 21],
-            'MaximumCompressorTemperature' => ['caption' => 'Maximum Compressor Temperature', 'address' => 34, 'type' => 'float', 'scale' => 100, 'minimum' => 80, 'maximum' => 140, 'suffix' => ' °C', 'signed' => true, 'position' => 22],
-            'MaximumCondenserTemperatureCooling' => ['caption' => 'Maximum Condenser Temperature Cooling', 'address' => 45, 'type' => 'float', 'scale' => 100, 'minimum' => 45, 'maximum' => 55, 'suffix' => ' °C', 'signed' => true, 'position' => 23],
-            'FanMinimumAirflow' => ['caption' => 'Fan Minimum Airflow', 'address' => 11, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 24],
-            'FanMaximumAirflow' => ['caption' => 'Fan Maximum Airflow', 'address' => 12, 'type' => 'float', 'scale' => 100, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 25],
-            'DeviceFilterLifetime' => ['caption' => 'Device Filter Lifetime', 'address' => 460, 'type' => 'integer', 'scale' => 1, 'minimum' => 3, 'maximum' => 8, 'suffix' => ' ' . $this->Translate('Months'), 'position' => 26],
-            'RecirculationFilterLifetime' => ['caption' => 'Recirculation Filter Lifetime', 'address' => 461, 'type' => 'integer', 'scale' => 1, 'minimum' => 50, 'maximum' => 900, 'suffix' => ' ' . $this->Translate('Hours'), 'position' => 27],
-            'RecirculationFilterInstalled' => ['caption' => 'Recirculation Filter Installed', 'address' => 462, 'type' => 'boolean', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'position' => 28],
-            'Co2Threshold' => ['caption' => 'CO2 Threshold', 'address' => 117, 'type' => 'integer', 'scale' => 1, 'minimum' => 400, 'maximum' => 1500, 'suffix' => ' ppm', 'position' => 29],
-            'RelativeHumidityThreshold' => ['caption' => 'Relative Humidity Threshold', 'address' => 118, 'type' => 'integer', 'scale' => 1, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 30],
-            'Zone1SensorSource' => ['caption' => 'Zone 1 Temperature Source', 'address' => 115, 'type' => 'enumeration', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'options' => [0 => 'Central Panel Sensor', 1 => 'Internal Sensor T41'], 'position' => 31],
-            'Zone2SensorSource' => ['caption' => 'Zone 2 Temperature Source', 'address' => 116, 'type' => 'enumeration', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'options' => [0 => 'Main Secondary Panel Sensor', 1 => 'Internal Sensor T42'], 'position' => 32]
+            'DeviceFilterLifetime' => ['caption' => 'Device Filter Lifetime', 'address' => 460, 'type' => 'integer', 'scale' => 1, 'minimum' => 3, 'maximum' => 8, 'suffix' => ' ' . $this->Translate('Months'), 'position' => 10],
+            'RecirculationFilterLifetime' => ['caption' => 'Recirculation Filter Lifetime', 'address' => 461, 'type' => 'integer', 'scale' => 1, 'minimum' => 50, 'maximum' => 900, 'suffix' => ' ' . $this->Translate('Hours'), 'position' => 11],
+            'RecirculationFilterInstalled' => ['caption' => 'Recirculation Filter Installed', 'address' => 462, 'type' => 'boolean', 'scale' => 1, 'minimum' => 0, 'maximum' => 1, 'suffix' => '', 'position' => 12],
+            'Co2Threshold' => ['caption' => 'CO2 Threshold', 'address' => 117, 'type' => 'integer', 'scale' => 1, 'minimum' => 400, 'maximum' => 1500, 'suffix' => ' ppm', 'position' => 13],
+            'RelativeHumidityThreshold' => ['caption' => 'Relative Humidity Threshold', 'address' => 118, 'type' => 'integer', 'scale' => 1, 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'position' => 14]
         ];
-
-        for ($stage = 1; $stage <= 4; $stage++) {
-            $definitions['SupplyAirflowStage' . $stage] = [
-                'caption' => 'Supply Airflow Stage ' . $stage,
-                'address' => $stage + 1,
-                'type' => 'float',
-                'scale' => 100,
-                'minimum' => 0,
-                'maximum' => 100,
-                'suffix' => ' %',
-                'position' => 32 + $stage
-            ];
-        }
-
-        for ($stage = 1; $stage <= 4; $stage++) {
-            $definitions['ExtractAirflowStage' . $stage] = [
-                'caption' => 'Extract Airflow Stage ' . $stage,
-                'address' => $stage + 5,
-                'type' => 'float',
-                'scale' => 100,
-                'minimum' => 0,
-                'maximum' => 100,
-                'suffix' => ' %',
-                'position' => 36 + $stage
-            ];
-        }
 
         for ($sensor = 1; $sensor <= $this->GetSensorCount(); $sensor++) {
             $definitions['CO2Sensor' . $sensor . 'Room'] = $this->GetSensorRoomDefinition($sensor);
@@ -239,6 +252,50 @@ class ProxonSystemControl extends IPSModuleStrict
     private function GetSensorCount(): int
     {
         return max(1, min(5, $this->ReadPropertyInteger('CO2RFSensorCount')));
+    }
+
+    private function HideLegacyAdvancedVariables(): void
+    {
+        $legacyIdents = [
+            'PtcSwitchOnThreshold',
+            'PtcSwitchOffThreshold',
+            'GlobalPtcEnabled',
+            'MinimumFreshAirTemperature',
+            'HeatPumpCoolingThreshold',
+            'CoolingMinimumOutdoorTemperature',
+            'CompressorContinuousOperationOutdoorTemperature',
+            'HeatPumpStartThreshold',
+            'HeatPumpStopThreshold',
+            'CompressorMinimumPower',
+            'CompressorMaximumHeatingPower',
+            'CompressorMaximumCoolingPower',
+            'MaximumCompressorTemperature',
+            'MaximumCondenserTemperatureCooling',
+            'FanMinimumAirflow',
+            'FanMaximumAirflow',
+            'Zone1SensorSource',
+            'Zone2SensorSource'
+        ];
+        for ($stage = 1; $stage <= 4; $stage++) {
+            $legacyIdents[] = 'SupplyAirflowStage' . $stage;
+            $legacyIdents[] = 'ExtractAirflowStage' . $stage;
+        }
+
+        foreach (IPS_GetChildrenIDs($this->InstanceID) as $childID) {
+            if (!IPS_VariableExists($childID)) {
+                continue;
+            }
+
+            $ident = IPS_GetObject($childID)['ObjectIdent'];
+            if (!in_array($ident, $legacyIdents, true)) {
+                continue;
+            }
+
+            $this->MaintainAction($ident, false);
+            if (!IPS_SetHidden($childID, true)) {
+                $this->LogMessage(sprintf($this->Translate('Could not hide legacy advanced variable %s.'), $ident), LOGMESSAGE_WARNING);
+            }
+        }
     }
 
     private function RegisterPlantControlVariables(): void
@@ -289,6 +346,8 @@ class ProxonSystemControl extends IPSModuleStrict
         $this->RegisterStatusInteger('RecirculationFilterRuntime', 'Recirculation Filter Runtime', ' ' . $this->Translate('Hours'), 71);
         $this->RegisterVariableString('ConnectedPanels', $this->Translate('Connected Panels'), '', 72);
         $this->RegisterStatusInteger('ConnectedPanelCount', 'Connected Panel Count', '', 73);
+        $this->RegisterVariableString('BypassStatus', $this->Translate('Bypass Status'), '', 74);
+        $this->RegisterVariableString('DamperPosition', $this->Translate('Damper Position'), '', 75);
     }
 
     private function RegisterStatusInteger(string $ident, string $caption, string $suffix, int $position): void
@@ -426,6 +485,40 @@ class ProxonSystemControl extends IPSModuleStrict
                 $this->SetValue($ident, $this->DecodeSignedValue($value) / 100);
             }
         }
+
+        $bypassStatus = $this->ReadRegister(4, 222);
+        if ($bypassStatus !== null) {
+            $this->SetValue('BypassStatus', $this->GetBypassStatusCaption($bypassStatus));
+        }
+
+        $damperPosition = $this->ReadRegister(4, 159);
+        if ($damperPosition !== null) {
+            $this->SetValue('DamperPosition', $this->GetDamperPositionCaption($damperPosition));
+        }
+    }
+
+    private function GetBypassStatusCaption(int $value): string
+    {
+        return match ($value) {
+            0 => $this->Translate('Closed'),
+            1 => $this->Translate('Open'),
+            default => sprintf($this->Translate('Unknown status (%d)'), $value)
+        };
+    }
+
+    private function GetDamperPositionCaption(int $value): string
+    {
+        $captions = [
+            0 => 'Ground Floor',
+            1 => 'Ground Floor Preferred',
+            2 => 'Balanced',
+            3 => 'Upper Floor Preferred',
+            4 => 'Upper Floor'
+        ];
+
+        return isset($captions[$value])
+            ? $this->Translate($captions[$value])
+            : sprintf($this->Translate('Unknown position (%d)'), $value);
     }
 
     private function UpdateConnectedPanels(): void

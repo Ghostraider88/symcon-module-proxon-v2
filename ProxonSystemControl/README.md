@@ -1,29 +1,32 @@
 # Proxon System Control
 
-This instance controls and monitors system-wide functions of PROXON FWT 2.0 and 3.0 through the configured Modbus parent. It is not assigned to a room or control panel.
+This instance handles daily plant operation and read-only plant status for PROXON FWT 2.0 and 3.0. It is system-wide and connects to the same Modbus parent as the room panels.
 
-## Operating controls
+## Standard controls
 
 | Function | Register | Use |
 | --- | --- | --- |
-| Operating mode | 4x0016 | 0 Off, 1 Summer, 2 Winter, 3 ECO Comfort, 4 Stove, 6 Emergency |
+| Operating mode | 4x0016 | Off, Summer, Winter, ECO Comfort, Stove, Emergency |
 | Fan stage | 4x0022 | Selects fan stage 1 to 4 |
 | Cooling enabled | 4x0062 | Enables or disables demand-based cooling |
 | Intensive ventilation duration | 4x0133 | Selectable duration from 0 to 1440 minutes |
-| PTC thresholds and global release | 4x0317, 4x0318, 4x0325 | Configures system-wide auxiliary heater operation |
-| Heat pump limits | 4x0034, 4x0041–4x0046, 4x0048, 4x0052, 4x0134 | Start/stop thresholds, cooling outdoor temperature, compressor temperature limits, continuous-operation outdoor threshold and power limits |
-| Ventilation airflow | 4x0002–4x0009, 4x0011–4x0012 | Airflow settings for each fan stage and fan limits |
-| Temperature source | 4x0115–4x0116 | Selects panel or internal board sensor for zone 1 and zone 2 |
-| CO2/RF control | 4x0117–4x0118, 4x0394–4x0397, 4x0466 | Sets thresholds and assigns up to five sensors to rooms |
 | Filter service settings | 4x0460–4x0462 | Filter lifetime and recirculation filter presence |
+| CO2 and humidity thresholds | 4x0117–4x0118 | Normal ventilation thresholds |
+| CO2/RF room assignments | 4x0394–4x0397, 4x0466 | Assign up to five sensors to rooms |
 
-The room assignment values for CO2/RF sensors are 0 unassigned, 1 central panel room, 2 HNBP room and 3–21 NBP 1–19.
+Room assignment values for CO2/RF sensors are 0 unassigned, 1 central panel room, 2 HNBP room and 3–21 NBP 1–19.
 
 ## Status values
 
-The instance displays the actual operating and heat pump modes, fan speeds and stages, fresh/supply/extract/exhaust air temperatures, connected panels, CO2/RF readings for the configured sensor count, and device/recirculation filter runtime.
+The instance displays actual operating and heat pump modes, fan RPM and stages, fresh/supply/extract/exhaust air temperatures, connected panels, CO2/RF readings for the configured sensor count, filter runtimes, bypass status (3x0222) and damper position (3x0159). The damper position is shown as EG, EG preferred, balanced, OG preferred or OG for values 0–4. Both bypass status and damper position are read-only.
 
-The configurator already uses the NBP connection bitfields at 4x0210–4x0211 to list panels present in the project. It does not create instances automatically.
+## Advanced controls
+
+The configuration switch **Enable Advanced Controls** defaults to off. Enabling it reveals the **Create Advanced Instance** button. That button creates a separate Advanced instance on the same Modbus connection. The switch must remain on for write actions to be accepted.
+
+Advanced includes compressor and heat-pump settings, the bypass temperature threshold (4x0019), PTC thresholds, fan airflow tuning, zone temperature source selection and temperature corrections for HNBP/NBP panels. Incorrect values can impair or damage the plant. The current fan stage and measured fan RPM remain standard values.
+
+Previously exposed advanced variables in an existing System Control instance are made read-only and hidden rather than deleted. The previous per-room sensor temperature correction is also hidden and locked in Proxon Zone. The Advanced instance takes over those registers. Update scripts and visualizations that used the old variable IDs to point to the new variables in Advanced.
 
 ## Configuration
 
@@ -31,12 +34,13 @@ The configurator already uses the NBP connection bitfields at 4x0210–4x0211 to
 | --- | --- | --- |
 | Interval | 30 seconds | Poll interval for control and status values |
 | CO2/RF sensor count | 1 | Number of installed sensors to show, from 1 to 5 |
+| Enable Advanced Controls | Off | Allows write actions in the associated Advanced instance |
 
-The plant must already allow Modbus writes. The instance does not change the write permission register.
+The plant must already allow Modbus writes. This library does not change the write permission register.
 
 ## Installation
 
-Create one instance through the Proxon Configurator for each Modbus connection. The instance is system-wide. Create a separate Proxon Zone instance for each installed HNBP or NBP.
+Create one System Control instance through the Proxon Configurator for each Modbus connection. Create a separate Proxon Zone instance for each installed HNBP or NBP. Create the Advanced instance only if you need its settings.
 
 ## Compatibility
 

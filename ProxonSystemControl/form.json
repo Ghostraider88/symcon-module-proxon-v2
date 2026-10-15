@@ -12,6 +12,15 @@
 			"caption": "CO2/RF Sensor Count",
 			"minimum": 1,
 			"maximum": 5
+		},
+		{
+			"name": "AdvancedControlsEnabled",
+			"type": "CheckBox",
+			"caption": "Enable Advanced Controls"
+		},
+		{
+			"type": "Label",
+			"caption": "Advanced controls include compressor, heat pump, bypass temperature, airflow tuning and panel sensor calibration settings. Incorrect values can impair or damage the system."
 		}
 	],
 	"actions": [
@@ -19,6 +28,11 @@
 			"type": "Button",
 			"caption": "Update Values",
 			"onClick": "PROXON_RequestStatus($id);"
+		},
+		{
+			"type": "Button",
+			"caption": "Create Advanced Instance",
+			"onClick": "PROXON_CreateAdvancedInstance($id);"
 		}
 	]
 }

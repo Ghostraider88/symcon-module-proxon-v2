@@ -1,0 +1,27 @@
+{
+    "elements": [
+        {
+            "name": "SystemControlInstanceID",
+            "type": "SelectInstance",
+            "caption": "System Control Instance",
+            "moduleID": "{014DD20E-4090-4399-9C1F-D850E3DF4591}"
+        },
+        {
+            "name": "Interval",
+            "type": "NumberSpinner",
+            "caption": "Interval",
+            "suffix": "Seconds"
+        },
+        {
+            "type": "Label",
+            "caption": "These settings can change protective limits, compressor output and air distribution. They remain read-only unless Advanced Controls is enabled in the associated System Control instance."
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Update Values",
+            "onClick": "PROXONADV_RequestStatus($id);"
+        }
+    ]
+}

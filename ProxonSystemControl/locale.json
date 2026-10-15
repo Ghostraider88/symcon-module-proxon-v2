@@ -89,7 +89,30 @@
 			"Hours": "Stunden",
 			"Invalid selection value.": "Ungültiger Auswahlwert.",
 			"The value must be numeric.": "Der Wert muss numerisch sein.",
-			"The value must be between %s and %s.": "Der Wert muss zwischen %s und %s liegen."
+			"The value must be between %s and %s.": "Der Wert muss zwischen %s und %s liegen.",
+			"Enable Advanced Controls": "Erweiterte Werte freigeben",
+			"Advanced controls include compressor, heat pump, bypass temperature, airflow tuning and panel sensor calibration settings. Incorrect values can impair or damage the system.": "Erweiterte Werte ver\u00e4ndern unter anderem Kompressor, W\u00e4rmepumpe, Bypass-Temperaturschwelle, Luftmengen und Temperaturkorrekturen. Falsche Werte k\u00f6nnen die Anlage beeintr\u00e4chtigen oder besch\u00e4digen.",
+			"Create Advanced Instance": "Advanced-Instanz anlegen",
+			"Advanced controls": "Erweiterte Werte",
+			"Proxon System Control Advanced": "Proxon Systemsteuerung Erweitert",
+			"Enable advanced controls before creating the Advanced instance.": "Gib zuerst die erweiterten Werte frei, bevor du die Advanced-Instanz anlegst.",
+			"The Modbus parent must be active before creating the Advanced instance.": "Vor dem Anlegen der Advanced-Instanz muss der Modbus-Elternknoten aktiv sein.",
+			"No active Modbus parent connection was found.": "Es wurde keine aktive Modbus-Elternverbindung gefunden.",
+			"The Advanced instance already exists.": "Die Advanced-Instanz ist bereits vorhanden.",
+			"The Advanced instance could not be configured.": "Die Advanced-Instanz konnte nicht konfiguriert werden.",
+			"The Advanced instance was created.": "Die Advanced-Instanz wurde angelegt.",
+			"Could not hide legacy advanced variable %s.": "Der alte erweiterte Wert %s konnte nicht ausgeblendet werden.",
+			"Bypass Status": "Bypassstatus",
+			"Damper Position": "Schieberstellung",
+			"Closed": "Geschlossen",
+			"Open": "Offen",
+			"Ground Floor": "EG",
+			"Ground Floor Preferred": "EG bevorzugt",
+			"Balanced": "Ausgeglichen",
+			"Upper Floor Preferred": "OG bevorzugt",
+			"Upper Floor": "OG",
+			"Unknown status (%d)": "Unbekannter Status (%d)",
+			"Unknown position (%d)": "Unbekannte Stellung (%d)"
 		}
 	}
 }
