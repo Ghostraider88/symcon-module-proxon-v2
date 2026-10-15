@@ -26,6 +26,7 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
     {
         parent::ApplyChanges();
 
+        $this->RemoveLegacyMonitoringVariables();
         $this->UpdatePowerVariableReference();
         $this->RegisterMonitoringVariables();
         $this->SetTimerInterval('Poller', max(5, $this->ReadPropertyInteger('Interval')) * 1000);
@@ -77,6 +78,23 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
     public function RestartController(): void
     {
         $this->SendServiceCommand(465, $this->Translate('Controller restart command sent.'));
+    }
+
+    private function RemoveLegacyMonitoringVariables(): void
+    {
+        foreach ([
+            'CompressorCOPJAZ1Minute' => VARIABLETYPE_FLOAT,
+            'CompressorCOPJAZ1Hour' => VARIABLETYPE_FLOAT,
+            'CompressorCOPJAZ24Hours' => VARIABLETYPE_FLOAT,
+            'CompressorCOPJAZ365Days' => VARIABLETYPE_FLOAT,
+            'CompressorCOPJAZDays' => VARIABLETYPE_INTEGER,
+            'TotalCOPJAZ1Minute' => VARIABLETYPE_FLOAT,
+            'TotalCOPJAZ1Hour' => VARIABLETYPE_FLOAT,
+            'TotalCOPJAZ24Hours' => VARIABLETYPE_FLOAT,
+            'Airflow' => VARIABLETYPE_FLOAT
+        ] as $ident => $type) {
+            $this->MaintainVariable($ident, '', $type, '', 0, false);
+        }
     }
 
     private function RegisterMonitoringVariables(): void
@@ -225,15 +243,6 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
             'ElectricalPowerPCB' => ['caption' => 'Electrical Power PCB', 'function' => 4, 'address' => 19, 'type' => 'float', 'scale' => 10, 'suffix' => ' W', 'digits' => 1, 'position' => 1],
             'ElectricalPowerInverter' => ['caption' => 'Electrical Power Inverter', 'function' => 4, 'address' => 20, 'type' => 'float', 'scale' => 10, 'suffix' => ' W', 'digits' => 1, 'position' => 2],
             'TotalElectricalPower' => ['caption' => 'Total Electrical Power', 'function' => 4, 'address' => 25, 'type' => 'float', 'scale' => 10, 'suffix' => ' W', 'digits' => 1, 'position' => 3],
-            'Airflow' => ['caption' => 'Airflow', 'function' => 4, 'address' => 26, 'type' => 'float', 'scale' => 10, 'suffix' => ' m³/h', 'digits' => 1, 'position' => 5],
-            'CompressorCOPJAZ1Minute' => ['caption' => 'Compressor COP/JAZ (1 minute)', 'function' => 4, 'address' => 27, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 6],
-            'CompressorCOPJAZ1Hour' => ['caption' => 'Compressor COP/JAZ (1 hour)', 'function' => 4, 'address' => 28, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 7],
-            'CompressorCOPJAZ24Hours' => ['caption' => 'Compressor COP/JAZ (24 hours)', 'function' => 4, 'address' => 29, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 8],
-            'CompressorCOPJAZ365Days' => ['caption' => 'Compressor COP/JAZ (365 days)', 'function' => 4, 'address' => 30, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 9],
-            'CompressorCOPJAZDays' => ['caption' => 'Compressor COP/JAZ days', 'function' => 4, 'address' => 31, 'type' => 'integer', 'scale' => 1, 'suffix' => ' d', 'position' => 10],
-            'TotalCOPJAZ1Minute' => ['caption' => 'Total COP/JAZ (1 minute)', 'function' => 4, 'address' => 32, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 11],
-            'TotalCOPJAZ1Hour' => ['caption' => 'Total COP/JAZ (1 hour)', 'function' => 4, 'address' => 33, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 12],
-            'TotalCOPJAZ24Hours' => ['caption' => 'Total COP/JAZ (24 hours)', 'function' => 4, 'address' => 34, 'type' => 'float', 'scale' => 100, 'suffix' => '', 'digits' => 2, 'position' => 13],
             'FaultRegister' => ['caption' => 'Fault Register', 'function' => 4, 'address' => 47, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 20],
             'FaultStatus1' => ['caption' => 'Fault Status 1 (raw)', 'function' => 4, 'address' => 48, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 21],
             'FaultStatus2' => ['caption' => 'Fault Status 2 (raw)', 'function' => 4, 'address' => 49, 'type' => 'integer', 'scale' => 1, 'suffix' => '', 'position' => 22],

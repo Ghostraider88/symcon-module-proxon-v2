@@ -1,6 +1,6 @@
 # FWT-Werte für eine Anlagenkachel
 
-Diese Seite beschreibt verfügbare Variablen aus den Instanzen **Proxon System Control** und **Proxon System Control Monitoring**. Eine künftige Visualisierung kann die Werte über den jeweiligen Variablen-Ident der ausgewählten Instanz lesen. Diese Änderung legt die Datenbasis fest; Visualisierungsdateien werden nicht geändert.
+Diese Seite dokumentiert Variablen der Instanzen Proxon System Control und Proxon System Control Monitoring sowie offene Registerfragen.
 
 `FC04` bezeichnet Function Code 4 (Input Register), `FC03` Function Code 3 (Holding Register). Die Registerbezeichnungen folgen der FWT-Registerliste. „Geklärt“ bedeutet, dass Bezeichnung und Skalierung aus der Registerliste und der aktuellen Modullogik hervorgehen. Es bestätigt keine zusätzliche, nicht dokumentierte Anlagenphysik.
 
@@ -20,8 +20,6 @@ Diese Seite beschreibt verfügbare Variablen aus den Instanzen **Proxon System C
 | Monitoring | `FaultPresent` | Boolean | Mindestens ein gelesener Fehlerindikator ist ungleich null | Zusammenfassung der unten aufgeführten Fehlerregister; bei lückenhaftem Lesen zusätzlich `FaultStatusComplete` beachten |
 | Monitoring | `FaultSummary` | Text | Lesbare Störungsmeldung, ohne erfundene Code- oder Bitübersetzung | Aus den bestätigten Fehlerindikatoren abgeleitet |
 | Monitoring | `FaultStatusComplete` | Boolean | Alle zehn für die Störungsübersicht verwendeten Register wurden beim letzten Poll gelesen | Gültigkeit der beiden Störungswerte darüber |
-| Monitoring | `Airflow` | m³/h | Als „Air m³/h“ benannter Luftvolumenstrom; im Symcon-Test bei gleichzeitig gemeldeten Ventilatordrehzahlen nicht plausibel | FC04 / 4x0026, Registerwert / 10; Messort und Luftstrombezug ungeklärt; bis zur Klärung kein bestätigter Kachelwert |
-| Monitoring | `TotalCOPJAZ1Hour` | Verhältniszahl | Vom Regler gemeldeter Gesamt-COP/JAZ für 1 Stunde | FC04 / 4x0033, Wert / 100; Berechnungsdefinition nicht unabhängig verifiziert |
 
 `FaultDetails` und die numerischen Fehlerregister sind Backend-Diagnosewerte. Sie werden nicht als Kachelwerte empfohlen. `EnergyToday`, `EnergyThisMonth` und `EnergyThisYear` sind Schätzungen aus den Archivaggregaten einer auswählbaren Gesamtleistung in Watt, keine Stromzählerstände. `EnergyArchiveStatus` zeigt an, ob die Berechnung Daten verwenden kann. `EnergySinceFirstSample` bleibt eine separate lokale Leistungssummen-Schätzung.
 
@@ -70,15 +68,6 @@ Diese Werte sind optionale Raumkacheldaten und erscheinen nicht zwingend in eine
 | `ElectricalPowerPCB` | W | FC04 / 4x0019, / 10 | Elektrische Leistung der Platine laut Registerliste | Bezeichnung und Skalierung geklärt |
 | `ElectricalPowerInverter` | W | FC04 / 4x0020, / 10 | Elektrische Leistung des Umrichters laut Registerliste | Bezeichnung und Skalierung geklärt |
 | `TotalElectricalPower` | W | FC04 / 4x0025, / 10 | Elektrische Gesamtleistung laut FWT | Bezeichnung und Skalierung geklärt |
-| `Airflow` | m³/h | FC04 / 4x0026, / 10 | Registerbezeichnung „Air m³/h“ | **Ungeklärt:** Messort und genauer Luftstrombezug fehlen; der Symcon-Testwert war bei gemeldeten Ventilatordrehzahlen unplausibel. Nicht als bestätigten Ist-Volumenstrom in der Kachel verwenden |
-| `CompressorCOPJAZ1Minute` | Verhältniszahl | FC04 / 4x0027, / 100 | Kompressor-COP/JAZ, 1 Minute | Reglerwert; Berechnung/Begriff COP vs. JAZ nicht unabhängig verifiziert |
-| `CompressorCOPJAZ1Hour` | Verhältniszahl | FC04 / 4x0028, / 100 | Kompressor-COP/JAZ, 1 Stunde | Wie oben |
-| `CompressorCOPJAZ24Hours` | Verhältniszahl | FC04 / 4x0029, / 100 | Kompressor-COP/JAZ, 24 Stunden | Wie oben |
-| `CompressorCOPJAZ365Days` | Verhältniszahl | FC04 / 4x0030, / 100 | Kompressor-COP/JAZ, 365 Tage | Wie oben |
-| `CompressorCOPJAZDays` | d | FC04 / 4x0031 | Zeitraum/Alter des Kompressor-COP/JAZ-Werts laut Registerbezeichnung | Genaue Zählweise ungeklärt |
-| `TotalCOPJAZ1Minute` | Verhältniszahl | FC04 / 4x0032, / 100 | Gesamt-COP/JAZ, 1 Minute | Reglerwert; Berechnung/Begriff nicht unabhängig verifiziert |
-| `TotalCOPJAZ1Hour` | Verhältniszahl | FC04 / 4x0033, / 100 | Gesamt-COP/JAZ, 1 Stunde | Wie oben |
-| `TotalCOPJAZ24Hours` | Verhältniszahl | FC04 / 4x0034, / 100 | Gesamt-COP/JAZ, 24 Stunden | Wie oben |
 | `EnergySinceFirstSample` | kWh | lokal berechnet | Integration der Gesamtleistung seit dem ersten gültigen Messpunkt | Schätzwert; kein Zählerstand und keine Historie vor dem ersten Messpunkt |
 | `EnergyToday` | kWh | Archivaggregation | Durchschnittliche Gesamtleistung × Dauer der Tagesaggregation | Benötigt eine ausgewählte protokollierte Leistungsvariable in W; Schätzwert, kein Zählerstand |
 | `EnergyThisMonth` | kWh | Archivaggregation | Durchschnittliche Gesamtleistung × Dauer der Monatsaggregation seit Monatsbeginn | Benötigt dieselbe Archivquelle; Schätzwert, kein Zählerstand |
@@ -135,8 +124,8 @@ Die Monitoring-Instanz liest FC04 / 4x0047–0051, 0157, 0170, 0172, 0174 und 01
 
 ## Offene Register- und Bedeutungsfragen
 
-- 4x0026: Excel nennt „Air m³/h“ und den Faktor 10. Im Symcon-Test war der Wert bei gleichzeitig gemeldeten Ventilatordrehzahlen unplausibel; Messort und Luftstrombezug bleiben offen. Bis zur Klärung nicht als belastbaren Volumenstrom in der Kachel verwenden.
-- 3x0398: Excel führt „Air m3/h K faktor“ im Holding-Registerblatt mit dem Format `*1000`, aber ohne Einheit. Das PDF bezeichnet dieselbe Funktion als 4x0398 und beschreibt ein nutzerspezifisches Luftvolumen im Nennlüftungsbetrieb zur JAZ-Berechnung. In den manuell angelegten Symcon-FWT-Registern gibt es keinen passenden Wert. Als möglichen Konfigurations-/Kalibrierwert behandeln, nicht als aktuellen Volumenstrom; Registeradresse und Skalierung vor einer Integration klären.
+- 4x0026: Excel nennt „Air m³/h“ und den Faktor 10. Laut Symcon-Beobachtung liefert das Register 0 und keinen nutzbaren Messwert. Der Modul-Ident `Airflow` wurde deshalb entfernt; eine frühere Modulvariable wird beim nächsten Anwenden der Instanzkonfiguration gelöscht. Messort, Luftstrombezug und Skalierung bleiben ungeklärt.
+- 3x0398: Excel führt "Air m3/h K faktor" im Holding-Registerblatt mit dem Faktor *1000, aber ohne Einheit. Das PDF bezeichnet dieselbe Funktion als 4x0398 und beschreibt einen konfigurierten Luftmengenwert im Nennlüftungsbetrieb. Laut Symcon-Beobachtung liefert auch dieses Register 0 und keinen nutzbaren Wert. Nicht als aktuellen Volumenstrom verwenden; Registeradresse und Skalierung bleiben ungeklärt.
 - 4x0048–0051 und 4x0157: Welche Bits entsprechen welchen Fehlern?
 - 4x0152 und 4x0162: Welche Statuswerte bedeuten welche Ventilator-/Kompressorzustände?
 - 4x0170, 4x0172 und 4x0174: Welche Fehlercodes und FOF-Werte gibt es?
@@ -146,4 +135,3 @@ Die Monitoring-Instanz liest FC04 / 4x0047–0051, 0157, 0170, 0172, 0174 und 01
 - 3x0069: Als Test-/Debugwert bestätigt; die Registerliste nennt 0 = Aus, 1 = Heizbedarf, 2 = Kühlbedarf und 3 = Ventilation. Nicht als tatsächliche Betriebsart verwenden.
 - 4x0241: Excel führt „Akt_WP_Betriebsart“ als Input Register ohne Code-Tabelle. Symcon-Archivwerte und Betriebszustände bestätigen 0 = Aus, 1 = Heizen und 2 = Kühlen. Andere Codes bleiben ungeklärt.
 - Vierwegeventil: Im aktuellen Modul ist noch kein verifiziertes Register mit belastbarer Zustandsdekodierung vorhanden.
-- 4x0035/0036 (Gesamt-JAZ 365 Tage und Alter): In der Registerliste als nicht implementiert markiert und daher nicht im Modul verfügbar.

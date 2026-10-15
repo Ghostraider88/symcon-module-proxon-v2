@@ -14,7 +14,7 @@
         },
         {
             "type": "Label",
-            "caption": "Select a logged total electrical power variable in watts to calculate daily, monthly and yearly consumption from archive averages. The module does not enable archive logging. Energy Since First Sample remains a local estimate; COP/JAZ values are reported by the FWT controller."
+            "caption": "Select a logged total electrical power variable in watts to calculate daily, monthly and yearly consumption from archive averages. The module does not enable archive logging. Energy Since First Sample remains a local estimate."
         },
         {
             "type": "Label",

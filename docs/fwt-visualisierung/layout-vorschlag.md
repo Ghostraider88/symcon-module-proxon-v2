@@ -10,7 +10,7 @@ Die Vorschau [04-fwt-layout-vorschlag.svg](04-fwt-layout-vorschlag.svg) zeigt ei
 
 1. **Anlagenluftweg über die ganze Kachelbreite.** Der Kreuzstrom-Wärmetauscher bleibt zentral und zeigt weiterhin zwei getrennte, diagonal kreuzende Luftwege. Temperaturwerte, Lüfterdrehzahlen, Bypass sowie die Abzweigung nach EG und OG stehen direkt am Prozess.
 2. **Drei gut lesbare Statuskarten darunter.** Luftgerät, relative EG/OG-Verteilung und Wärmepumpenzustand bekommen jeweils eine eigene Karte. Die fünf Schieberpositionen und die beiden Etagenbalken bleiben sichtbar.
-3. **Wärmepumpenwerte nach Themen gruppiert.** Antrieb/JAZ, Kältekreis und Fehler/Laufzeiten liegen in einem eigenen unteren Bereich. Die Kältekreis-Komponenten behalten ihre physische Zuordnung.
+3. **Wärmepumpenwerte nach Themen gruppiert.** Antrieb, Kältekreis und Fehler/Laufzeiten liegen in einem eigenen unteren Bereich. Die Kältekreis-Komponenten behalten ihre physische Zuordnung.
 4. **Kopfbereich entschlacken.** Die Kachel wiederholt nicht mehr den großen Namen „Anlagensteuerung“ als zweite Überschrift; oben bleibt nur eine kleine FWT-Kennung mit Betriebsstatus.
 
 ## Daten, die weiterhin gekennzeichnet werden müssen

@@ -132,8 +132,6 @@
  <rect class="card" x="1207" y="307" width="242" height="50" rx="10" fill="#f7f9fb"/><text class="small" x="1223" y="326" font-weight="750">KOMPRESSOR · R171</text><text class="value" x="1223" y="349" font-size="17">—</text>
  <rect class="card" x="975" y="362" width="220" height="50" rx="10" fill="#f7f9fb"/><text class="small" x="991" y="381" font-weight="750">DREHZAHL · R190</text><text class="value" x="991" y="404" font-size="17">—</text>
  <rect class="card" x="1207" y="362" width="242" height="50" rx="10" fill="#f7f9fb"/><text class="small" x="1223" y="381" font-weight="750">FU-STROM · R250</text><text class="value" x="1223" y="404" font-size="17">—</text>
- <rect class="card" x="975" y="417" width="220" height="54" rx="10" fill="#f7f9fb"/><text class="small" x="991" y="436" font-weight="750">JAZ KOMP. · R27–30</text><text class="small" x="991" y="457">1m — · 1h — · 24h — · 365d —</text>
- <rect class="card" x="1207" y="417" width="242" height="54" rx="10" fill="#f7f9fb"/><text class="small" x="1223" y="436" font-weight="750">JAZ GESAMT · R32–35</text><text class="small" x="1223" y="457">1m — · 1h — · 24h — · 365d —</text>
 </g>
 
 <text class="section" x="975" y="493">KÄLTEKREIS · BAUTEILTEMPERATUREN</text>

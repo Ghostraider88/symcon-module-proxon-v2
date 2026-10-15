@@ -136,7 +136,7 @@
 
 <!-- Readable register groups; detailed values no longer compete with the main process. -->
 <rect class="card" x="28" y="872" width="558" height="346" rx="18"/>
-<text class="muted" x="54" y="908" font-size="13" font-weight="800" letter-spacing="1">ANTRIEB · LEISTUNG · JAZ / COP</text>
+<text class="muted" x="54" y="908" font-size="13" font-weight="800" letter-spacing="1">ANTRIEB UND LEISTUNG</text>
 <g class="mini" font-weight="700">
  <text x="54" y="950">PCB · R19</text><text x="54" y="972" class="value" font-size="17">—</text>
  <text x="188" y="950">FU · R20</text><text x="188" y="972" class="value" font-size="17">—</text>
@@ -144,11 +144,8 @@
  <text x="456" y="950">Kompressor · R171</text><text x="456" y="972" class="value" font-size="17">—</text>
  <text x="54" y="1018">Drehzahl · R190</text><text x="54" y="1040" class="value" font-size="17">—</text>
  <text x="188" y="1018">FU-Strom · R250</text><text x="188" y="1040" class="value" font-size="17">—</text>
- <text x="322" y="1018">JAZ Kompressor</text><text x="322" y="1040" class="value" font-size="17">—</text>
- <text x="456" y="1018">JAZ Gesamt</text><text x="456" y="1040" class="value" font-size="17">—</text>
 </g>
 <path d="M54 1070H558" stroke="#e6ebf0"/>
-<text class="mini" x="54" y="1100">JAZ-Zeiträume als eigene Reihe: 1 Monat · 1 Stunde · 24 Stunden · 365 Tage</text>
 <text class="mini" x="54" y="1130">Einheiten nur anzeigen, wenn sie im Register eindeutig feststehen.</text>
 
 <rect class="card" x="606" y="872" width="558" height="346" rx="18"/>

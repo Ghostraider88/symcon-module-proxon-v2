@@ -134,14 +134,7 @@
 <text class="label" x="1108" y="509">Verdampfer aus Druck <tspan class="small"></tspan></text><text class="value" x="1548" y="509" text-anchor="end">1,8 °C</text>
 <text class="label" x="1108" y="541">Kreislauf<tspan class="small"></tspan></text><text class="value" x="1548" y="541" text-anchor="end">15,3 °C</text>
 
-<rect x="1108" y="565" width="440" height="155" rx="12" fill="#f5f8fa"/>
-<text class="label" x="1124" y="589">JAZ / COP</text>
-<g text-anchor="middle">
- <text class="small" x="1282" y="615">1 min</text><text class="small" x="1364" y="615">1 h</text><text class="small" x="1446" y="615">24 h</text><text class="small" x="1521" y="615">365 d</text>
- <text class="label" x="1282" y="647">3,4</text><text class="label" x="1364" y="647">3,6</text><text class="label" x="1446" y="647">3,7</text><text class="label" x="1521" y="647">3,8</text>
- <text class="label" x="1282" y="682">3,1</text><text class="label" x="1364" y="682">3,3</text><text class="label" x="1446" y="682">3,4</text><text class="label" x="1521" y="682">3,5</text>
-</g>
-<text class="small" x="1124" y="647">Kompressor</text><text class="small" x="1124" y="682">Gesamt</text>
+
 
 <!-- Equal-sized floor cards, same supply-air colour, equal bars for position 2. -->
 <text class="heading" x="52" y="808">Luftverteilung und Räume</text><text x="1028" y="808" font-size="13" class="muted" text-anchor="end">Position 2 · ausgeglichen</text>
