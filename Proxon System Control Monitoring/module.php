@@ -210,10 +210,34 @@ class ProxonSystemControlMonitoring extends IPSModuleStrict
                 continue;
             }
 
-            $detailLines[] = sprintf('%s: %d', $definition['register'], (int) $this->GetValue($ident));
+            $value = (int) $this->GetValue($ident);
+            $detailLine = sprintf('%s: %d', $definition['register'], $value);
+            if (in_array($ident, ['FaultStatus1', 'FaultStatus2', 'FaultStatus3', 'FaultStatus4', 'SecondaryBoardFaultFlags'], true)) {
+                $activeBits = $this->GetActiveBitPositions($value);
+                if ($activeBits !== []) {
+                    $detailLine .= ' (' . sprintf(
+                        $this->Translate('Active bit positions: %s; meanings unresolved.'),
+                        implode(', ', $activeBits)
+                    ) . ')';
+                }
+            }
+            $detailLines[] = $detailLine;
         }
         $detailLines[] = $this->Translate('Fault code and bit meanings are not decoded by the register sheet.');
         $this->SetValue('FaultDetails', implode("\n", $detailLines));
+    }
+
+    private function GetActiveBitPositions(int $rawValue): array
+    {
+        $value = $rawValue & 0xFFFF;
+        $positions = [];
+        for ($bit = 0; $bit < 16; $bit++) {
+            if (($value & (1 << $bit)) !== 0) {
+                $positions[] = $bit;
+            }
+        }
+
+        return $positions;
     }
 
     private function GetFaultRegisterDefinitions(): array

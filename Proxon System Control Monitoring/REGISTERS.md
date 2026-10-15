@@ -76,7 +76,7 @@ Diese Werte sind optionale Raumkacheldaten und erscheinen nicht zwingend in eine
 | `FaultPresent` | Boolean | abgeleitet | Mindestens ein gelesener Fehlerindikator ist ungleich null | Bei unvollständigem Poll nur Aussage über gelesene Register; `FaultStatusComplete` mit auswerten |
 | `FaultSummary` | Text | abgeleitet | Lesbare Sammelmeldung: Anlagenstörung, schwerer Umrichterfehler und/oder interner Fehlerindikator | Keine Dekodierung von Fehlercodes oder einzelnen Bits |
 | `FaultStatusComplete` | Boolean | abgeleitet | Alle zehn Fehlerindikatoren sind beim letzten Poll erfolgreich gelesen | `false` bedeutet, dass die Störungsübersicht unvollständig ist |
-| `FaultDetails` | Text, Backend | abgeleitet | Registeradressen, letzte gelesene Rohwerte und nicht gelesene Register | In Visualisierungen verborgen; Codes/Bitfelder werden nicht übersetzt |
+| `FaultDetails` | Text, Backend | abgeleitet | Registeradressen, letzte gelesene Rohwerte, nicht gelesene Register und gesetzte Bitpositionen in den Status-/Flag-Registern | In Visualisierungen verborgen; Bitpositionen werden angezeigt, ihre Bedeutungen und Fehlercodes bleiben ungeklärt |
 | `FaultRegister` | Rohwert | FC04 / 4x0047 | Zentrales Störungsregister | Registerfunktion bekannt; Fehlercodes nicht aufgeschlüsselt; Backend |
 | `FaultStatus1` | Rohwert | FC04 / 4x0048 | ErrorStatus 1 | **Ungeklärt:** Bit-/Codebedeutungen fehlen; Backend |
 | `FaultStatus2` | Rohwert | FC04 / 4x0049 | ErrorStatus 2 | **Ungeklärt:** Bit-/Codebedeutungen fehlen; Backend |

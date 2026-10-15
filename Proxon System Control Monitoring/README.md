@@ -8,7 +8,7 @@ Fault reset and controller restart are available only from the instance configur
 
 Electrical consumption values are estimates based on measured power and optional archive aggregates; they are not meter readings.
 
-The monitoring instance exposes a readable `FaultSummary`, a `FaultPresent` marker and `FaultStatusComplete`. The summary only groups documented fault indicators; it does not invent text for unknown codes or bits. Raw fault registers and `FaultDetails` remain available in the backend and are hidden from visualizations. `FaultDetails` lists the read values and any unavailable fault registers for backend diagnosis. Without an active Modbus parent, the summary reports that the fault status is unavailable.
+The monitoring instance exposes a readable `FaultSummary`, a `FaultPresent` marker and `FaultStatusComplete`. The summary only groups documented fault indicators; it does not invent text for unknown codes or bits. Raw fault registers and `FaultDetails` remain available in the backend and are hidden from visualizations. `FaultDetails` lists the read values, unavailable registers and set bit positions in status/flag registers; bit meanings remain unresolved. Without an active Modbus parent, the summary reports that the fault status is unavailable.
 
 No measured airflow value is exposed: Symcon reports 0 for both 4x0026 and the checked 3x0398 source. The 4x0026 `Airflow` variable was removed because its register meaning, scaling and measurement point are still unresolved.
 

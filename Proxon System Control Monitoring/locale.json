@@ -50,6 +50,7 @@
             "Fault status is incomplete (%d of %d registers read).": "Störungsstatus unvollständig (%d von %d Registern gelesen).",
             "not read": "nicht gelesen",
             "Fault code and bit meanings are not decoded by the register sheet.": "Fehlercodes und Bitbedeutungen sind in der Registerliste nicht decodiert.",
+            "Active bit positions: %s; meanings unresolved.": "Aktive Bitpositionen: %s; Bedeutung ungeklärt.",
             "Fault Register": "Störungsregister",
             "Fault Status 1 (raw)": "Störungsstatus 1 (Rohwert)",
             "Fault Status 2 (raw)": "Störungsstatus 2 (Rohwert)",
