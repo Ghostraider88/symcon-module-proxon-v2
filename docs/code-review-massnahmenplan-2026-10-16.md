@@ -1,6 +1,6 @@
 # Proxon Maßnahmenplan nach dem Code Review
 
-**Status:** Lokale Umsetzung abgeschlossen; isolierte Prüfungen bestanden. Der Symcon-TEST-Nachweis steht vor einer Auslieferung noch aus.
+**Status:** Umsetzung und isolierte Prüfungen abgeschlossen; Branch gepusht und GitHub-Workflow erfolgreich. Die Symcon-TEST-Module wurden über MCP synchronisiert und geprüft. Der TEST-Nachweis ist teilweise erbracht; offene und beim Reload beobachtete Punkte stehen in der Abschlusstabelle.
 
 **Planungsdatum:** 16. Oktober 2026
 
@@ -206,7 +206,7 @@ Jedes Arbeitspaket wird als einzeln abnehmbarer Abschnitt bearbeitet. Bei größ
 
 ### AP04 Kachelübertragung und Betriebszustände
 
-**Status:** Lokal abgeschlossen; offene Kachelaktualisierung und gezielte Logprüfung auf Symcon TEST noch ausstehend
+**Status:** Lokal abgeschlossen; TEST-Module synchronisiert. Laufende Anlagen- und Raumlesungen wurden nach dem Reload bestätigt; die Aktualisierung einer geöffneten Kachel wurde nicht visuell geprüft.
 
 **Bezug:** R01 und R08
 
@@ -236,7 +236,7 @@ Jedes Arbeitspaket wird als einzeln abnehmbarer Abschnitt bearbeitet. Bei größ
 
 ### AP05 Polling und Transport
 
-**Status:** Implementierung und isolierte Prüfungen abgeschlossen; Live-Laufzeitnachweis steht vor TEST-Auslieferung aus
+**Status:** Implementierung und isolierte Prüfungen abgeschlossen; Live-Leselaufzeiten in TEST gemessen. Timeout- und Wiederanlaufverhalten bleiben ungeprüft.
 
 **Bezug:** R05 und die Transportabhängigkeiten der übrigen Pakete
 
@@ -256,7 +256,7 @@ Jedes Arbeitspaket wird als einzeln abnehmbarer Abschnitt bearbeitet. Bei größ
 
 **Betroffene Bereiche:** RequestStatus und Transporthilfen der Module, Timerkonfiguration und gegebenenfalls gemeinsame Hilfsfunktionen.
 
-**Nachweis:** Die gemeinsame Polling-Hilfe verhindert parallele Polls derselben Instanz mit einer nicht wartenden Sperre und gibt sie auch bei Ausnahmen frei. Die sieben aktiven FWT-2/3- und T300-Module akzeptieren 0 oder 5–86400 Sekunden; 0 deaktiviert den Timer, manuelle Aktualisierung bleibt möglich, und ungültige Werte stoppen das Polling mit Status 203. Messungen je Registergruppe protokollieren Dauer, Antwortlänge und Ergebnis. FWT-System-Monitoring verwendet 16 exakte zusammenhängende Gruppen, T300 Control 4 FC3-Gruppen und T300 Monitoring 11 FC4-Gruppen; Lücken werden nicht mitgelesen. Isolierte Prüfungen bestätigen Sperrverhalten, Freigabe nach Ausnahme, kurze Antwortbehandlung, Intervallregeln und Gruppierung. In Symcon wurde noch keine reale Anlagenantwortzeit oder ein Transport-Timeout provoziert; diese Laufzeitmessung bleibt Teil des späteren TEST-Nachweises.
+**Nachweis:** Die gemeinsame Polling-Hilfe verhindert parallele Polls derselben Instanz mit einer nicht wartenden Sperre und gibt sie auch bei Ausnahmen frei. Die sieben aktiven FWT-2/3- und T300-Module akzeptieren 0 oder 5–86400 Sekunden; 0 deaktiviert den Timer, manuelle Aktualisierung bleibt möglich, und ungültige Werte stoppen das Polling mit Status 203. Messungen je Registergruppe protokollieren Dauer, Antwortlänge und Ergebnis. FWT-System-Monitoring verwendet 16 exakte zusammenhängende Gruppen, T300 Control 4 FC3-Gruppen und T300 Monitoring 11 FC4-Gruppen; Lücken werden nicht mitgelesen. Isolierte Prüfungen bestätigen Sperrverhalten, Freigabe nach Ausnahme, kurze Antwortbehandlung, Intervallregeln und Gruppierung. Manuelle lesende TEST-Abrufe liefen fehlerfrei: FWT System Control 22 Registerlesungen in 35,7 Sekunden, FWT System Monitoring 16 Gruppen in 17,8 Sekunden und T300 Control 4 Gruppen in 6,85 Sekunden. Die FWT System Control ist auf 30 Sekunden eingestellt; ein vollständiger Abruf überschritt dieses Intervall. Ein Timeout oder Kommunikationsverlust wurde nicht provoziert.
 
 **Abnahme**
 
@@ -268,7 +268,7 @@ Jedes Arbeitspaket wird als einzeln abnehmbarer Abschnitt bearbeitet. Bei größ
 
 ### AP06 Datenalter und Gültigkeit
 
-**Status:** Implementierung und isolierte Prüfungen abgeschlossen; Live-Kachelnachweis steht vor TEST-Auslieferung aus
+**Status:** Implementierung und isolierte Prüfungen abgeschlossen; Lesequalitäten werden nach dem Reload aktualisiert. Nachrichtenverlust und sichtbare Veraltung in der Kachel bleiben ungeprüft.
 
 **Bezug:** R07
 
@@ -289,7 +289,7 @@ Jedes Arbeitspaket wird als einzeln abnehmbarer Abschnitt bearbeitet. Bei größ
 
 **Betroffene Bereiche:** FWT System Control, FWT System Monitoring, T300-Statusverarbeitung soweit erforderlich, Raum-Bibliothek und Kachelempfänger.
 
-**Nachweis:** Jede abgefragte Registergruppe führt einen eigenen letzten Versuch, letzten Erfolg, Zeitstempel, Alter und Zustand (current, stale, unknown oder failed). Ein 30-Sekunden-Timer aktualisiert den Qualitätsstatus auch ohne neue Pollantwort; Werte veralten nach max(300 Sekunden, dreifachem konfigurierten Intervall). Fehlgeschlagene Gruppen lassen nur ihre eigenen Werte ungültig. Die Kachel prüft Alter und Qualität, aktualisiert dargestellte Zustände regelmäßig ohne Seitenneuladen und lässt bestätigtes Aus gegenüber Schätzungen vorrangig. Raumwerte führen Qualität pro Feld; neu aktivierte interne Sensorsignale bleiben bis zu einer passenden neuen Lesung unbekannt. Die isolierten Prüfungen für Polling, Kachel und Raumzuordnung bestanden. Live-Meldungsverlust und die Ablaufdarstellung wurden noch nicht in Symcon beobachtet.
+**Nachweis:** Jede abgefragte Registergruppe führt einen eigenen letzten Versuch, letzten Erfolg, Zeitstempel, Alter und Zustand (current, stale, unknown oder failed). Ein 30-Sekunden-Timer aktualisiert den Qualitätsstatus auch ohne neue Pollantwort; Werte veralten nach max(300 Sekunden, dreifachem konfigurierten Intervall). Fehlgeschlagene Gruppen lassen nur ihre eigenen Werte ungültig. Die Kachel prüft Alter und Qualität, aktualisiert dargestellte Zustände regelmäßig ohne Seitenneuladen und lässt bestätigtes Aus gegenüber Schätzungen vorrangig. Raumwerte führen Qualität pro Feld; neu aktivierte interne Sensorsignale bleiben bis zu einer passenden neuen Lesung unbekannt. Die isolierten Prüfungen für Polling, Kachel und Raumzuordnung bestanden. Nach dem TEST-Reload wurden aktuelle Lesequalitäten für die Anlagensteuerung, das Zentralpanel und mehrere Raumpanels beobachtet. Nachrichtenverlust und die sichtbare Ablaufdarstellung in einer geöffneten Kachel wurden nicht geprüft.
 
 **Abnahme**
 
@@ -307,7 +307,7 @@ Jedes Arbeitspaket wird als einzeln abnehmbarer Abschnitt bearbeitet. Bei größ
 
 ### AP08 Konfiguration Referenzen und Variablenerhalt
 
-**Status:** Lokal abgeschlossen; tatsächliches Referenz-, Variablen-ID- und Archivverhalten auf Symcon TEST noch ausstehend
+**Status:** Lokal abgeschlossen; aktuelle Advanced-Referenz, bestehende Sensor-IDs und Archivzustand wurden in Symcon TEST lesend geprüft. Eine Änderung der Sensoranzahl zur Live-Prüfung der Erhaltung wurde nicht ausgeführt.
 
 **Bezug:** R12 und R13
 
@@ -334,7 +334,7 @@ Jedes Arbeitspaket wird als einzeln abnehmbarer Abschnitt bearbeitet. Bei größ
 
 ### AP09 Dokumentation automatisierte Prüfungen und Release
 
-**Status:** Lokal abgeschlossen; GitHub Actions kann nach Push laufen. Der Symcon-TEST-Nachweis folgt nach Auslieferung; der aktuelle Symcon-MCP-Dateivergleich bestätigt, dass die installierten Moduldateien noch nicht diesem GIT-Stand entsprechen.
+**Status:** Branch gepusht; GitHub Actions erfolgreich. Die geänderten Laufzeit-, Formular- und Übersetzungsdateien wurden über Symcon MCP aus dem Branch synchronisiert, zurückgelesen und validiert. Module Control selbst wurde nicht auf einen anderen Repository-Zweig umgestellt.
 
 **StylePHP-Prüfstand:** Das `.style`-Submodul fehlt im Checkout. Ein temporärer Dry-Run gegen die offizielle Symcon-Konfiguration meldete zunächst Formatierungsbefunde in 9 von 11 geprüften PHP-Dateien. `libs/FWTStatusPolling.php` wurde danach angepasst; das Ergebnis des abschließenden Gesamtlaufs wurde nicht verlässlich erfasst. Ein sauberer StylePHP-Lauf ist daher nicht nachgewiesen und bleibt vor einem Release erforderlich.
 
@@ -423,12 +423,12 @@ Ein Arbeitspaket erhält erst nach Umsetzung und zugehörigem Nachweis den Statu
 | AP01 | Abgeschlossen | Eingabewerte, Grenzen, Enum, Schalter, Ganzgrad-Rundung und Registerauflösung | Bestanden |
 | AP02 | Abgeschlossen | FWT Room Panel IDs 0/21/negativ/gebrochen; gültige Adressen; Panelwechsel | Bestanden, FWT 1 ausgeschlossen |
 | AP03 | Abgeschlossen | Frischer Lüfter-Gegenwert, fehlender Wert, veralteter Cache, Unter-/Obergrenze | Bestanden, ohne Modbuszugriff |
-| AP04 | Lokal abgeschlossen | JSON-Nachrichten, initiales Objekt, ungültige Nachricht, Modus 0 und unbekannter Modus | Isoliert bestanden; offene Kachelaktualisierung und Logprüfung auf TEST offen |
-| AP05 | Lokal abgeschlossen | Sperre, Fehlerfreigabe, Intervalllogik, Antwortlänge, Registergruppen | Isoliert bestanden; reale Laufzeit-/Timeoutmessung auf TEST offen |
-| AP06 | Lokal abgeschlossen | Per-Gruppenqualität, Alter, Kachelablauf, Sensorreaktivierung | Isoliert bestanden; Live-Meldungsverlusttest auf TEST offen |
+| AP04 | Teilweise auf TEST geprüft | JSON-Nachrichten, initiales Objekt, ungültige Nachricht, Modus 0 und unbekannter Modus; nach Reload aktuelle Anlagen-/Raumlesungen | Isoliert bestanden; offene Kachel nicht visuell geprüft. Der Reload meldete kurzzeitig `InstanceInterface`-Fehler; in den anschließenden 60 Sekunden und späteren manuellen Polls keine weiteren Proxon-Fehler |
+| AP05 | Teilweise auf TEST geprüft | Poll-Sperre und Intervall isoliert; manuelle Laufzeiten: FWT System Control 35,7 s, FWT System Monitoring 17,8 s, T300 Control 6,85 s | Lesegruppen erfolgreich; System Control überschritt das eingestellte 30-s-Intervall. Timeout-/Wiederanlauf- und Parallelpolltest nicht ausgeführt |
+| AP06 | Teilweise auf TEST geprüft | Per-Gruppenqualität, Alter und Kachelablauf isoliert; aktuelle Qualität nach Reload auf mehreren Instanzen beobachtet | Kein Meldungsverlust provoziert und keine veraltete Kachelansicht visuell geprüft |
 | AP07 | Zurückgestellt | FWT 1 nicht bearbeitet oder getestet | Außerhalb des Auftragsumfangs |
-| AP08 | Lokal abgeschlossen | Advanced-Referenzwechsel, Verbindungsprüfung, Sensor-IDs | Isoliert bestanden; tatsächliche Referenz- und Archivkonfiguration auf TEST offen |
-| AP09 | Lokal abgeschlossen | Modulnotizen, Registergruppenkatalog, Metadatenvalidator, CI-Workflow, Update-/Rollback-Anleitung; MCP-Dateivergleich gegen Symcon | Lokale Prüfungen bestanden; installierte Moduldateien sind nicht aktuell, deshalb sind GitHub-Workflow nach Push, StylePHP vor Release und Symcon TEST noch ausstehend. Der Rollback-Ablauf ist dokumentiert, aber noch nicht auf TEST ausgeführt |
+| AP08 | Teilweise auf TEST geprüft | Advanced-Referenz zeigt auf die gewählte System Control; bestehende Sensorvariablen und Archivstatus lesend ermittelt | Konfiguration nicht geändert. Live-Erhalt von IDs/Archivstatus bei Sensoranzahländerung bleibt ungeprüft |
+| AP09 | Teilweise auf TEST geprüft | GitHub-Workflow auf `c82362c` erfolgreich; installierte Laufzeit-/Formdateien über MCP abgeglichen; Bibliotheksvalidierung und gezielter PHP-Lint erfolgreich | Symcon-Reload reconnected 10 Instanzen; kurzzeitige Interface-Fehler während Reconnect, danach keine neuen Proxon-Fehler und alle neun TEST-Instanzen Status 102. Module-Control-Zweig nicht umgestellt; StylePHP vor Release und TEST-Rollback bleiben offen |
 
 ## Referenzen
 
