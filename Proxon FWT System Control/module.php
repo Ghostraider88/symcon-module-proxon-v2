@@ -545,13 +545,22 @@ class ProxonFWTSystemControl extends IPSModuleStrict
 
     private function MaintainSensorVariable(string $ident, string $name, int $position, bool $active): int
     {
-        $existingID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
-        if (!$active && $existingID === 0) {
-            return 0;
+        $existingID = 0;
+        if (!$active) {
+            foreach (IPS_GetChildrenIDs($this->InstanceID) as $childID) {
+                if (IPS_GetObject($childID)['ObjectIdent'] === $ident) {
+                    $existingID = $childID;
+                    break;
+                }
+            }
+
+            if ($existingID === 0) {
+                return 0;
+            }
         }
 
         $this->MaintainVariable($ident, $name, VARIABLETYPE_INTEGER, '', $position, true);
-        $variableID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
+        $variableID = $existingID > 0 ? $existingID : IPS_GetObjectIDByIdent($ident, $this->InstanceID);
         if ($variableID > 0 && !IPS_SetHidden($variableID, !$active)) {
             $this->LogMessage($this->Translate('Could not update sensor variable visibility.'), KL_WARNING);
         }

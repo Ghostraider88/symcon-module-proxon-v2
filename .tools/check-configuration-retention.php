@@ -17,6 +17,7 @@ $GLOBALS['instances'] = [
 $GLOBALS['enabled'] = [100 => true];
 $GLOBALS['activeModule'] = null;
 $GLOBALS['nextVariableID'] = 1000;
+$GLOBALS['missingIdentLookups'] = [];
 
 function IPS_GetKernelRunlevel(): int
 {
@@ -41,7 +42,27 @@ function IPS_GetProperty(int $instanceID, string $property): mixed
 function IPS_GetObjectIDByIdent(string $ident, int $parentID): int
 {
     $module = $GLOBALS['activeModule'];
-    return $parentID === $module->InstanceID ? ($module->variables[$ident] ?? 0) : 0;
+    $variableID = $parentID === $module->InstanceID ? ($module->variables[$ident] ?? 0) : 0;
+    if ($variableID === 0) {
+        $GLOBALS['missingIdentLookups'][] = $ident;
+    }
+    return $variableID;
+}
+
+function IPS_GetChildrenIDs(int $instanceID): array
+{
+    $module = $GLOBALS['activeModule'];
+    return $instanceID === $module->InstanceID ? array_values($module->variables) : [];
+}
+
+function IPS_GetObject(int $objectID): array
+{
+    foreach ($GLOBALS['activeModule']->variables as $ident => $variableID) {
+        if ($variableID === $objectID) {
+            return ['ObjectIdent' => $ident];
+        }
+    }
+    return [];
 }
 
 function IPS_SetVariableCustomPresentation(int $variableID, array $presentation): bool
@@ -172,6 +193,7 @@ $systemControl->properties['CO2RFSensorCount'] = 3;
 $GLOBALS['activeModule'] = $systemControl;
 $registerSensors = new ReflectionMethod(ProxonFWTSystemControl::class, 'RegisterSensorVariables');
 $registerSensors->invoke($systemControl);
+checkConfigurationRetention($GLOBALS['missingIdentLookups'] === [], 'Inactive sensors without variables are skipped without looking up unknown idents.');
 $sensorThreeIDs = [
     $systemControl->variables['CO2Sensor3Room'],
     $systemControl->variables['CO2Sensor3Value'],
