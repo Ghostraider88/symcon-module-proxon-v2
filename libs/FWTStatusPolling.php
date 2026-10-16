@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 trait FWTStatusPolling
 {
-    private const MIN_STATUS_POLL_INTERVAL = 5;
-    private const MAX_STATUS_POLL_INTERVAL = 86400;
     private bool $fwtStatusPollActive = false;
     private int $fwtStatusPollReadCount = 0;
     private int $fwtStatusPollFailureCount = 0;
@@ -173,7 +171,7 @@ trait FWTStatusPolling
 
     private function IsStatusPollingIntervalValid(int $intervalSeconds): bool
     {
-        return $intervalSeconds === 0 || ($intervalSeconds >= self::MIN_STATUS_POLL_INTERVAL && $intervalSeconds <= self::MAX_STATUS_POLL_INTERVAL);
+        return $intervalSeconds === 0 || ($intervalSeconds >= 5 && $intervalSeconds <= 86400);
     }
 
     private function BeginStatusPoll(): ?int
