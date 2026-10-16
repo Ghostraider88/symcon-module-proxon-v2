@@ -28,8 +28,17 @@ trait FWTVisualizationRooms
     {
         $this->SetTimerInterval('RoomVisualizationRefresh', 0);
         if (IPS_GetKernelRunlevel() === KR_READY) {
-            $this->UpdateVisualizationValue($this->GetVisualizationData());
+            $this->PublishVisualizationData($this->GetVisualizationData());
         }
+    }
+
+    private function PublishVisualizationData(array $data): void
+    {
+        $payload = json_encode(
+            $data,
+            JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+        );
+        $this->UpdateVisualizationValue($payload);
     }
 
     private function UpdateVisualizationRoomBindings(): void
@@ -125,6 +134,10 @@ trait FWTVisualizationRooms
                 'name' => $name,
                 'floor' => ($row['Floor'] ?? '') === 'OG' ? 'OG' : 'EG',
                 'instanceID' => $instanceID,
+                'internalSensor' => [
+                    'co2' => $externalCO2 > 0 || !$sensorAvailable ? 0 : $sensor,
+                    'humidity' => $externalHumidity > 0 || !$sensorAvailable ? 0 : $sensor
+                ],
                 'variables' => [
                     'temperature' => $native['CurrentTemperature'] ?? 0,
                     'setpoint' => $native['TargetTemperature'] ?? 0,
@@ -163,32 +176,68 @@ trait FWTVisualizationRooms
     private function GetVisualizationRooms(): array
     {
         $rooms = [];
+        $sensorActivationTimestamps = json_decode($this->ReadAttributeString('SensorActivationTimestamps'), true) ?? [];
         foreach ($this->GetVisualizationRoomDefinitions() as $definition) {
-            $room = ['name' => $definition['name'], 'floor' => $definition['floor']];
+            $room = ['name' => $definition['name'], 'floor' => $definition['floor'], 'quality' => []];
+            $roomInterval = $definition['instanceID'] > 0
+                ? (int) IPS_GetProperty($definition['instanceID'], 'Interval')
+                : $this->ReadPropertyInteger('Interval');
             foreach ($definition['variables'] as $field => $variableID) {
-                $room[$field] = $this->GetVisualizationRoomValue($variableID, $field);
+                $interval = in_array($field, ['temperature', 'setpoint', 'ptc'], true)
+                    ? $roomInterval
+                    : $this->ReadPropertyInteger('Interval');
+                $maximumAge = $interval === 0 ? 300 : max(300, $interval * 3);
+                $sensor = (int) ($definition['internalSensor'][$field] ?? 0);
+                $validAfterTimestamp = $sensor > 0 ? (int) ($sensorActivationTimestamps[$sensor] ?? 0) : 0;
+                $reading = $this->GetVisualizationRoomReading($variableID, $field, $maximumAge, $validAfterTimestamp);
+                $room[$field] = $reading['value'];
+                $room['quality'][$field] = $reading['quality'];
             }
             $rooms[] = $room;
         }
         return $rooms;
     }
 
-    private function GetVisualizationRoomValue(int $variableID, string $field): int|float|bool|null
+    private function GetVisualizationRoomReading(int $variableID, string $field, int $maximumAge, int $validAfterTimestamp = 0): array
     {
-        if ($variableID <= 0 || !IPS_VariableExists($variableID)
-            || (int) IPS_GetVariable($variableID)['VariableUpdated'] <= 0) {
-            return null;
+        if ($variableID <= 0 || !IPS_VariableExists($variableID)) {
+            return ['value' => null, 'quality' => ['status' => 'unknown', 'timestamp' => null, 'ageSeconds' => null, 'maximumAgeSeconds' => $maximumAge]];
         }
+
+        $updatedAt = (int) IPS_GetVariable($variableID)['VariableUpdated'];
+        if ($updatedAt <= $validAfterTimestamp) {
+            return [
+                'value' => null,
+                'quality' => [
+                    'status' => 'unknown',
+                    'timestamp' => $updatedAt > 0 ? $updatedAt * 1000 : null,
+                    'ageSeconds' => $updatedAt > 0 ? max(0, time() - $updatedAt) : null,
+                    'maximumAgeSeconds' => $maximumAge
+                ]
+            ];
+        }
+
         $value = GetValue($variableID);
         if ($field === 'ptc') {
-            return is_bool($value) ? $value : null;
+            $valid = is_bool($value);
+        } else {
+            $valid = (is_int($value) || is_float($value)) && is_finite((float) $value);
         }
-        if ((!is_int($value) && !is_float($value)) || !is_finite((float) $value)) {
-            return null;
+
+        if (!$valid || ($field === 'humidity' && ($value < 0 || $value > 100)) || ($field === 'co2' && $value < 0)) {
+            return ['value' => null, 'quality' => ['status' => 'failed', 'timestamp' => $updatedAt > 0 ? $updatedAt * 1000 : null, 'ageSeconds' => null, 'maximumAgeSeconds' => $maximumAge]];
         }
-        if (($field === 'humidity' && ($value < 0 || $value > 100)) || ($field === 'co2' && $value < 0)) {
-            return null;
-        }
-        return $value;
+
+        $ageSeconds = $updatedAt > 0 ? max(0, time() - $updatedAt) : null;
+        $status = $updatedAt <= 0 ? 'unknown' : ($ageSeconds > $maximumAge ? 'stale' : 'current');
+        return [
+            'value' => $updatedAt > 0 ? $value : null,
+            'quality' => [
+                'status' => $status,
+                'timestamp' => $updatedAt > 0 ? $updatedAt * 1000 : null,
+                'ageSeconds' => $ageSeconds,
+                'maximumAgeSeconds' => $maximumAge
+            ]
+        ];
     }
 }

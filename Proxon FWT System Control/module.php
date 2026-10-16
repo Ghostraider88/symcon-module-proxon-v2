@@ -2,11 +2,17 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../libs/FWTVisualizationRooms.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTStatusPolling.php';
+
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTVisualizationRooms.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTControlInput.php';
 
 class ProxonFWTSystemControl extends IPSModuleStrict
 {
+    use FWTStatusPolling;
+
     use FWTVisualizationRooms;
+    use FWTControlInput;
 
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const ADVANCED_MODULE_ID = '{96EBFF26-A28F-4C3F-BB0B-166BDEE7B182}';
@@ -44,8 +50,12 @@ class ProxonFWTSystemControl extends IPSModuleStrict
     {
         parent::Create();
 
+        $this->CreateStatusReadQuality();
+
         $this->RegisterPropertyInteger('Interval', 30);
         $this->RegisterPropertyInteger('CO2RFSensorCount', 1);
+        $this->RegisterAttributeInteger('AppliedSensorCount', 0);
+        $this->RegisterAttributeString('SensorActivationTimestamps', '{}');
         $this->RegisterPropertyBoolean('AdvancedControlsEnabled', false);
         $this->RegisterPropertyInteger('MonitoringInstanceID', 0);
         $this->RegisterAttributeInteger('RegisteredMonitoringInstanceID', 0);
@@ -55,11 +65,15 @@ class ProxonFWTSystemControl extends IPSModuleStrict
         $this->RegisterAttributeInteger('LastVisualizationUpdate', 0);
         $this->CreateVisualizationRooms();
         $this->RegisterTimer('Poller', 0, 'PROXON_RequestStatus($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('StatusQuality', 0, 'PROXON_RefreshReadQuality($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+
+        $this->RegisterStatusReadQualityVariable(500);
+        $this->UpdateSensorActivationState();
 
         $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML);
         $this->UpdateMonitoringReference();
@@ -97,7 +111,7 @@ class ProxonFWTSystemControl extends IPSModuleStrict
         $this->UpdateVisualizationRoomBindings();
         $this->HideLegacyAdvancedVariables();
 
-        $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
+        $this->ConfigureStatusPolling($this->ReadPropertyInteger('Interval'));
     }
 
     public function GetConfigurationForm(): string
@@ -127,7 +141,7 @@ class ProxonFWTSystemControl extends IPSModuleStrict
         );
 
         $roomLabels = [];
-        foreach (['Rooms', 'Room', 'Ground Floor', 'Upper Floor', 'Actual / Target', 'CO2', 'Relative Humidity', 'PTC Active', 'No rooms assigned', 'On', 'Off', 'Running', 'Heating (inferred)', 'Cooling (inferred)', 'Mode Inferred'] as $caption) {
+        foreach (['Rooms', 'Room', 'Ground Floor', 'Upper Floor', 'Actual / Target', 'CO2', 'Relative Humidity', 'PTC Active', 'No rooms assigned', 'On', 'Off', 'Running', 'Heating (inferred)', 'Cooling (inferred)', 'Mode Inferred', 'Current', 'Stale', 'Failed', 'Unknown', 'Plant', 'Monitoring', 'Modbus', 'Disconnected', 'Select a Monitoring instance', 'Fault status incomplete'] as $caption) {
             $roomLabels[$caption] = $this->Translate($caption);
         }
 
@@ -219,6 +233,20 @@ class ProxonFWTSystemControl extends IPSModuleStrict
 
     public function RequestStatus(): void
     {
+        $startedAt = $this->BeginStatusPoll();
+        if ($startedAt === null) {
+            return;
+        }
+        try {
+            $this->PollStatusValues();
+        } finally {
+            $this->statusPollInProgress = false;
+            $this->EndStatusPoll($startedAt, 'FWT System Control');
+        }
+    }
+
+    private function PollStatusValues(): void
+    {
         if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
             return;
         }
@@ -257,23 +285,23 @@ class ProxonFWTSystemControl extends IPSModuleStrict
         if ($this->statusPollHadSuccessfulRead) {
             $this->WriteAttributeInteger('LastVisualizationUpdate', time());
         }
-        $this->UpdateVisualizationValue($this->GetVisualizationData());
+        $this->PublishVisualizationData($this->GetVisualizationData());
     }
 
     public function RequestAction(string $Ident, mixed $Value): void
     {
         switch ($Ident) {
             case 'OperatingMode':
-                $this->SetOperatingMode((int) $Value);
+                $this->SetOperatingMode($Value);
                 return;
             case 'FanStage':
-                $this->SetFanStage((int) $Value);
+                $this->SetFanStage($Value);
                 return;
             case 'CoolingEnabled':
-                $this->SetCoolingEnabled((bool) $Value);
+                $this->SetCoolingEnabled($Value);
                 return;
             case 'IntensiveVentilationDuration':
-                $this->SetIntensiveVentilationDuration((int) $Value);
+                $this->SetIntensiveVentilationDuration($Value);
                 return;
         }
 
@@ -472,24 +500,102 @@ class ProxonFWTSystemControl extends IPSModuleStrict
             $co2Position = 80 + (($sensor - 1) * 2);
             $humidityPosition = $co2Position + 1;
 
-            $this->MaintainVariable($roomIdent, $this->Translate($roomDefinition['caption']), VARIABLETYPE_INTEGER, '', $roomDefinition['position'], $active);
-            $this->MaintainVariable($co2Ident, sprintf($this->Translate('CO2 Sensor %d Value'), $sensor), VARIABLETYPE_INTEGER, '', $co2Position, $active);
-            $this->MaintainVariable($humidityIdent, sprintf($this->Translate('CO2 Sensor %d Relative Humidity'), $sensor), VARIABLETYPE_INTEGER, '', $humidityPosition, $active);
+            $roomVariableId = $this->MaintainSensorVariable(
+                $roomIdent,
+                $this->Translate($roomDefinition['caption']),
+                $roomDefinition['position'],
+                $active
+            );
+            $co2VariableId = $this->MaintainSensorVariable(
+                $co2Ident,
+                sprintf($this->Translate('CO2 Sensor %d Value'), $sensor),
+                $co2Position,
+                $active
+            );
+            $humidityVariableId = $this->MaintainSensorVariable(
+                $humidityIdent,
+                sprintf($this->Translate('CO2 Sensor %d Relative Humidity'), $sensor),
+                $humidityPosition,
+                $active
+            );
+
+            if ($roomVariableId > 0) {
+                $this->MaintainAction($roomIdent, $active);
+            }
 
             if ($active) {
-                $roomVariableId = IPS_GetObjectIDByIdent($roomIdent, $this->InstanceID);
                 IPS_SetVariableCustomPresentation($roomVariableId, $this->GetEnumerationPresentation($roomDefinition['options']));
-                $this->EnableAction($roomIdent);
-                IPS_SetVariableCustomPresentation(IPS_GetObjectIDByIdent($co2Ident, $this->InstanceID), [
+            }
+
+            if ($co2VariableId > 0) {
+                IPS_SetVariableCustomPresentation($co2VariableId, [
                     'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
                     'SUFFIX' => ' ppm'
                 ]);
-                IPS_SetVariableCustomPresentation(IPS_GetObjectIDByIdent($humidityIdent, $this->InstanceID), [
+            }
+
+            if ($humidityVariableId > 0) {
+                IPS_SetVariableCustomPresentation($humidityVariableId, [
                     'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
                     'SUFFIX' => ' %'
                 ]);
             }
         }
+    }
+
+    private function MaintainSensorVariable(string $ident, string $name, int $position, bool $active): int
+    {
+        $existingID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
+        if (!$active && $existingID === 0) {
+            return 0;
+        }
+
+        $this->MaintainVariable($ident, $name, VARIABLETYPE_INTEGER, '', $position, true);
+        $variableID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
+        if ($variableID > 0 && !IPS_SetHidden($variableID, !$active)) {
+            $this->LogMessage($this->Translate('Could not update sensor variable visibility.'), KL_WARNING);
+        }
+
+        return $variableID;
+    }
+
+    private function UpdateSensorActivationState(): void
+    {
+        $previousCount = $this->ReadAttributeInteger('AppliedSensorCount');
+        $currentCount = $this->GetSensorCount();
+        if ($previousCount === $currentCount) {
+            return;
+        }
+
+        $activationTimestamps = json_decode($this->ReadAttributeString('SensorActivationTimestamps'), true);
+        if (!is_array($activationTimestamps)) {
+            $activationTimestamps = [];
+        }
+
+        for ($sensor = min($previousCount, $currentCount) + 1; $sensor <= max($previousCount, $currentCount); $sensor++) {
+            $this->InvalidateSensorReadQuality($sensor);
+            if ($currentCount > $previousCount) {
+                $activationTimestamps[$sensor] = time() + 1;
+            }
+        }
+
+        $this->WriteAttributeString('SensorActivationTimestamps', json_encode($activationTimestamps, JSON_THROW_ON_ERROR));
+        $this->WriteAttributeInteger('AppliedSensorCount', $currentCount);
+    }
+
+    private function InvalidateSensorReadQuality(int $sensor): void
+    {
+        $quality = $this->ReadStatusReadQualityMap();
+        $groups = [
+            'FC3 register ' . self::SENSOR_ROOM_REGISTERS[$sensor],
+            'FC4 register ' . self::SENSOR_CO2_REGISTERS[$sensor],
+            'FC4 register ' . self::SENSOR_HUMIDITY_REGISTERS[$sensor]
+        ];
+        foreach ($groups as $group) {
+            unset($quality[$group]);
+        }
+
+        $this->WriteStatusReadQualityMap($quality);
     }
 
     private function GetEnumerationPresentation(array $options): array
@@ -560,31 +666,34 @@ class ProxonFWTSystemControl extends IPSModuleStrict
 
     private function GetVisualizationData(): array
     {
+        $this->RefreshReadQuality();
         $lastUpdate = $this->ReadAttributeInteger('LastVisualizationUpdate');
         $hasLiveData = $lastUpdate > 0;
         $monitoringInstanceID = $this->ReadPropertyInteger('MonitoringInstanceID');
         $monitoringSelected = $this->IsMonitoringInstance($monitoringInstanceID);
-        $monitoring = $this->GetVisualizationMonitoringValues($monitoringInstanceID, $hasLiveData);
+        $monitoring = $this->GetVisualizationMonitoringValues($monitoringInstanceID);
+        $monitoringQuality = json_decode((string) ($monitoring['ReadQuality'] ?? '{}'), true) ?? [];
 
         $systemControl = [];
-        foreach ([
-            'ActualOperatingMode',
-            'ActualHeatPumpMode',
-            'SupplyFanRPM',
-            'ExtractFanRPM',
-            'SupplyAirTemperature',
-            'ExtractAirTemperature',
-            'ExhaustAirTemperature',
-            'FreshAirTemperature',
-            'DeviceFilterRuntime',
-            'RecirculationFilterRuntime',
-            'BypassStatus',
-            'DamperPosition',
-            'CoolingEnabled',
-            'SupplyFanStageActual',
-            'ExtractFanStageActual'
-        ] as $ident) {
-            $systemControl[$ident] = $hasLiveData ? $this->GetValue($ident) : null;
+        $systemControlGroups = [
+            'ActualOperatingMode' => 'FC4 register 23',
+            'ActualHeatPumpMode' => 'FC4 register 241',
+            'SupplyFanRPM' => 'FC4 register 0',
+            'ExtractFanRPM' => 'FC4 register 1',
+            'SupplyAirTemperature' => 'FC4 register 195',
+            'ExtractAirTemperature' => 'FC4 register 196',
+            'ExhaustAirTemperature' => 'FC4 register 197',
+            'FreshAirTemperature' => 'FC4 register 198',
+            'DeviceFilterRuntime' => 'FC3 register 469',
+            'RecirculationFilterRuntime' => 'FC3 register 468',
+            'BypassStatus' => 'FC4 register 222',
+            'DamperPosition' => 'FC4 register 159',
+            'CoolingEnabled' => 'FC3 register 62',
+            'SupplyFanStageActual' => 'FC4 register 154',
+            'ExtractFanStageActual' => 'FC4 register 211'
+        ];
+        foreach ($systemControlGroups as $ident => $group) {
+            $systemControl[$ident] = $this->IsStatusReadCurrent($group) ? $this->GetValue($ident) : null;
         }
 
         $rawBypassStatus = $this->ReadAttributeInteger('RawBypassStatus');
@@ -594,23 +703,27 @@ class ProxonFWTSystemControl extends IPSModuleStrict
         return [
             'connected' => $this->HasActiveParent(),
             'updatedAt' => $hasLiveData ? $lastUpdate : null,
+            'systemControlInterval' => max(0, $this->ReadPropertyInteger('Interval')),
+            'systemControlQuality' => $this->ReadStatusReadQualityMap(),
             'monitoringSelected' => $monitoringSelected,
-            'monitoringInterval' => $monitoringSelected ? max(5, (int) IPS_GetProperty($monitoringInstanceID, 'Interval')) : null,
+            'monitoringInterval' => $monitoringSelected ? max(0, (int) IPS_GetProperty($monitoringInstanceID, 'Interval')) : null,
             'monitoringLastRead' => $monitoring['LastSuccessfulRead'] ?? null,
+            'monitoringLastReadTimestamp' => $monitoring['LastSuccessfulReadTimestamp'] ?? null,
+            'monitoringQuality' => $monitoringQuality,
             'systemControl' => $systemControl + [
-                'BypassOpen' => $hasLiveData && in_array($rawBypassStatus, [0, 1], true) ? $rawBypassStatus === 1 : null,
-                'DamperPositionCode' => $hasLiveData && $rawDamperPosition >= 0 && $rawDamperPosition <= 4 ? $rawDamperPosition : null,
+                'BypassOpen' => $this->IsStatusReadCurrent('FC4 register 222') && in_array($rawBypassStatus, [0, 1], true) ? $rawBypassStatus === 1 : null,
+                'DamperPositionCode' => $this->IsStatusReadCurrent('FC4 register 159') && $rawDamperPosition >= 0 && $rawDamperPosition <= 4 ? $rawDamperPosition : null,
                 // Symcon archive values confirm 0 = off, 1 = heating, and 2 = cooling.
-                'HeatPumpModeCode' => $hasLiveData && in_array($rawHeatPumpMode, [0, 1, 2], true) ? $rawHeatPumpMode : null
+                'HeatPumpModeCode' => $this->IsStatusReadCurrent('FC4 register 241') && in_array($rawHeatPumpMode, [0, 1, 2], true) ? $rawHeatPumpMode : null
             ],
             'monitoring' => $monitoring,
             'rooms' => $this->GetVisualizationRooms()
         ];
     }
 
-    private function GetVisualizationMonitoringValues(int $monitoringInstanceID, bool $hasLiveData): array
+    private function GetVisualizationMonitoringValues(int $monitoringInstanceID): array
     {
-        if (!$hasLiveData || !$this->IsMonitoringInstance($monitoringInstanceID)) {
+        if (!$this->IsMonitoringInstance($monitoringInstanceID)) {
             return [];
         }
 
@@ -628,7 +741,7 @@ class ProxonFWTSystemControl extends IPSModuleStrict
             $values[$ident] = GetValue($childID);
         }
 
-        return ($values['LastSuccessfulRead'] ?? '') !== '' ? $values : [];
+        return (int) ($values['LastSuccessfulReadTimestamp'] ?? 0) > 0 ? $values : [];
     }
 
     private function UpdatePlantStatus(): void
@@ -795,51 +908,29 @@ class ProxonFWTSystemControl extends IPSModuleStrict
 
     private function WritePlantControl(string $ident, mixed $value, array $definition): void
     {
-        if ($definition['type'] === 'boolean') {
-            $normalizedValue = (bool) $value;
-            $rawValue = $normalizedValue ? 1 : 0;
-        } elseif ($definition['type'] === 'enumeration') {
-            $normalizedValue = (int) $value;
-            if (!array_key_exists($normalizedValue, $definition['options'])) {
-                throw new InvalidArgumentException($this->Translate('Invalid selection value.'));
-            }
-            $rawValue = $normalizedValue;
-        } else {
-            if (!is_numeric($value)) {
-                throw new InvalidArgumentException($this->Translate('The value must be numeric.'));
-            }
+        $normalized = $this->NormalizeFWTControlValue($value, $definition);
 
-            $numericValue = (float) $value;
-            if ($numericValue < $definition['minimum'] || $numericValue > $definition['maximum']) {
-                throw new InvalidArgumentException(sprintf(
-                    $this->Translate('The value must be between %s and %s.'),
-                    (string) $definition['minimum'],
-                    (string) $definition['maximum']
-                ));
-            }
-
-            $normalizedValue = $definition['type'] === 'integer' ? (int) round($numericValue) : $numericValue;
-            $rawValue = (int) round($numericValue * $definition['scale']);
-        }
-
-        if (!$this->WriteHoldingRegister($definition['address'], $rawValue)) {
+        if (!$this->WriteHoldingRegister($definition['address'], $normalized['raw'])) {
             return;
         }
 
-        $this->SetValue($ident, $normalizedValue);
+        $this->SetValue($ident, $normalized['value']);
     }
 
-    private function SetOperatingMode(int $value): void
+    private function SetOperatingMode(mixed $value): void
     {
-        if (!in_array($value, [0, 1, 2, 3, 4, 6], true)) {
-            throw new InvalidArgumentException($this->Translate('Unsupported operating mode.'));
-        }
+        $value = $this->NormalizeFWTSelection(
+            $value,
+            [0 => true, 1 => true, 2 => true, 3 => true, 4 => true, 6 => true],
+            $this->Translate('Unsupported operating mode.')
+        );
 
         $this->WriteAndUpdate('OperatingMode', 16, $value);
     }
 
-    private function SetFanStage(int $value): void
+    private function SetFanStage(mixed $value): void
     {
+        $value = $this->NormalizeFWTInteger($value);
         if ($value < 1 || $value > 4) {
             throw new InvalidArgumentException($this->Translate('Fan stage must be between 1 and 4.'));
         }
@@ -847,13 +938,15 @@ class ProxonFWTSystemControl extends IPSModuleStrict
         $this->WriteAndUpdate('FanStage', 22, $value);
     }
 
-    private function SetCoolingEnabled(bool $enabled): void
+    private function SetCoolingEnabled(mixed $enabled): void
     {
+        $enabled = $this->NormalizeFWTBoolean($enabled);
         $this->WriteAndUpdate('CoolingEnabled', 62, $enabled ? 1 : 0, true);
     }
 
-    private function SetIntensiveVentilationDuration(int $minutes): void
+    private function SetIntensiveVentilationDuration(mixed $minutes): void
     {
+        $minutes = $this->NormalizeFWTInteger($minutes);
         if ($minutes < 0 || $minutes > 1440) {
             throw new InvalidArgumentException($this->Translate('Intensive ventilation duration must be between 0 and 1440 minutes.'));
         }
@@ -882,13 +975,13 @@ class ProxonFWTSystemControl extends IPSModuleStrict
             return null;
         }
 
-        $response = $this->SendDataToParent(json_encode([
+        $response = $this->SendMeasuredStatusRead('FC' . $function . ' register ' . $address, json_encode([
             'DataID' => self::MODBUS_DATA_ID,
             'Function' => $function,
             'Address' => $address,
             'Quantity' => 1,
             'Data' => ''
-        ], JSON_THROW_ON_ERROR));
+        ], JSON_THROW_ON_ERROR), 4);
 
         if (!is_string($response) || strlen($response) < 4) {
             $this->pollCache[$key] = null;

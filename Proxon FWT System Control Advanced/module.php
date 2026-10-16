@@ -2,8 +2,18 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTStatusPolling.php';
+
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTControlInput.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTAdvancedControlValidation.php';
+
 class ProxonFWTSystemControlAdvanced extends IPSModuleStrict
 {
+    use FWTStatusPolling;
+
+    use FWTControlInput;
+    use FWTAdvancedControlValidation;
+
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const SYSTEM_CONTROL_MODULE_ID = '{014DD20E-4090-4399-9C1F-D850E3DF4591}';
 
@@ -13,26 +23,42 @@ class ProxonFWTSystemControlAdvanced extends IPSModuleStrict
     {
         parent::Create();
 
+        $this->CreateStatusReadQuality();
+
         $this->RegisterPropertyInteger('SystemControlInstanceID', 0);
+        $this->RegisterAttributeInteger('RegisteredSystemControlInstanceID', 0);
         $this->RegisterPropertyInteger('Interval', 30);
         $this->RegisterTimer('Poller', 0, 'PROXONADV_RequestStatus($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('StatusQuality', 0, 'PROXONADV_RefreshReadQuality($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
 
-        $systemControlID = $this->ReadPropertyInteger('SystemControlInstanceID');
-        if ($systemControlID > 0 && IPS_InstanceExists($systemControlID)) {
-            $this->RegisterReference($systemControlID);
-        }
+        $this->RegisterStatusReadQualityVariable(500);
+
+        $this->UpdateSystemControlReference();
 
         $this->RegisterAdvancedVariables();
         $this->UpdateActionAvailability();
-        $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
+        $this->ConfigureStatusPolling($this->ReadPropertyInteger('Interval'));
     }
 
     public function RequestStatus(): void
+    {
+        $startedAt = $this->BeginStatusPoll();
+        if ($startedAt === null) {
+            return;
+        }
+        try {
+            $this->PollStatusValues();
+        } finally {
+            $this->EndStatusPoll($startedAt, 'FWT System Control Advanced');
+        }
+    }
+
+    private function PollStatusValues(): void
     {
         $panelMask = $this->UpdateActionAvailability();
         if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
@@ -257,22 +283,44 @@ class ProxonFWTSystemControlAdvanced extends IPSModuleStrict
         }
 
         $systemControlID = $this->ReadPropertyInteger('SystemControlInstanceID');
-        if ($systemControlID <= 0 || !IPS_InstanceExists($systemControlID)) {
+        if (!$this->IsSystemControlInstance($systemControlID)) {
             return false;
         }
 
-        $systemControl = IPS_GetInstance($systemControlID);
+        return (bool) IPS_GetProperty($systemControlID, 'AdvancedControlsEnabled');
+    }
+
+    private function IsSystemControlInstance(int $instanceID): bool
+    {
+        if ($instanceID <= 0 || !IPS_InstanceExists($instanceID)) {
+            return false;
+        }
+
+        $systemControl = IPS_GetInstance($instanceID);
         if (($systemControl['ModuleInfo']['ModuleID'] ?? '') !== self::SYSTEM_CONTROL_MODULE_ID) {
             return false;
         }
 
         $systemControlConnectionID = (int) ($systemControl['ConnectionID'] ?? 0);
-        $advancedConnectionID = (int) IPS_GetInstance($this->InstanceID)['ConnectionID'];
-        if ($systemControlConnectionID <= 0 || $systemControlConnectionID !== $advancedConnectionID) {
-            return false;
+        $advancedConnectionID = (int) (IPS_GetInstance($this->InstanceID)['ConnectionID'] ?? 0);
+        return $systemControlConnectionID > 0 && $systemControlConnectionID === $advancedConnectionID;
+    }
+
+    private function UpdateSystemControlReference(): void
+    {
+        $systemControlID = $this->ReadPropertyInteger('SystemControlInstanceID');
+        $registeredID = $this->ReadAttributeInteger('RegisteredSystemControlInstanceID');
+        $isValid = $this->IsSystemControlInstance($systemControlID);
+
+        if ($registeredID > 0 && (!$isValid || $registeredID !== $systemControlID)) {
+            $this->UnregisterReference($registeredID);
         }
 
-        return (bool) IPS_GetProperty($systemControlID, 'AdvancedControlsEnabled');
+        if ($isValid) {
+            $this->RegisterReference($systemControlID);
+        }
+
+        $this->WriteAttributeInteger('RegisteredSystemControlInstanceID', $isValid ? $systemControlID : 0);
     }
 
     private function EnsureAdvancedEnabled(): void
@@ -297,44 +345,27 @@ class ProxonFWTSystemControlAdvanced extends IPSModuleStrict
         }
 
         $value = $rawValue / $definition['scale'];
-        return $definition['type'] === 'integer' ? (int) round($value) : $value;
+        return $definition['type'] === 'integer' ? (int) round($value) : (float) $value;
     }
 
     private function WriteControl(string $ident, mixed $value, array $definition): void
     {
+        $normalized = $this->NormalizeFWTControlValue($value, $definition);
+        $normalizedValue = $normalized['value'];
+        $rawValue = $normalized['raw'];
+
+        if ($ident === 'FanMinimumAirflow' || $ident === 'FanMaximumAirflow') {
+            $opposingIdent = $ident === 'FanMinimumAirflow' ? 'FanMaximumAirflow' : 'FanMinimumAirflow';
+            $opposingDefinition = $this->GetAdvancedPlantControlDefinitions()[$opposingIdent];
+            $this->ValidateFWTFanAirflowControl($ident, $normalizedValue, $opposingDefinition);
+        }
+
         $panel = $this->GetPanelFromIdent($ident);
         if ($panel !== null) {
             $this->pollCache = [];
             if (!$this->IsPanelConnected($panel, $this->GetConnectedPanelMask())) {
                 throw new RuntimeException($this->Translate('The selected panel is not currently connected.'));
             }
-        }
-
-        if ($definition['type'] === 'boolean') {
-            $normalizedValue = (bool) $value;
-            $rawValue = $normalizedValue ? 1 : 0;
-        } elseif ($definition['type'] === 'enumeration') {
-            $normalizedValue = (int) $value;
-            if (!array_key_exists($normalizedValue, $definition['options'])) {
-                throw new InvalidArgumentException($this->Translate('Invalid selection value.'));
-            }
-            $rawValue = $normalizedValue;
-        } else {
-            if (!is_numeric($value)) {
-                throw new InvalidArgumentException($this->Translate('The value must be numeric.'));
-            }
-
-            $numericValue = (float) $value;
-            if ($numericValue < $definition['minimum'] || $numericValue > $definition['maximum']) {
-                throw new InvalidArgumentException(sprintf(
-                    $this->Translate('The value must be between %s and %s.'),
-                    (string) $definition['minimum'],
-                    (string) $definition['maximum']
-                ));
-            }
-
-            $normalizedValue = $definition['type'] === 'integer' ? (int) round($numericValue) : $numericValue;
-            $rawValue = (int) round($numericValue * $definition['scale']);
         }
 
         $this->EnsureAdvancedEnabled();
@@ -356,13 +387,13 @@ class ProxonFWTSystemControlAdvanced extends IPSModuleStrict
             return null;
         }
 
-        $response = $this->SendDataToParent(json_encode([
+        $response = $this->SendMeasuredStatusRead('FC3 register ' . $address, json_encode([
             'DataID' => self::MODBUS_DATA_ID,
             'Function' => 3,
             'Address' => $address,
             'Quantity' => 1,
             'Data' => ''
-        ], JSON_THROW_ON_ERROR));
+        ], JSON_THROW_ON_ERROR), 4);
 
         if (!is_string($response) || strlen($response) < 4) {
             $this->pollCache[$address] = null;
@@ -372,6 +403,12 @@ class ProxonFWTSystemControlAdvanced extends IPSModuleStrict
         $value = unpack('nvalue', substr($response, 2, 2));
         $this->pollCache[$address] = $value === false ? null : $value['value'];
         return $this->pollCache[$address];
+    }
+
+    private function ReadFreshRegister(int $address): ?int
+    {
+        unset($this->pollCache[$address]);
+        return $this->ReadRegister($address);
     }
 
     private function WriteHoldingRegister(int $address, int $value): bool

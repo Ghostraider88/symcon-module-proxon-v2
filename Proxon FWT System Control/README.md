@@ -16,6 +16,8 @@ This instance handles daily plant operation and read-only plant status for PROXO
 
 Room assignment values for CO2/RF sensors are 0 unassigned, 1 central panel room, 2 HNBP room and 3–21 NBP 1–19.
 
+The default poll interval is 30 seconds. Use 0 to disable automatic polling while keeping manual updates available, or choose 5 to 86400 seconds. `ReadQuality` reports per-block last-attempt and last-success times, age and current, stale, unknown or failed state. Values become stale after max(300 seconds, three times the poll interval). Instance status 202 indicates a failed read or missing parent, 203 an invalid interval, and 104 automatic polling disabled. Block duration and response validity are available in the debug window.
+
 ## Status values
 
 The instance displays actual operating and heat-pump modes, fan RPM and stages, fresh/supply/extract/exhaust air temperatures, connected panels, CO2/RF readings for the configured sensor count, filter runtimes, bypass status (3x0222) and damper position (3x0159). Actual heat-pump mode comes from 4x0241: 0 = off, 1 = heating, 2 = cooling. Register 3x0069 is a test/debug value and is not used as the actual mode. The damper position is shown as EG, EG preferred, balanced, OG preferred or OG for values 0–4. Both bypass status and damper position are read-only.
@@ -68,9 +70,18 @@ The Zone module's `PTCRelease` is permission to heat and is never shown as an ac
 
 This room mapping is for display and does not change the device's own CO2/RF room assignment or heating controls. Only selected instances, selected variables and this instance's selected native sensors are read. References protect those objects, and variable updates refresh the room cards through a short debounce timer without extra Modbus requests. No external variable is written or archived automatically.
 
+Reducing the configured CO2/RF sensor count hides its existing variables and disables the room-assignment action without deleting the variables or their IDs. Raising the count restores those same variables and any archive assignments. Newly enabled sensors remain unavailable in room mappings until a successful read after activation.
+
 ## Installation
 
 Create one System Control instance through the Proxon FWT Configurator for each Modbus connection. Create a separate Proxon FWT Room Panel instance for each installed HNBP or NBP. Create the Advanced instance only if you need its settings.
+
+## Exported functions
+
+- `PROXON_RequestStatus(int $id)`: reads plant status and configured sensors once.
+- `PROXON_CreateAdvancedInstance(int $id)`: creates the associated Advanced instance when enabled.
+- `PROXON_CreateMonitoringInstance(int $id)`: creates the separate System Monitoring instance.
+- `PROXON_RefreshReadQuality(int $id)`: recalculates read freshness without Modbus reads.
 
 ## Compatibility
 

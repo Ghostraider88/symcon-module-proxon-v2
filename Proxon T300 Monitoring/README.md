@@ -1,8 +1,8 @@
 # Proxon T300 Monitoring
 
-The read-only Monitoring instance polls the documented T300 Input Registers with Modbus function 4 (FC4), grouped into seven blocks. It exposes 57 register values, counters, relay states and operating/fault status values, plus a readable fault description and an availability flag for the optional external sensor. The poll interval defaults to 60 seconds and can be changed in the instance configuration.
+The read-only Monitoring instance polls the documented T300 Input Registers with Modbus function 4 (FC4), grouped into 11 contiguous blocks. It exposes 57 register values, counters, relay states and operating/fault status values, plus a readable fault description and an availability flag for the optional external sensor. The poll interval defaults to 60 seconds. Use 0 to disable automatic polling while keeping manual updates available, or choose 5 to 86400 seconds.
 
-The variables do not have actions, and the module does not enable archive logging. Debug output is available through the Symcon debug window for failed FC4 reads.
+The variables do not have actions, and the module does not enable archive logging. `ReadQuality` contains per-block JSON details, including last attempts, last successful timestamps, age and current, stale, unknown or failed status. Values become stale after max(300 seconds, three times the poll interval). Instance status 202 indicates a failed read or missing parent, 203 an invalid interval, and 104 automatic polling disabled. Debug output includes each FC4 block's duration and result.
 
 Create the instance from the **Create Monitoring Instance** action in Proxon T300 Control after its Modbus parent is active.
 
@@ -10,12 +10,16 @@ Create the instance from the **Create Monitoring Instance** action in Proxon T30
 
 | Addresses | Contents |
 | --- | --- |
-| 811-830 | Temperatures, pressures, valve position and relay states |
-| 832-841 | Operating timers and fan speed |
-| 842-846 | Compressor, fan and pressure error durations |
-| 861 | Raw fault code and readable fault description |
-| 862 | Fan speed in rpm |
-| 868-892 | Emergency permission, setpoint, firmware, tank/superheat readings and timers |
+| 811-820 | Temperatures, pressures and expansion-valve position |
+| 824-830 | Relay states and derived evaporator readings |
+| 832 | Hot-air restriction duration |
+| 834-836 | Emergency operation, defrost restriction and heat-pump state duration |
+| 838-842 | Fan percentage and operating timers |
+| 844-846 | Compressor temperature, fan and P14 pressure error durations |
+| 861-862 | Raw fault code and fan speed in rpm |
+| 868-888 | Emergency heater permission, setpoint, firmware, tank/superheat readings and timers |
+| 890 | Maximum superheat after defrost |
+| 892 | Defrost start temperature |
 | 898-900 | PV tank level and active heater/heat-pump states |
 
 ### Fault code 861
@@ -54,3 +58,4 @@ The external sensor at input register 817 is optional. <code>ExternalSensorTempe
 ## Exported functions
 
 - `PROXONT300MON_RequestStatus(int $id)`: reads all configured FC4 register groups once.
+- `PROXONT300MON_RefreshReadQuality(int $id)`: recalculates per-block freshness and age without Modbus reads.

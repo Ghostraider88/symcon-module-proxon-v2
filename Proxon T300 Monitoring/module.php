@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTStatusPolling.php';
+
 class ProxonT300Monitoring extends IPSModuleStrict
 {
+    use FWTStatusPolling;
+
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const READ_FUNCTION = 4;
     private const EXTERNAL_SENSOR_UNAVAILABLE_RAW_VALUE = 2569;
@@ -31,13 +35,18 @@ class ProxonT300Monitoring extends IPSModuleStrict
     {
         parent::Create();
 
+        $this->CreateStatusReadQuality();
+
         $this->RegisterPropertyInteger('Interval', 60);
         $this->RegisterTimer('Poller', 0, 'PROXONT300MON_RequestStatus($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('StatusQuality', 0, 'PROXONT300MON_RefreshReadQuality($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+
+        $this->RegisterStatusReadQualityVariable(500);
 
         $this->RegisterInputVariables();
         $this->RegisterVariableString(
@@ -54,18 +63,38 @@ class ProxonT300Monitoring extends IPSModuleStrict
             159
         );
         $this->MaintainAction('ExternalSensorTemperatureAvailable', false);
-        $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
+        $this->RegisterVariableInteger('LastSuccessfulReadTimestamp', $this->Translate('Last Successful Read Timestamp'), '', 160);
+        $this->MaintainAction('LastSuccessfulReadTimestamp', false);
+        $this->ConfigureStatusPolling($this->ReadPropertyInteger('Interval'));
     }
 
     public function RequestStatus(): void
+    {
+        $startedAt = $this->BeginStatusPoll();
+        if ($startedAt === null) {
+            return;
+        }
+        try {
+            $this->PollStatusValues();
+        } finally {
+            $this->EndStatusPoll($startedAt, 'T300 Monitoring');
+        }
+    }
+
+    private function PollStatusValues(): void
     {
         if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
             return;
         }
 
         $definitions = $this->GetInputDefinitions();
+        $successfulReads = 0;
         foreach ($this->GetInputRegisterGroups() as $group) {
-            $values = $this->ReadInputRegisters($group['address'], $group['quantity']);
+            $groupIdents = array_map(
+                static fn(array $entry): string => $entry['ident'],
+                $group['definitions']
+            );
+            $values = $this->ReadInputRegisters($group['address'], $group['quantity'], $groupIdents);
             if ($values === null) {
                 continue;
             }
@@ -84,10 +113,14 @@ class ProxonT300Monitoring extends IPSModuleStrict
 
                 $decodedValue = $this->DecodeInputValue($rawValue, $definition);
                 $this->SetValue($ident, $decodedValue);
+                $successfulReads++;
                 if ($ident === 'FaultCode') {
                     $this->SetValue('FaultDescription', $this->GetFaultDescription((int) $decodedValue));
                 }
             }
+        }
+        if ($successfulReads > 0) {
+            $this->SetValue('LastSuccessfulReadTimestamp', (int) floor(microtime(true) * 1000));
         }
     }
 
@@ -202,26 +235,18 @@ class ProxonT300Monitoring extends IPSModuleStrict
 
     private function GetInputRegisterGroups(): array
     {
-        return [
-            ['address' => 811, 'quantity' => 20],
-            ['address' => 832, 'quantity' => 10],
-            ['address' => 842, 'quantity' => 5],
-            ['address' => 861, 'quantity' => 1],
-            ['address' => 862, 'quantity' => 1],
-            ['address' => 868, 'quantity' => 25],
-            ['address' => 898, 'quantity' => 3]
-        ];
+        return $this->BuildContiguousStatusReadGroups($this->GetInputDefinitions());
     }
 
-    private function ReadInputRegisters(int $address, int $quantity): ?array
+    private function ReadInputRegisters(int $address, int $quantity, array $identifiers): ?array
     {
-        $response = $this->SendDataToParent(json_encode([
+        $response = $this->SendMeasuredStatusRead('FC4 block ' . $address . 'x' . $quantity, json_encode([
             'DataID' => self::MODBUS_DATA_ID,
             'Function' => self::READ_FUNCTION,
             'Address' => $address,
             'Quantity' => $quantity,
             'Data' => ''
-        ], JSON_THROW_ON_ERROR));
+        ], JSON_THROW_ON_ERROR), 2 + ($quantity * 2), $identifiers);
 
         if (!is_string($response) || strlen($response) !== 2 + ($quantity * 2)) {
             $this->SendDebug('FC4 read failed', sprintf('Address %d, quantity %d', $address, $quantity), 0);

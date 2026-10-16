@@ -10,6 +10,8 @@
             "name": "Interval",
             "type": "NumberSpinner",
             "caption": "Interval",
+            "minimum": 0,
+            "maximum": 86400,
             "suffix": "Seconds"
         },
         {
@@ -23,5 +25,12 @@
             "caption": "Update Values",
             "onClick": "PROXONADV_RequestStatus($id);"
         }
+    ]
+,
+    "status": [
+        {"code": 104, "icon": "information", "caption": "Automatic polling is disabled; use Update Values for a manual poll."},
+        {"code": 202, "icon": "error", "caption": "Modbus read failed or no active parent connection is available."},
+        {"code": 203, "icon": "error", "caption": "Polling interval must be 0 or between 5 and 86400 seconds."}
+
     ]
 }

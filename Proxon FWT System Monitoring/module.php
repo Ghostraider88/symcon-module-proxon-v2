@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTStatusPolling.php';
+
 class ProxonFWTSystemMonitoring extends IPSModuleStrict
 {
+    use FWTStatusPolling;
+
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const ARCHIVE_MODULE_ID = '{43192F0B-135B-4CE7-A0A7-1475603F3060}';
 
@@ -12,6 +16,8 @@ class ProxonFWTSystemMonitoring extends IPSModuleStrict
     public function Create(): void
     {
         parent::Create();
+
+        $this->CreateStatusReadQuality();
 
         $this->RegisterPropertyInteger('Interval', 60);
         $this->RegisterPropertyInteger('PowerVariableID', 0);
@@ -24,20 +30,36 @@ class ProxonFWTSystemMonitoring extends IPSModuleStrict
         $this->RegisterAttributeInteger('DeviceFilterRemainingHoursAtStoredReference', 0);
         $this->RegisterAttributeInteger('DeviceFilterRuntimeReferenceTimestamp', 0);
         $this->RegisterTimer('Poller', 0, 'PROXONMON_RequestStatus($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('StatusQuality', 0, 'PROXONMON_RefreshReadQuality($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
 
+        $this->RegisterStatusReadQualityVariable(500);
+
         $this->RemoveLegacyMonitoringVariables();
         $this->UpdatePowerVariableReference();
         $this->RegisterMonitoringVariables();
         $this->UpdateDeviceFilterRuntimeEstimate();
-        $this->SetTimerInterval('Poller', max(5, $this->ReadPropertyInteger('Interval')) * 1000);
+        $this->ConfigureStatusPolling($this->ReadPropertyInteger('Interval'));
     }
 
     public function RequestStatus(): void
+    {
+        $startedAt = $this->BeginStatusPoll();
+        if ($startedAt === null) {
+            return;
+        }
+        try {
+            $this->PollStatusValues();
+        } finally {
+            $this->EndStatusPoll($startedAt, 'FWT System Monitoring');
+        }
+    }
+
+    private function PollStatusValues(): void
     {
         $this->pollCache = [];
         if (IPS_GetKernelRunlevel() !== KR_READY) {
@@ -52,20 +74,33 @@ class ProxonFWTSystemMonitoring extends IPSModuleStrict
 
         $successfulReads = 0;
         $successfulIdentifiers = [];
-        foreach ($this->GetMonitoringDefinitions() as $ident => $definition) {
-            $rawValue = $this->ReadRegister($definition['function'], $definition['address']);
-            if ($rawValue === null) {
+        foreach ($this->GetMonitoringReadGroups() as $group) {
+            $groupIdents = array_map(
+                static fn(array $entry): string => $entry['ident'],
+                $group['definitions']
+            );
+            $rawValues = $this->ReadRegisterBlock(
+                $group['function'],
+                $group['address'],
+                count($group['definitions']),
+                $groupIdents
+            );
+            if ($rawValues === null) {
                 continue;
             }
-            $value = $this->DecodeValue($rawValue, $definition);
-            $this->SetValue($ident, $value);
-            $successfulReads++;
-            $successfulIdentifiers[] = $ident;
 
-            if ($ident === 'TotalElectricalPower') {
-                $this->UpdateEnergyEstimate((float) $value);
+            foreach ($group['definitions'] as $offset => $entry) {
+                $ident = $entry['ident'];
+                $definition = $entry['definition'];
+                $value = $this->DecodeValue($rawValues[$offset], $definition);
+                $this->SetValue($ident, $value);
+                $successfulReads++;
+                $successfulIdentifiers[] = $ident;
+
+                if ($ident === 'TotalElectricalPower') {
+                    $this->UpdateEnergyEstimate((float) $value);
+                }
             }
-
         }
 
         $this->UpdateFaultStatus($successfulIdentifiers);
@@ -75,6 +110,7 @@ class ProxonFWTSystemMonitoring extends IPSModuleStrict
 
         if ($successfulReads > 0) {
             $this->SetValue('LastSuccessfulRead', date('Y-m-d H:i:s'));
+            $this->SetValue('LastSuccessfulReadTimestamp', (int) floor(microtime(true) * 1000));
         }
     }
 
@@ -185,6 +221,8 @@ class ProxonFWTSystemMonitoring extends IPSModuleStrict
         }
         $this->RegisterVariableString('EnergyArchiveStatus', $this->Translate('Energy Archive Status'), '', 73);
         $this->RegisterVariableString('LastSuccessfulRead', $this->Translate('Last Successful Read'), '', 90);
+        $this->RegisterVariableInteger('LastSuccessfulReadTimestamp', $this->Translate('Last Successful Read Timestamp'), '', 91);
+        $this->MaintainAction('LastSuccessfulReadTimestamp', false);
 
         foreach (array_merge($this->GetTechnicalFaultIdents(), ['FaultDetails']) as $ident) {
             $variableID = IPS_GetObjectIDByIdent($ident, $this->InstanceID);
@@ -535,13 +573,13 @@ class ProxonFWTSystemMonitoring extends IPSModuleStrict
             return $this->pollCache[$key];
         }
 
-        $response = $this->SendDataToParent(json_encode([
+        $response = $this->SendMeasuredStatusRead('FC' . $function . ' register ' . $address, json_encode([
             'DataID' => self::MODBUS_DATA_ID,
             'Function' => $function,
             'Address' => $address,
             'Quantity' => 1,
             'Data' => ''
-        ], JSON_THROW_ON_ERROR));
+        ], JSON_THROW_ON_ERROR), 4);
 
         if (!is_string($response) || strlen($response) < 4) {
             $this->pollCache[$key] = null;
@@ -551,6 +589,83 @@ class ProxonFWTSystemMonitoring extends IPSModuleStrict
         $value = unpack('nvalue', substr($response, 2, 2));
         $this->pollCache[$key] = $value === false ? null : $value['value'];
         return $this->pollCache[$key];
+    }
+
+    private function GetMonitoringReadGroups(): array
+    {
+        $definitions = $this->GetMonitoringDefinitions();
+        $entries = [];
+        foreach ($definitions as $ident => $definition) {
+            $entries[] = [
+                'ident' => $ident,
+                'definition' => $definition
+            ];
+        }
+
+        usort($entries, static function (array $left, array $right): int {
+            return [$left['definition']['function'], $left['definition']['address']]
+                <=> [$right['definition']['function'], $right['definition']['address']];
+        });
+
+        $groups = [];
+        foreach ($entries as $entry) {
+            $definition = $entry['definition'];
+            $lastGroupIndex = count($groups) - 1;
+            if ($lastGroupIndex >= 0) {
+                $lastGroup = &$groups[$lastGroupIndex];
+                $lastAddress = $lastGroup['address'] + count($lastGroup['definitions']) - 1;
+                if ($lastGroup['function'] === $definition['function'] && $definition['address'] === $lastAddress + 1) {
+                    $lastGroup['definitions'][] = $entry;
+                    unset($lastGroup);
+                    continue;
+                }
+                unset($lastGroup);
+            }
+
+            $groups[] = [
+                'function' => $definition['function'],
+                'address' => $definition['address'],
+                'definitions' => [$entry]
+            ];
+        }
+
+        return $groups;
+    }
+
+    private function ReadRegisterBlock(int $function, int $address, int $quantity, array $identifiers): ?array
+    {
+        if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+            return null;
+        }
+
+        $response = $this->SendMeasuredStatusRead(
+            'FC' . $function . ' block ' . $address . 'x' . $quantity,
+            json_encode([
+                'DataID' => self::MODBUS_DATA_ID,
+                'Function' => $function,
+                'Address' => $address,
+                'Quantity' => $quantity,
+                'Data' => ''
+            ], JSON_THROW_ON_ERROR),
+            2 + ($quantity * 2),
+            $identifiers
+        );
+
+        if (!is_string($response) || strlen($response) !== 2 + ($quantity * 2)) {
+            return null;
+        }
+
+        $values = unpack('n*', substr($response, 2));
+        if ($values === false) {
+            return null;
+        }
+
+        $values = array_values($values);
+        foreach ($values as $offset => $value) {
+            $this->pollCache[$function . ':' . ($address + $offset)] = $value;
+        }
+
+        return $values;
     }
 
     private function SendServiceCommand(int $address, string $message): void

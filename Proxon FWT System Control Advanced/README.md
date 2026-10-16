@@ -22,3 +22,8 @@ Disabling Advanced Controls in the associated System Control instance blocks all
 ## Compatibility
 
 IP-Symcon 8.1 or newer and a Proxon Modbus parent connection are required. T300 functions are not included.
+
+## Exported functions
+
+- `PROXONADV_RequestStatus(int $id)`: reads the Advanced settings once.
+- `PROXONADV_RefreshReadQuality(int $id)`: recalculates read freshness without Modbus reads.

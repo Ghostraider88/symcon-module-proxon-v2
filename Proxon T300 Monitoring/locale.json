@@ -116,7 +116,17 @@
             "Invalid selection value.": "Ungültiger Auswahlwert.",
             "Boolean controls accept only true or false.": "Schalter akzeptieren nur true oder false.",
             "The T300 Modbus parent is not available.": "Die T300-Modbus-Elterninstanz ist nicht verfügbar.",
-            "Writing T300 register %d failed.": "Das Schreiben von T300-Register %d ist fehlgeschlagen."
-        }
+            "Writing T300 register %d failed.": "Das Schreiben von T300-Register %d ist fehlgeschlagen.",
+                    "Automatic polling is disabled; use Update Values for a manual poll.": "Automatische Abfrage ist deaktiviert; nutze Werte aktualisieren f\u00fcr eine manuelle Abfrage.",
+            "Polling interval must be 0 or between 5 and 86400 seconds.": "Das Abfrageintervall muss 0 oder zwischen 5 und 86400 Sekunden liegen.",
+            "Modbus read failed or no active parent connection is available.": "Mindestens ein Modbus-Lesefehler ist aufgetreten oder die Parent-Verbindung ist nicht aktiv. Siehe Modbus-Lesequalität.",
+
+            "Modbus Read Quality (JSON)": "Modbus-Lesequalität (JSON)",
+            "Last Successful Read Timestamp": "Zeitstempel der letzten erfolgreichen Abfrage",
+            "Current": "aktuell",
+            "Stale": "veraltet",
+            "Failed": "fehlgeschlagen",
+            "Unknown": "unbekannt"
+}
     }
 }

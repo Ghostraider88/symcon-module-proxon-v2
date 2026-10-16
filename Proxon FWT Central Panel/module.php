@@ -2,20 +2,33 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTStatusPolling.php';
+
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTControlInput.php';
+
 class ProxonFWTCentralPanel extends IPSModuleStrict {
+    use FWTStatusPolling;
+
+		use FWTControlInput;
+
 		public function Create(): void {
 			//Never delete this line!
 			parent::Create();
+
+        $this->CreateStatusReadQuality();
 			
 			$this->RegisterPropertyInteger("Interval", 30);
 
 			$this->RegisterTimer("Poller", 0, "PROXON_RequestStatus(\$_IPS['TARGET']);");
+			$this->RegisterTimer('StatusQuality', 0, 'PROXON_RefreshReadQuality($_IPS[\'TARGET\']);');
  
 		}
 
 		public function ApplyChanges(): void {
 			//Never delete this line!
 			parent::ApplyChanges();
+
+        $this->RegisterStatusReadQualityVariable(500);
 			
 			$this->RegisterVariableFloat("CurrentTemperature", $this->Translate("Current Temperature"), [
 				"PRESENTATION" => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
@@ -42,14 +55,32 @@ class ProxonFWTCentralPanel extends IPSModuleStrict {
 			$this->MaintainVariable("OperatingMode", $this->Translate("Operating Mode"), VARIABLETYPE_INTEGER, "", 4, false);
 			$this->MaintainVariable("FanStage", $this->Translate("Fan Stage"), VARIABLETYPE_INTEGER, "", 5, false);
 			
-			$this->SetTimerInterval("Poller", $this->ReadPropertyInteger("Interval") * 1000);
+			$this->ConfigureStatusPolling($this->ReadPropertyInteger('Interval'));
 		}
 
-		public function RequestStatus(): void {
+		public function RequestStatus(): void
+		{
+			$startedAt = $this->BeginStatusPoll();
+			if ($startedAt === null) {
+			    return;
+			}
+			try {
+			    $this->PollStatusValues();
+			} finally {
+			    $this->EndStatusPoll($startedAt, 'FWT Central Panel');
+			}
+		}
+
+		private function PollStatusValues(): void
+		{
+			if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
+			    return;
+			}
+
 			// CurrentTemperature -> FC4, 263, INT16 (0.01 °C Resolution)
 			$Address = 263;
-			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 4, "Address" => $Address , "Quantity" => 1, "Data" => "")));
-			if($Data == false)
+			$Data = $this->SendMeasuredStatusRead('Register ' . $Address, json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 4, "Address" => $Address , "Quantity" => 1, "Data" => "")), 4);
+			if (!is_string($Data) || strlen($Data) !== 4)
 				return;
 			$Data = (unpack("n*", substr($Data,2)));
 			// CurrentTemperature is a signed value, so we need to convert it (there is no value for unpacking a signed short)
@@ -58,8 +89,8 @@ class ProxonFWTCentralPanel extends IPSModuleStrict {
 
 			// TargetTemperature -> FC3, 70, INT16 (0.01 °C Resolution)
 			$Address = 70;
-			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
-			if($Data == false)
+			$Data = $this->SendMeasuredStatusRead('Register ' . $Address, json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")), 4);
+			if (!is_string($Data) || strlen($Data) !== 4)
 				return;
 			$TargetTemperature = (unpack("n*", substr($Data,2)));
 			// TargetTemperature is a signed value, so we need to convert it (there is no value for unpacking a signed short)
@@ -68,20 +99,21 @@ class ProxonFWTCentralPanel extends IPSModuleStrict {
 			$this->SetValue("TargetTemperature", $TargetTemperature[1] / 100.0);			
 			// PTCRelease -> 4x0187, FC3, uint16 (0=locked, 1=released)
 			$Address = 187;
-			$Data = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")));
-			if($Data !== false) {
+			$Data = $this->SendMeasuredStatusRead('Register ' . $Address, json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 3, "Address" => $Address , "Quantity" => 1, "Data" => "")), 4);
+			if (is_string($Data) && strlen($Data) === 4) {
 				$PTCRelease = unpack("n*", substr($Data, 2));
 				$this->SetValue("PTCRelease", $PTCRelease[1] > 0);
 			}
 		}
 
-		public function SetTemperature(float $Value): void {
-			if ($Value < 10 || $Value > 30) {
+		public function SetTemperature(mixed $Value): void {
+			$Temperature = $this->NormalizeFWTNumber($Value);
+			if ($Temperature < 10 || $Temperature > 30) {
 				throw new InvalidArgumentException($this->Translate("Target temperature must be between 10 and 30 °C."));
 			}
 
 			// The main control panel only supports whole-degree setpoints.
-			$Value = (float) round($Value);
+			$Value = (float) $this->NormalizeFWTWholeDegreeTemperature($Temperature);
 
 			$Address = 70;
 			$Data = pack("n*", (int) round($Value * 100));
@@ -91,7 +123,8 @@ class ProxonFWTCentralPanel extends IPSModuleStrict {
 			}
 		}
 
-		public function SetPTC(bool $Release): void {
+		public function SetPTC(mixed $Release): void {
+			$Release = $this->NormalizeFWTBoolean($Release);
 			$Address = 187;
 			$Data = pack("n*", $Release ? 1 : 0);
 			$Response = $this->SendDataToParent(json_encode(Array("DataID" => "{E310B701-4AE7-458E-B618-EC13A1A6F6A8}", "Function" => 6, "Address" => $Address , "Quantity" => 1, "Data" => bin2hex($Data))));
@@ -103,10 +136,10 @@ class ProxonFWTCentralPanel extends IPSModuleStrict {
 		public function RequestAction(string $Ident, mixed $Value): void {
 			switch($Ident) {
 				case "TargetTemperature":
-					$this->SetTemperature((float) $Value);
+					$this->SetTemperature($Value);
 					break;
 				case "PTCRelease":
-					$this->SetPTC((bool) $Value);
+					$this->SetPTC($Value);
 					break;
 			}
 		}

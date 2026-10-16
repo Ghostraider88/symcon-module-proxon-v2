@@ -14,7 +14,7 @@ This library integrates PROXON FWT 1.0, FWT 2.0/3.0 and T300 Modbus systems.
 - **Proxon T300 Control** (ProxonT300Control): T300 Holding Register controls and setup actions.
 - **Proxon T300 Monitoring** (ProxonT300Monitoring): read-only T300 Input Register measurements and status.
 
-T300 read-only input values use FC4, matching the workbook and existing Symcon configurations. Holding-register actions are enabled by default only for registers 2000-2003; ten other candidate writes require the maintenance/setup switch and remain unverified on hardware.
+T300 read-only input values use FC4, matching the workbook and existing Symcon configurations. The T300 Control instance reads Holding Registers with FC3 and writes with FC6. Routine writes cover 2000-2003 plus PV and Legionella; the other eight writable setup settings require the maintenance/setup switch. The ten additional writable settings have been checked on the T300 display.
 
 All modules are listed under the Proxon vendor and have a single catalog name without aliases.
 
@@ -27,3 +27,5 @@ The central panel module handles room control. System-wide operating mode and fa
 ## Migration note
 
 The central instance no longer owns the OperatingMode and FanStage variables. After updating the library, add the new System Control entry through the Configurator. Applying changes to the old central instance removes its managed mode and fan variables; update any scripts or visualizations that refer to those old variable IDs. Advanced controls previously shown in System Control and the room temperature correction previously shown in the room panel are hidden and locked, while their old variables are retained. The new Advanced instance owns these controls.
+
+For the Module Control update and source rollback procedure, see [module update and rollback](docs/module-update-rollback.md).

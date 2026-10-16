@@ -1,6 +1,6 @@
 {
     "translations": {
-        "de": { 
+        "de": {
             "Control Panel": "Bedienpanel",
             "Current Temperature": "Ist Temperatur",
             "Target Temperature": "Soll Temperatur",
@@ -8,7 +8,20 @@
             "Target temperature must be between 10 and 30 °C.": "Die Solltemperatur muss zwischen 10 und 30 °C liegen.",
             "Interval": "Intervall",
             "Seconds": "Sekunden",
-            "Update Values": "Werte aktualisieren"
-        }
+            "Update Values": "Werte aktualisieren",
+            "The value must be a finite number.": "Der Wert muss eine endliche Zahl sein.",
+            "The value must be a whole number.": "Der Wert muss eine ganze Zahl sein.",
+            "The value must be a boolean or 0 or 1.": "Der Wert muss Wahr/Falsch oder 0 oder 1 sein.",
+                    "Automatic polling is disabled; use Update Values for a manual poll.": "Automatische Abfrage ist deaktiviert; nutze Werte aktualisieren f\u00fcr eine manuelle Abfrage.",
+            "Polling interval must be 0 or between 5 and 86400 seconds.": "Das Abfrageintervall muss 0 oder zwischen 5 und 86400 Sekunden liegen.",
+            "Modbus read failed or no active parent connection is available.": "Mindestens ein Modbus-Lesefehler ist aufgetreten oder die Parent-Verbindung ist nicht aktiv. Siehe Modbus-Lesequalität.",
+
+            "Modbus Read Quality (JSON)": "Modbus-Lesequalität (JSON)",
+            "Last Successful Read Timestamp": "Zeitstempel der letzten erfolgreichen Abfrage",
+            "Current": "aktuell",
+            "Stale": "veraltet",
+            "Failed": "fehlgeschlagen",
+            "Unknown": "unbekannt"
+}
     }
 }

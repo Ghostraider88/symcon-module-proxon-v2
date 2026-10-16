@@ -52,6 +52,49 @@
 <script>
 const initialData = __INITIAL_DATA__;
 const roomLabels = __ROOM_LABELS__;
+let latestTileData = null;
+
+function getReadQualityState(entry, intervalSeconds) {
+    if (!entry || typeof entry !== 'object') return 'unknown';
+    const lastSuccess = Number(entry.lastSuccessTimestamp) || 0;
+    const lastAttempt = Number(entry.lastAttemptTimestamp) || 0;
+    const maximumAge = Math.max(300, intervalSeconds > 0 ? intervalSeconds * 3 : 300) * 1000;
+    if (lastSuccess <= 0) return lastAttempt > 0 ? 'failed' : 'unknown';
+    if (Date.now() - lastSuccess > maximumAge) return 'stale';
+    if (entry.lastAttemptSucceeded === false) return 'failed';
+    return 'current';
+}
+
+function getGroupQuality(data, group) {
+    const quality = data.systemControlQuality || {};
+    return getReadQualityState(quality[group], Number(data.systemControlInterval) || 0);
+}
+
+function getMonitoringIdentifierQuality(data, ident) {
+    const quality = data.monitoringQuality || {};
+    const interval = Number(data.monitoringInterval) || 0;
+    for (const entry of Object.values(quality)) {
+        if (Array.isArray(entry.identifiers) && entry.identifiers.includes(ident)) {
+            return getReadQualityState(entry, interval);
+        }
+    }
+    return Object.keys(quality).length === 0 ? 'current' : 'unknown';
+}
+
+function getRoomReadingQuality(quality) {
+    if (!quality || typeof quality !== 'object') return 'current';
+    const timestamp = Number(quality.timestamp) || 0;
+    if (timestamp <= 0) return quality.status || 'unknown';
+    const maximumAge = Math.max(0, Number(quality.maximumAgeSeconds) || 300) * 1000;
+    return Date.now() - timestamp > maximumAge ? 'stale' : quality.status || 'current';
+}
+
+function qualitySuffix(status) {
+    if (status === 'current') return '';
+    if (status === 'failed') return ' (' + (roomLabels.Failed || 'failed') + ')';
+    if (status === 'unknown') return ' (' + (roomLabels.Unknown || 'unknown') + ')';
+    return ' (' + (roomLabels.Stale || 'stale') + ')';
+}
 
 function updateRooms(data) {
     const section = document.getElementById('fwt-rooms');
@@ -92,13 +135,19 @@ function updateRooms(data) {
         const body = element('tbody');
         for (const room of selected) {
             const row = element('tr');
-            row.append(element('td', room.name));
-            row.append(element('td', room.temperature == null && room.setpoint == null ? '—'
-                : number(room.temperature, '', 1) + ' / ' + number(room.setpoint, '', 1) + ' °C'));
-            row.append(element('td', number(room.co2, ' ppm')));
-            row.append(element('td', number(room.humidity, ' %', 1)));
+            row.append(element('td', room.name));            const temperatureQuality = [room.quality?.temperature, room.quality?.setpoint]
+                .map(getRoomReadingQuality).find((state) => state !== 'current') || 'current';
+            const temperatureText = room.temperature == null && room.setpoint == null ? '\u2014'
+                : number(room.temperature, '', 1) + ' / ' + number(room.setpoint, '', 1) + ' \u00B0C' + qualitySuffix(temperatureQuality);
+            row.append(element('td', temperatureText));
+            const co2Quality = getRoomReadingQuality(room.quality?.co2);
+            row.append(element('td', number(room.co2, ' ppm') + (room.co2 == null ? '' : qualitySuffix(co2Quality))));
+            const humidityQuality = getRoomReadingQuality(room.quality?.humidity);
+            row.append(element('td', number(room.humidity, ' %', 1) + (room.humidity == null ? '' : qualitySuffix(humidityQuality))));
             const ptc = element('td');
-            ptc.append(element('span', room.ptc === true ? roomLabels.On : room.ptc === false ? roomLabels.Off : '—', 'fwt-ptc' + (room.ptc === true ? ' active' : '')));
+            const ptcValue = room.ptc === true ? roomLabels.On : room.ptc === false ? roomLabels.Off : '\u2014';
+            const ptcQuality = getRoomReadingQuality(room.quality?.ptc);
+            ptc.append(element('span', ptcValue + (room.ptc == null ? '' : qualitySuffix(ptcQuality)), 'fwt-ptc' + (room.ptc === true ? ' active' : '')));
             row.append(ptc);
             body.append(row);
         }
@@ -111,6 +160,46 @@ function updateRooms(data) {
 
 function getValueAtPath(source, path) {
     return path.split('.').reduce((value, key) => value && value[key], source);
+}
+
+function getCurrentTileData(data) {
+    const visibleData = {
+        ...data,
+        systemControl: { ...(data.systemControl || {}) },
+        monitoring: { ...(data.monitoring || {}) }
+    };
+    const systemControlGroups = {
+        ActualOperatingMode: 'FC4 register 23',
+        ActualHeatPumpMode: 'FC4 register 241',
+        HeatPumpModeCode: 'FC4 register 241',
+        SupplyFanRPM: 'FC4 register 0',
+        ExtractFanRPM: 'FC4 register 1',
+        SupplyAirTemperature: 'FC4 register 195',
+        ExtractAirTemperature: 'FC4 register 196',
+        ExhaustAirTemperature: 'FC4 register 197',
+        FreshAirTemperature: 'FC4 register 198',
+        DeviceFilterRuntime: 'FC3 register 469',
+        RecirculationFilterRuntime: 'FC3 register 468',
+        BypassStatus: 'FC4 register 222',
+        BypassOpen: 'FC4 register 222',
+        DamperPosition: 'FC4 register 159',
+        DamperPositionCode: 'FC4 register 159',
+        CoolingEnabled: 'FC3 register 62',
+        SupplyFanStageActual: 'FC4 register 154',
+        ExtractFanStageActual: 'FC4 register 211'
+    };
+    if (Object.keys(data.systemControlQuality || {}).length > 0) {
+        for (const [ident, group] of Object.entries(systemControlGroups)) {
+            if (getGroupQuality(data, group) !== 'current') visibleData.systemControl[ident] = null;
+        }
+    }
+    const monitoringInterval = Number(data.monitoringInterval) || 0;
+    for (const entry of Object.values(data.monitoringQuality || {})) {
+        if (!Array.isArray(entry.identifiers)) continue;
+        if (getReadQualityState(entry, monitoringInterval) === 'current') continue;
+        for (const ident of entry.identifiers) visibleData.monitoring[ident] = null;
+    }
+    return visibleData;
 }
 
 function formatBoundValue(element, value) {
@@ -197,7 +286,10 @@ function updateAirflow(data) {
 function updateCompressorAnimation(data) {
     const monitoring = data.monitoring || {};
     const rpm = monitoring.CompressorSpeed;
-    const hasSpeed = typeof rpm === 'number' && Number.isFinite(rpm) && rpm >= 0;
+    const monitoringQualityAvailable = Object.keys(data.monitoringQuality || {}).length > 0;
+    const compressorSpeedIsCurrent = !monitoringQualityAvailable
+        || getMonitoringIdentifierQuality(data, 'CompressorSpeed') === 'current';
+    const hasSpeed = compressorSpeedIsCurrent && typeof rpm === 'number' && Number.isFinite(rpm) && rpm >= 0;
     const isRunning = hasSpeed && rpm > 0;
     const plant = document.querySelector('.fwt-plant');
     const heatPumpMode = plant ? plant.dataset.heatPumpMode : 'unknown';
@@ -368,7 +460,15 @@ function updateHeatPumpMode(data) {
     let mode = Number.isInteger(reportedMode) && reportedMode >= 0 && reportedMode <= 3 ? reportedMode : null;
     let inferred = false;
 
-    if (mode === null || mode === 0) {
+    const systemQualityAvailable = Object.keys(data.systemControlQuality || {}).length > 0;
+    const monitoringQualityAvailable = Object.keys(data.monitoringQuality || {}).length > 0;
+    const inferenceInputsAreCurrent = (!systemQualityAvailable
+        || (getGroupQuality(data, 'FC4 register 195') === 'current'
+            && getGroupQuality(data, 'FC4 register 198') === 'current'))
+        && (!monitoringQualityAvailable
+            || getMonitoringIdentifierQuality(data, 'CompressorSpeed') === 'current');
+
+    if (mode === null && inferenceInputsAreCurrent) {
         const compressorRPM = monitoring.CompressorSpeed;
         const supplyTemperature = system.SupplyAirTemperature;
         const freshTemperature = system.FreshAirTemperature;
@@ -501,39 +601,77 @@ function updateHeatPumpMode(data) {
 
 function updateTileStatus(data) {
     const source = document.getElementById('monitoring-source-status');
-    if (source) {
-        if (!data.monitoringSelected) {
-            source.textContent = 'Monitoring-Instanz in der Konfiguration auswählen';
-        } else if (!data.monitoringLastRead) {
-            source.textContent = 'Monitoring ausgewählt · wartet auf erfolgreiche Abfrage';
-        } else {
-            const readTime = Date.parse(String(data.monitoringLastRead).replace(' ', 'T'));
-            const interval = Number(data.monitoringInterval) || 60;
-            const isStale = Number.isFinite(readTime) && Date.now() - readTime > interval * 3000;
-            source.textContent = (isStale ? 'Monitoringdaten veraltet · letzter Stand ' : 'Monitoring · letzter Stand ')
-                + data.monitoringLastRead;
+    if (!source) return;
+    const summarize = (quality, interval) => {
+        const entries = Object.values(quality || {});
+        if (!entries.length) return roomLabels.Unknown || 'unknown';
+        const states = entries.map((entry) => getReadQualityState(entry, interval));
+        const failed = states.filter((state) => state === 'failed').length;
+        const stale = states.filter((state) => state === 'stale').length;
+        const unknown = states.filter((state) => state === 'unknown').length;
+        if (failed) return (roomLabels.Failed || 'failed') + ': ' + failed;
+        if (stale) return (roomLabels.Stale || 'stale') + ': ' + stale;
+        if (unknown) return (roomLabels.Unknown || 'unknown') + ': ' + unknown;
+        return roomLabels.Current || 'current';
+    };
+    const parts = [];
+    if (!data.connected) parts.push((roomLabels.Modbus || 'Modbus') + ': ' + (roomLabels.Disconnected || 'disconnected'));
+    parts.push((roomLabels.Plant || 'Plant') + ': ' + summarize(data.systemControlQuality, Number(data.systemControlInterval) || 0));
+    if (!data.monitoringSelected) {
+        parts.push(roomLabels['Select a Monitoring instance'] || 'Select a Monitoring instance');
+    } else {
+        parts.push((roomLabels.Monitoring || 'Monitoring') + ': ' + summarize(data.monitoringQuality, Number(data.monitoringInterval) || 0));
+        if (data.monitoring?.FaultStatusComplete === false) parts.push(roomLabels['Fault status incomplete'] || 'Fault status incomplete');
+        if (data.monitoringLastReadTimestamp) {
+            parts.push(new Date(Number(data.monitoringLastReadTimestamp)).toLocaleString());
         }
     }
+    source.textContent = parts.join(' \u00b7 ');
+}
+
+function refreshTileQuality() {
+    if (!latestTileData) return;
+    const visibleData = getCurrentTileData(latestTileData);
+    updateBoundValues(visibleData);
+    updateAirflow(visibleData);
+    updateDamper(visibleData);
+    updateBypass(visibleData);
+    updateFilterIndicators(visibleData);
+    updateTileStatus(latestTileData);
+    updateHeatPumpMode(visibleData);
+    updateCompressorAnimation(visibleData);
+    updateRooms(latestTileData);
 }
 
 function handleMessage(data) {
-    if (!data || typeof data !== 'object') {
+    if (typeof data === 'string') {
+        try {
+            data = JSON.parse(data);
+        } catch (error) {
+            return;
+        }
+    }
+
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
         return;
     }
 
-    updateBoundValues(data);
-    updateAirflow(data);
-    updateDamper(data);
-    updateBypass(data);
-    updateFilterIndicators(data);
-    updateHeatPumpMode(data);
-    updateCompressorAnimation(data);
+    latestTileData = data;
+    const visibleData = getCurrentTileData(data);
+    updateBoundValues(visibleData);
+    updateAirflow(visibleData);
+    updateDamper(visibleData);
+    updateBypass(visibleData);
+    updateFilterIndicators(visibleData);
+    updateHeatPumpMode(visibleData);
+    updateCompressorAnimation(visibleData);
     updateTileStatus(data);
     updateRooms(data);
 }
 
 window.handleMessage = handleMessage;
 handleMessage(initialData);
+window.setInterval(refreshTileQuality, 15000);
 </script>
 </body>
 </html>

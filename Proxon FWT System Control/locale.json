@@ -154,7 +154,28 @@
 			"Upper Floor Preferred": "OG bevorzugt",
 			"Upper Floor": "OG",
 			"Unknown status (%d)": "Unbekannter Status (%d)",
-			"Unknown position (%d)": "Unbekannte Stellung (%d)"
-		}
+			"Unknown position (%d)": "Unbekannte Stellung (%d)",
+			"The value must be a finite number.": "Der Wert muss eine endliche Zahl sein.",
+			"The value must be a whole number.": "Der Wert muss eine ganze Zahl sein.",
+			"The value must be a boolean or 0 or 1.": "Der Wert muss Wahr/Falsch oder 0 oder 1 sein.",
+				    "Automatic polling is disabled; use Update Values for a manual poll.": "Automatische Abfrage ist deaktiviert; nutze Werte aktualisieren f\u00fcr eine manuelle Abfrage.",
+		    "Polling interval must be 0 or between 5 and 86400 seconds.": "Das Abfrageintervall muss 0 oder zwischen 5 und 86400 Sekunden liegen.",
+		    "Modbus read failed or no active parent connection is available.": "Mindestens ein Modbus-Lesefehler ist aufgetreten oder die Parent-Verbindung ist nicht aktiv. Siehe Modbus-Lesequalität.",
+
+		    "Modbus Read Quality (JSON)": "Modbus-Lesequalität (JSON)",
+		    "Last Successful Read Timestamp": "Zeitstempel der letzten erfolgreichen Abfrage",
+		    "Current": "aktuell",
+		    "Stale": "veraltet",
+		    "Failed": "fehlgeschlagen",
+		    "Unknown": "unbekannt",
+            "Plant": "Anlage",
+            "Monitoring": "Monitoring",
+            "Modbus": "Modbus",
+            "Disconnected": "getrennt",
+            "Select a Monitoring instance": "Monitoring-Instanz ausw\u00e4hlen",
+            "Fault status incomplete": "St\u00f6rungsstatus unvollst\u00e4ndig",
+            "Could not update sensor variable visibility.": "Sichtbarkeit der Sensorvariable konnte nicht aktualisiert werden.",
+            "When the sensor count is reduced, existing sensor variables are retained and hidden. Re-enabling a sensor restores the same variable IDs and archive assignments.": "Wird die Sensoranzahl verringert, bleiben vorhandene Sensorvariablen erhalten und werden ausgeblendet. Beim erneuten Aktivieren werden dieselben Variablen-IDs und Archivzuordnungen wieder eingeblendet."
+}
 	}
 }

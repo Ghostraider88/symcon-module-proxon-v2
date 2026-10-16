@@ -46,7 +46,23 @@
             "Secondary Panel %d Temperature Offset": "Temperaturkorrektur Nebenbedienpanel %d",
             "Main Secondary Panel Temperature Offset": "Temperaturkorrektur Hauptnebenbedienpanel",
             "Months": "Monate",
-            "Hours": "Stunden"
-        }
+            "Hours": "Stunden",
+            "The value must be a finite number.": "Der Wert muss eine endliche Zahl sein.",
+            "The value must be a whole number.": "Der Wert muss eine ganze Zahl sein.",
+            "The value must be a boolean or 0 or 1.": "Der Wert muss Wahr/Falsch oder 0 oder 1 sein.",
+            "The current opposing fan airflow limit could not be read.": "Der aktuelle Gegenwert für die Lüftergrenze konnte nicht gelesen werden.",
+            "The current opposing fan airflow limit is outside its valid range.": "Der aktuelle Gegenwert für die Lüftergrenze liegt außerhalb seines gültigen Bereichs.",
+            "The minimum airflow must not exceed the maximum airflow.": "Der minimale Luftstrom darf den maximalen Luftstrom nicht überschreiten.",
+                    "Automatic polling is disabled; use Update Values for a manual poll.": "Automatische Abfrage ist deaktiviert; nutze Werte aktualisieren f\u00fcr eine manuelle Abfrage.",
+            "Polling interval must be 0 or between 5 and 86400 seconds.": "Das Abfrageintervall muss 0 oder zwischen 5 und 86400 Sekunden liegen.",
+            "Modbus read failed or no active parent connection is available.": "Mindestens ein Modbus-Lesefehler ist aufgetreten oder die Parent-Verbindung ist nicht aktiv. Siehe Modbus-Lesequalität.",
+
+            "Modbus Read Quality (JSON)": "Modbus-Lesequalität (JSON)",
+            "Last Successful Read Timestamp": "Zeitstempel der letzten erfolgreichen Abfrage",
+            "Current": "aktuell",
+            "Stale": "veraltet",
+            "Failed": "fehlgeschlagen",
+            "Unknown": "unbekannt"
+}
     }
 }

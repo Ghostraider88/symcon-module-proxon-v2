@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'FWTStatusPolling.php';
+
 class ProxonT300Control extends IPSModuleStrict
 {
+    use FWTStatusPolling;
+
     private const MODBUS_DATA_ID = '{E310B701-4AE7-458E-B618-EC13A1A6F6A8}';
     private const READ_FUNCTION = 3;
     private const WRITE_FUNCTION = 6;
@@ -13,20 +17,38 @@ class ProxonT300Control extends IPSModuleStrict
     {
         parent::Create();
 
+        $this->CreateStatusReadQuality();
+
         $this->RegisterPropertyInteger('Interval', 60);
         $this->RegisterPropertyBoolean('AdvancedControlsEnabled', false);
         $this->RegisterTimer('Poller', 0, 'PROXONT300_RequestStatus($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('StatusQuality', 0, 'PROXONT300_RefreshReadQuality($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
 
+        $this->RegisterStatusReadQualityVariable(500);
+
         $this->RegisterControlVariables();
-        $this->SetTimerInterval('Poller', max(1, $this->ReadPropertyInteger('Interval')) * 1000);
+        $this->ConfigureStatusPolling($this->ReadPropertyInteger('Interval'));
     }
 
     public function RequestStatus(): void
+    {
+        $startedAt = $this->BeginStatusPoll();
+        if ($startedAt === null) {
+            return;
+        }
+        try {
+            $this->PollStatusValues();
+        } finally {
+            $this->EndStatusPoll($startedAt, 'T300 Control');
+        }
+    }
+
+    private function PollStatusValues(): void
     {
         if (IPS_GetKernelRunlevel() !== KR_READY || !$this->HasActiveParent()) {
             return;
@@ -34,7 +56,11 @@ class ProxonT300Control extends IPSModuleStrict
 
         $definitions = $this->GetControlDefinitions();
         foreach ($this->GetRegisterGroups() as $group) {
-            $values = $this->ReadHoldingRegisters($group['address'], $group['quantity']);
+            $groupIdents = array_map(
+                static fn(array $entry): string => $entry['ident'],
+                $group['definitions']
+            );
+            $values = $this->ReadHoldingRegisters($group['address'], $group['quantity'], $groupIdents);
             if ($values === null) {
                 continue;
             }
@@ -314,23 +340,18 @@ class ProxonT300Control extends IPSModuleStrict
 
     private function GetRegisterGroups(): array
     {
-        return [
-            ['address' => 2000, 'quantity' => 4],
-            ['address' => 2008, 'quantity' => 3],
-            ['address' => 2025, 'quantity' => 1],
-            ['address' => 2150, 'quantity' => 6]
-        ];
+        return $this->BuildContiguousStatusReadGroups($this->GetControlDefinitions());
     }
 
-    private function ReadHoldingRegisters(int $address, int $quantity): ?array
+    private function ReadHoldingRegisters(int $address, int $quantity, array $identifiers): ?array
     {
-        $response = $this->SendDataToParent(json_encode([
+        $response = $this->SendMeasuredStatusRead('FC3 block ' . $address . 'x' . $quantity, json_encode([
             'DataID' => self::MODBUS_DATA_ID,
             'Function' => self::READ_FUNCTION,
             'Address' => $address,
             'Quantity' => $quantity,
             'Data' => ''
-        ], JSON_THROW_ON_ERROR));
+        ], JSON_THROW_ON_ERROR), 2 + ($quantity * 2), $identifiers);
 
         if (!is_string($response) || strlen($response) !== 2 + ($quantity * 2)) {
             return null;
